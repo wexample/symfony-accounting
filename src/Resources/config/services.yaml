@@ -4,6 +4,6 @@ services:
         autoconfigure: true
         public: false
 
-    Wexample\SymfonyTunnels\:
+    Wexample\SymfonyAccounting\:
         resource: '../../{Service}'
         tags: ['controller.service_arguments']

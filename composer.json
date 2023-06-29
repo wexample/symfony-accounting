@@ -1,12 +1,12 @@
 {
-    "name": "wexample/symfony-tunnels",
-    "description": "A tunnels service for Symfony",
+    "name": "wexample/symfony-accounting",
+    "description": "A accounting service for Symfony",
     "type": "library",
     "license": "MIT",
     "version": "0.1.0",
     "autoload": {
         "psr-4": {
-            "Wexample\\SymfonyTunnels\\": "src/"
+            "Wexample\\SymfonyAccounting\\": "src/"
         }
     },
     "authors": [

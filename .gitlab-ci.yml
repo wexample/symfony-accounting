@@ -1,5 +1,5 @@
 variables:
-  SYMFONY_PACKAGE_NAME: symfony-tunnels
+  SYMFONY_PACKAGE_NAME: symfony-accounting
 
 include:
   - project: 'wexample/symfony-packages-templates'
