@@ -88,18 +88,22 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
             ->offset($offset)
             ->process($csv);
 
+        /** @var array $record */
         foreach ($records as $record) {
             $desc = trim(
-                $record[$this->getItemDescriptionColumnIndex()]
+                $this->getRecordDescription($record)
             );
 
             $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
                 $bank,
                 AbstractAccountingTransactionEntity::TYPE_TRANSACTION,
-                $this->parseDate($record[$this->getItemDateColumnIndex()], $this->getDateFormat()),
+                $this->parseDate(
+                    trim($this->getRecordDateString($record)),
+                    $this->getDateFormat()
+                ),
                 $desc,
                 TextHelper::getIntDataFromString(
-                    $record[$this->getItemAmountColumnIndex()]
+                    $this->getRecordAmountString($record)
                 )
             );
 
@@ -111,9 +115,9 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
         return $count;
     }
 
-    abstract protected function getItemDescriptionColumnIndex(): int;
+    abstract protected function getRecordDescription(array $record): string;
 
-    abstract protected function getItemDateColumnIndex(): int;
+    abstract protected function getRecordDateString(array $record): string;
 
-    abstract protected function getItemAmountColumnIndex(): int;
+    abstract protected function getRecordAmountString(array $record): string;
 }

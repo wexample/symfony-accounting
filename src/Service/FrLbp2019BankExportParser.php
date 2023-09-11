@@ -190,18 +190,18 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
         return TextHelper::getIntDataFromString($header->fetchOne(4)[1]);
     }
 
-    protected function getItemDescriptionColumnIndex(): int
+    protected function getRecordDescription(array $record): string
     {
-        return 1;
+        return $record[1];
     }
 
-    protected function getItemDateColumnIndex(): int
+    protected function getRecordDateString(array $record): string
     {
-        return 0;
+        return $record[0];
     }
 
-    protected function getItemAmountColumnIndex(): int
+    protected function getRecordAmountString(array $record): string
     {
-        return 2;
+        return $record[2];
     }
 }

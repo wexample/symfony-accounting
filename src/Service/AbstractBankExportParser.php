@@ -63,7 +63,7 @@ abstract class AbstractBankExportParser
 
     public function parseDate(
         string $dateString,
-        $format = 'Y-m-d H:i'
+        string $format = 'Y-m-d H:i'
     ): DateTimeInterface {
         // Set time at midnight.
         return DateHelper::startOfDay(DateTime::createFromFormat(
