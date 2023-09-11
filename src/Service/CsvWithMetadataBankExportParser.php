@@ -2,16 +2,16 @@
 
 namespace Wexample\SymfonyAccounting\Service;
 
-use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
-use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
-use Wexample\SymfonyHelpers\Helper\TextHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Csv\Exception;
 use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\TabularDataReader;
 use League\Csv\UnableToProcessCsv;
+use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
+use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
+use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
+use Wexample\SymfonyHelpers\Helper\TextHelper;
 use function trim;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser

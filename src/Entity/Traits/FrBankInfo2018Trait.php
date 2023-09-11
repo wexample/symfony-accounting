@@ -8,18 +8,15 @@
 
 namespace Wexample\SymfonyAccounting\Entity\Traits;
 
-use function bcmod;
-
 use Doctrine\ORM\Mapping\Column;
-
+use Symfony\Component\Validator\Constraints\Length;
+use function bcmod;
 use function is_numeric;
 use function ord;
 use function pow;
 use function str_pad;
 use function strlen;
 use function substr;
-
-use Symfony\Component\Validator\Constraints\Length;
 
 trait FrBankInfo2018Trait
 {
@@ -159,8 +156,12 @@ trait FrBankInfo2018Trait
     /**
      * @see https://fr.wikipedia.org/wiki/Basic_Bank_Account_Number#V%C3%A9rification_du_RIB_en_PHP
      */
-    public function ribValidate($bank, $agency, $account, $key): bool
-    {
+    public function ribValidate(
+        $bank,
+        $agency,
+        $account,
+        $key
+    ): bool {
         $tab = '';
         $len = strlen($account);
         if (11 != $len) {
@@ -172,9 +173,9 @@ trait FrBankInfo2018Trait
             if (!is_numeric($car)) {
                 $c = ord($car) - (ord('A') - 1);
                 $b = (($c + pow(
-                    2,
-                    ($c - 10) / 9
-                )) % 10) + (($c > 18 && $c < 25) ? 1 : 0);
+                                2,
+                                ($c - 10) / 9
+                            )) % 10) + (($c > 18 && $c < 25) ? 1 : 0);
                 $tab .= $b;
             } else {
                 $tab .= $car;

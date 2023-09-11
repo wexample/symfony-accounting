@@ -2,8 +2,8 @@
 
 namespace Wexample\SymfonyAccounting\Entity;
 
-use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyHelpers\Entity\Organization;
 
-abstract class AbstractBankOrganizationEntity extends AbstractEntity
+abstract class AbstractBankOrganizationEntity extends Organization
 {
 }
