@@ -10,7 +10,7 @@ class WexampleSymfonyAccountingExtension extends AbstractWexampleSymfonyExtensio
     public function load(
         array $configs,
         ContainerBuilder $container
-    ) {
+    ): void {
         $this->loadConfig(
             __DIR__,
             $container
