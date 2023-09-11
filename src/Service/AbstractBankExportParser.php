@@ -12,6 +12,7 @@ use League\Csv\Reader;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\SymfonyHelpers\Helper\FileHelper;
 use function file_get_contents;
 
 abstract class AbstractBankExportParser
@@ -49,7 +50,7 @@ abstract class AbstractBankExportParser
 
         return $this->parseContent(
             $bank,
-            file_get_contents($filePath),
+            FileHelper::getContentUtf8($filePath),
             $options
         );
     }

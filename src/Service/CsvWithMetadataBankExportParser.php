@@ -15,7 +15,7 @@ use function trim;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {
-    public int $headerHeight = 7;
+    public int $headerHeight = 10;
 
     /**
      * @throws UnableToProcessCsv
@@ -55,9 +55,9 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
                 .$dateCreated->format(DateHelper::DATE_PATTERN_DAY_DEFAULT),
                 $balanceStatement
             );
-        }
 
-        $this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction);
+            $this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction);
+        }
 
         return $this->convertCsvRecords(
             $bank,

@@ -81,8 +81,6 @@ class Stripe2021BankExportExportParser extends AbstractBankExportParser
                     true
                 );
 
-                print($transactionFee->getId() . '!!!');
-
                 $dateMonth = DateHelper::endOfMonth(
                     $transactionFee->getDateCreated()
                 );
