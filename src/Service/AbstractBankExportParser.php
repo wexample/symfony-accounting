@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityRepository;
 use League\Csv\Exception;
 use League\Csv\Reader;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
+use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
 use function file_get_contents;
 
@@ -18,7 +19,8 @@ abstract class AbstractBankExportParser
     public EntityRepository $accountingTransactionRepo;
 
     public function __construct(
-        public EntityManagerInterface $entityManager
+        public EntityManagerInterface $entityManager,
+        protected readonly AbstractAccountingTransactionEntityService $accountingTransactionEntityService
     ) {
         $this->accountingTransactionRepo = $this->entityManager->getRepository(AccountingTransaction::class);
     }

@@ -2,7 +2,6 @@
 
 namespace Wexample\SymfonyAccounting\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use League\Csv\Exception;
 use League\Csv\Reader;
 use League\Csv\Statement;
@@ -10,20 +9,13 @@ use League\Csv\TabularDataReader;
 use League\Csv\UnableToProcessCsv;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
+use Wexample\SymfonyHelpers\Helper\DateHelper;
 use Wexample\SymfonyHelpers\Helper\TextHelper;
 use function trim;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {
     public int $headerHeight = 7;
-
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        protected readonly AbstractAccountingTransactionEntityService $accountingTransactionEntityService
-    ) {
-        parent::__construct($entityManager);
-    }
 
     /**
      * @throws UnableToProcessCsv
@@ -48,16 +40,22 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 
         // Load header.
         $header = (new Statement())->process($csv);
-        $created = $this->getCreated($header);
+        $created = $this->getDateExport($header);
+        $balanceStatement = $this->getAccountBalanceStatement($header);
 
-        // Save first transaction as statement.
-        $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
-            $bank,
-            AbstractAccountingTransactionEntity::TYPE_STATEMENT,
-            $this->parseDate($created, $this->getDateFormat()),
-            AbstractAccountingTransactionEntity::TYPE_STATEMENT.' - '.$created,
-            TextHelper::getIntDataFromString($header->fetchOne(4)[1])
-        );
+        if ($created && $balanceStatement) {
+            $dateCreated = $this->parseDate($created, $this->getDateFormat());
+
+            // Save first transaction as statement.
+            $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
+                $bank,
+                AbstractAccountingTransactionEntity::TYPE_STATEMENT,
+                $dateCreated,
+                AbstractAccountingTransactionEntity::TYPE_STATEMENT.' - '
+                .$dateCreated->format(DateHelper::DATE_PATTERN_DAY_DEFAULT),
+                $balanceStatement
+            );
+        }
 
         $this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction);
 
@@ -68,7 +66,9 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
         );
     }
 
-    abstract protected function getCreated(TabularDataReader $header): string;
+    abstract protected function getDateExport(TabularDataReader $header): ?string;
+
+    abstract protected function getAccountBalanceStatement(TabularDataReader $header): ?int;
 
     abstract protected function getDateFormat(): string;
 
@@ -89,14 +89,18 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
             ->process($csv);
 
         foreach ($records as $record) {
-            $desc = trim($record[1]);
+            $desc = trim(
+                $record[$this->getItemDescriptionColumnIndex()]
+            );
 
             $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
                 $bank,
                 AbstractAccountingTransactionEntity::TYPE_TRANSACTION,
-                $this->parseDate($record[0], $this->getDateFormat()),
+                $this->parseDate($record[$this->getItemDateColumnIndex()], $this->getDateFormat()),
                 $desc,
-                TextHelper::getIntDataFromString($record[2])
+                TextHelper::getIntDataFromString(
+                    $record[$this->getItemAmountColumnIndex()]
+                )
             );
 
             if ($this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction)) {
@@ -106,4 +110,10 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 
         return $count;
     }
+
+    abstract protected function getItemDescriptionColumnIndex(): int;
+
+    abstract protected function getItemDateColumnIndex(): int;
+
+    abstract protected function getItemAmountColumnIndex(): int;
 }

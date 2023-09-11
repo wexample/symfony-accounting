@@ -5,8 +5,10 @@ namespace Wexample\SymfonyAccounting\Service;
 use ArrayObject;
 use League\Csv\Exception;
 use League\Csv\TabularDataReader;
+use League\Csv\UnableToProcessCsv;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\SymfonyHelpers\Helper\FileHelper;
 use Wexample\SymfonyHelpers\Helper\TextHelper;
 use function explode;
 use function implode;
@@ -21,9 +23,6 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
 {
     public int $headerHeight = 7;
 
-    /**
-     * @throws Exception
-     */
     public function parseContent(
         AbstractBankOrganizationEntity $bank,
         string $content,
@@ -38,7 +37,7 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
         // PDF Files from LBP Bank are protected (with no password),
         // so pdf content can't be extracted and should be
         // copied / pasted in a txt file.
-        if ('txt' === $ext) {
+        if (FileHelper::FILE_EXTENSION_TXT === $ext) {
             return $this->convertPdfTextToTransaction($bank, $content);
         }
 
@@ -173,13 +172,36 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
         return implode(PHP_EOL, $aggregated);
     }
 
+    protected function getDateExport(TabularDataReader $header): ?string
+    {
+        return $header->fetchOne(3)[1];
+    }
+
     protected function getDateFormat(): string
     {
         return DateHelper::DATE_PATTERN_YMD_FR;
     }
 
-    protected function getCreated(TabularDataReader $header): string
+    /**
+     * @throws UnableToProcessCsv
+     */
+    protected function getAccountBalanceStatement(TabularDataReader $header): ?int
     {
-        return $header->fetchOne(3)[1];
+        return TextHelper::getIntDataFromString($header->fetchOne(4)[1]);
+    }
+
+    protected function getItemDescriptionColumnIndex(): int
+    {
+        return 1;
+    }
+
+    protected function getItemDateColumnIndex(): int
+    {
+        return 0;
+    }
+
+    protected function getItemAmountColumnIndex(): int
+    {
+        return 2;
     }
 }

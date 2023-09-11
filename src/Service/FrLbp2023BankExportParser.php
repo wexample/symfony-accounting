@@ -3,22 +3,14 @@
 namespace Wexample\SymfonyAccounting\Service;
 
 use League\Csv\TabularDataReader;
-use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\SymfonyHelpers\Helper\TextHelper;
 
 class FrLbp2023BankExportParser extends CsvWithMetadataBankExportParser
 {
     public int $headerHeight = 6;
 
-    public function parseContent(
-        AbstractBankOrganizationEntity $bank,
-        string $content,
-        array $options = []
-    ): int {
-        return $this->convertCsvTextToTransaction($bank, $content);
-    }
-
-    protected function getCreated(TabularDataReader $header): string
+    protected function getDateExport(TabularDataReader $header): ?string
     {
         $line = $header->fetchOne(2)[1];
 
@@ -35,5 +27,25 @@ class FrLbp2023BankExportParser extends CsvWithMetadataBankExportParser
     protected function getDateFormat(): string
     {
         return DateHelper::DATE_PATTERN_YMD_FR;
+    }
+
+    protected function getAccountBalanceStatement(TabularDataReader $header): ?int
+    {
+        return TextHelper::getIntDataFromString($header->fetchOne(4)[1]);
+    }
+
+    protected function getItemDescriptionColumnIndex(): int
+    {
+        return 1;
+    }
+
+    protected function getItemDateColumnIndex(): int
+    {
+        return 0;
+    }
+
+    protected function getItemAmountColumnIndex(): int
+    {
+        return 2;
     }
 }

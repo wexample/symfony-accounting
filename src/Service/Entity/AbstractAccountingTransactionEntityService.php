@@ -3,9 +3,12 @@
 namespace Wexample\SymfonyAccounting\Service\Entity;
 
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
+use Wexample\SymfonyAccounting\Service\Entity\Interface\AccountingTransactionEntityServiceInterface;
 use Wexample\SymfonyHelpers\Service\Entity\AbstractEntityService;
 
-class AbstractAccountingTransactionEntityService extends AbstractEntityService
+abstract class AbstractAccountingTransactionEntityService
+    extends AbstractEntityService
+    implements AccountingTransactionEntityServiceInterface
 {
     public static function getEntityClassName(): string
     {
@@ -16,7 +19,7 @@ class AbstractAccountingTransactionEntityService extends AbstractEntityService
         AbstractAccountingTransactionEntity $transaction
     ): bool {
         if (!$this->findSameTransaction($transaction)) {
-            $this->save($transaction);
+            $this->getEntityRepository()->add($transaction);
 
             return true;
         }
