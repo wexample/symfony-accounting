@@ -21,11 +21,11 @@ use function trim;
 
 class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
 {
-    public int $headerHeight = 7;
+    public int $headerHeight = 8;
 
     public function parseContent(
         AbstractBankOrganizationEntity $bank,
-        string $content,
+        $content,
         array $options = []
     ): int {
         $ext = pathinfo(
