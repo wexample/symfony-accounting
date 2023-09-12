@@ -18,6 +18,7 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use League\Csv\Exception;
+use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 
@@ -41,7 +42,7 @@ class Stripe2021BankExportExportParser extends AbstractBankExportParser
      */
     public function parseContent(
         AbstractBankOrganizationEntity $bank,
-        string $content,
+        $content,
         array $options = []
     ): int {
         /** @var InvoiceRepository $invoiceRepo */
@@ -151,7 +152,7 @@ class Stripe2021BankExportExportParser extends AbstractBankExportParser
     ): AccountingTransaction {
         $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
             $bank,
-            AccountingTransaction::TYPE_TRANSACTION,
+            AbstractAccountingTransactionEntity::TYPE_TRANSACTION,
             $this->parseDate($record['Created (UTC)']),
             $record['Description'].' '.$column.' '.$record['id'],
             ($negate ? -1 : 1) * TextHelper::getIntDataFromString($record[$column])

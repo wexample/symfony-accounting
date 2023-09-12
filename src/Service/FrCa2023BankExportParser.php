@@ -2,25 +2,36 @@
 
 namespace Wexample\SymfonyAccounting\Service;
 
-use League\Csv\TabularDataReader;
-use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
+use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class FrCa2023BankExportParser extends CsvWithMetadataBankExportParser
+class FrCa2023BankExportParser extends XlsBankExportParser
 {
-    public int $headerHeight = 10;
+    public int $headerHeight = 11;
 
-    public function parseContent(
-        AbstractBankOrganizationEntity $bank,
-        string $content,
-        array $options = []
-    ): int {
-        return $this->convertCsvTextToTransaction($bank, $content);
+    protected function getRowDescription(Row $row): string
+    {
+        return $this->getCellValue($row, 'B');
     }
 
-    protected function getDateExport(TabularDataReader $header): ?string
+    protected function getCellValue(
+        Row $row,
+        $cellCoordinate,
+        $default = Null
+    ): ?string {
+        $worksheet = $row->getWorksheet();
+
+        $cell = $worksheet->getCell($cellCoordinate.$row->getRowIndex());
+
+        return $cell->getValue() ?? $default;
+    }
+
+    protected function getRowDateString(Row $row): string
     {
-        return false;
+        return Date::excelToDateTimeObject(
+            $this->getCellValue($row, 'A')
+        )->format($this->getDateFormat());
     }
 
     protected function getDateFormat(): string
@@ -28,24 +39,10 @@ class FrCa2023BankExportParser extends CsvWithMetadataBankExportParser
         return DateHelper::DATE_PATTERN_YMD_FR;
     }
 
-    protected function getAccountBalanceStatement(TabularDataReader $header): ?int
+    protected function getRowAmountString(Row $row): string
     {
-        return false;
-    }
-
-    protected function getRecordDescription(array $record): string
-    {
-        return $record[1];
-    }
-
-    protected function getRecordDateString(array $record): string
-    {
-        return $record[0];
-    }
-
-    protected function getRecordAmountString(array $record): string
-    {
-        # Credit, or debit.
-        return $record[3] ?: '-'.$record[2];
+        // Credit or debit.
+        return $this->getCellValue($row, 'D')
+            || $this->getCellValue($row, 'C');
     }
 }

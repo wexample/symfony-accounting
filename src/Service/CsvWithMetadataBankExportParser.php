@@ -15,7 +15,7 @@ use function trim;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {
-    public int $headerHeight = 10;
+    public int $headerHeight;
 
     /**
      * @throws UnableToProcessCsv
@@ -23,7 +23,7 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
      */
     public function parseContent(
         AbstractBankOrganizationEntity $bank,
-        string $content,
+        $content,
         array $options = []
     ): int {
         return $this->convertCsvTextToTransaction($bank, $content);
@@ -47,16 +47,13 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
             $dateCreated = $this->parseDate($created, $this->getDateFormat());
 
             // Save first transaction as statement.
-            $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
+            $this->saveTransactionOfNotExists(
                 $bank,
-                AbstractAccountingTransactionEntity::TYPE_STATEMENT,
                 $dateCreated,
                 AbstractAccountingTransactionEntity::TYPE_STATEMENT.' - '
                 .$dateCreated->format(DateHelper::DATE_PATTERN_DAY_DEFAULT),
                 $balanceStatement
             );
-
-            $this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction);
         }
 
         return $this->convertCsvRecords(
@@ -93,21 +90,20 @@ abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
             $desc = trim(
                 $this->getRecordDescription($record)
             );
-
-            $transaction = $this->accountingTransactionRepo->createAccountingTransaction(
-                $bank,
-                AbstractAccountingTransactionEntity::TYPE_TRANSACTION,
-                $this->parseDate(
-                    trim($this->getRecordDateString($record)),
-                    $this->getDateFormat()
-                ),
-                $desc,
-                TextHelper::getIntDataFromString(
-                    $this->getRecordAmountString($record)
-                )
+            $date = $this->parseDate(
+                $this->getRecordDateString($record),
+                $this->getDateFormat()
+            );
+            $amount = TextHelper::getIntDataFromString(
+                $this->getRecordAmountString($record)
             );
 
-            if ($this->accountingTransactionEntityService->saveTransactionIfNotExists($transaction)) {
+            if ($this->saveTransactionOfNotExists(
+                $bank,
+                $date,
+                $desc,
+                $amount
+            )) {
                 ++$count;
             }
         }
