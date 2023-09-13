@@ -13,7 +13,7 @@ trait FrBankInfo2018Trait
     {
         $builder->add(
             'bank_owner',
-            TextType::class,
+            $this->resolveTypeClass(TextType::class),
             [
                 self::FIELD_OPTION_NAME_REQUIRED => false,
                 self::FIELD_OPTION_NAME_ICON => IconMaterialHelper::ICON_PERM_IDENTITY,
@@ -21,7 +21,7 @@ trait FrBankInfo2018Trait
         )
             ->add(
                 'bank_iban',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                     self::FIELD_OPTION_NAME_ICON => IconMaterialHelper::ICON_FILTER_1,
@@ -29,7 +29,7 @@ trait FrBankInfo2018Trait
             )
             ->add(
                 'bank_bic',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                     self::FIELD_OPTION_NAME_ICON => IconMaterialHelper::ICON_FILTER_2,
@@ -37,7 +37,7 @@ trait FrBankInfo2018Trait
             )
             ->add(
                 'bank_location',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                     self::FIELD_OPTION_NAME_ICON => IconMaterialHelper::ICON_PLACE,
@@ -45,7 +45,7 @@ trait FrBankInfo2018Trait
             )
             ->add(
                 'bank_rib_bank',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                     self::FIELD_OPTION_NAME_ICON => IconMaterialHelper::ICON_FILTER_3,
@@ -53,21 +53,21 @@ trait FrBankInfo2018Trait
             )
             ->add(
                 'bank_rib_agency',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                 ]
             )
             ->add(
                 'bank_rib_account',
-                TextType::class,
+                $this->resolveTypeClass(TextType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                 ]
             )
             ->add(
                 'bank_rib_key',
-                FloatType::class,
+                $this->resolveTypeClass(FloatType::class),
                 [
                     self::FIELD_OPTION_NAME_REQUIRED => false,
                     'attr' => [
