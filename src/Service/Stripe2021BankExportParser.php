@@ -10,8 +10,6 @@ use App\Repository\InvoiceRepository;
 use App\Repository\OrganizationRepository;
 use App\Service\Entity\InvoiceEntityService;
 use App\Service\Entity\InvoiceItemEntityService;
-use App\Wex\BaseBundle\Helper\DateHelper;
-use App\Wex\BaseBundle\Helper\TextHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -21,6 +19,8 @@ use League\Csv\Exception;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
+use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\SymfonyHelpers\Helper\TextHelper;
 
 class Stripe2021BankExportParser extends AbstractBankExportParser
 {
