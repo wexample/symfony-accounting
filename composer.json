@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "wexample/symfony-helpers": "^0.1.83",
+        "wexample/symfony-helpers": "^0.1.84",
         "league/csv": "^9.5"
     }
 }
