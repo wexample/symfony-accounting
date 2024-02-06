@@ -32,10 +32,7 @@ abstract class XlsBankExportParser extends AbstractBankExportParser
     }
 
     /**
-     * @param AbstractBankOrganizationEntity $bank
      * @param Spreadsheet                    $content
-     * @param array                          $options
-     * @return int
      * @throws Exception
      */
     public function parseContent(
