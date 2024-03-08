@@ -2,7 +2,7 @@
 
 namespace Wexample\SymfonyAccounting;
 
-use Wexample\SymfonyHelpers\AbstractBundle;
+use Wexample\SymfonyHelpers\Class\AbstractBundle;
 
 class WexampleSymfonyAccountingBundle extends AbstractBundle
 {
