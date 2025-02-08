@@ -20,7 +20,7 @@ use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
-use Wexample\SymfonyHelpers\Helper\TextHelper;
+use Wexample\Helpers\Helper\TextHelper;
 
 class Stripe2021BankExportParser extends AbstractBankExportParser
 {

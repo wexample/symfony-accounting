@@ -9,7 +9,7 @@ use League\Csv\UnableToProcessCsv;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
 use Wexample\SymfonyHelpers\Helper\FileHelper;
-use Wexample\SymfonyHelpers\Helper\TextHelper;
+use Wexample\Helpers\Helper\TextHelper;
 use function explode;
 use function implode;
 use function in_array;
