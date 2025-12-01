@@ -1,22 +1,22 @@
 {
-    "name": "wexample/symfony-accounting",
-    "description": "A accounting service for Symfony",
-    "type": "library",
-    "license": "MIT",
-    "version": "1.0.58",
-    "autoload": {
-        "psr-4": {
-            "Wexample\\SymfonyAccounting\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "weeger",
-            "email": "romain.weeger@wexample.com"
-        }
-    ],
-    "require": {
-        "wexample/symfony-helpers": "^1.0.64",
-        "league/csv": "^9.5"
+  "name": "wexample/symfony-accounting",
+  "description": "A accounting service for Symfony",
+  "type": "library",
+  "license": "MIT",
+  "version": "1.0.58",
+  "autoload": {
+    "psr-4": {
+      "Wexample\\SymfonyAccounting\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "weeger",
+      "email": "romain.weeger@wexample.com"
+    }
+  ],
+  "require": {
+    "wexample/symfony-helpers": "^1.0.64",
+    "league/csv": "^9.5"
+  }
 }
