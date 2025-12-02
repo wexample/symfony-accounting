@@ -7,11 +7,13 @@ use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\TabularDataReader;
 use League\Csv\UnableToProcessCsv;
+
+use function trim;
+
+use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
-use Wexample\Helpers\Helper\TextHelper;
-use function trim;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {

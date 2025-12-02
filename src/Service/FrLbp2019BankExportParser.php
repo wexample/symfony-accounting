@@ -3,21 +3,25 @@
 namespace Wexample\SymfonyAccounting\Service;
 
 use ArrayObject;
-use League\Csv\Exception;
-use League\Csv\TabularDataReader;
-use League\Csv\UnableToProcessCsv;
-use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\SymfonyHelpers\Helper\DateHelper;
-use Wexample\SymfonyHelpers\Helper\FileHelper;
-use Wexample\Helpers\Helper\TextHelper;
+
 use function explode;
 use function implode;
 use function in_array;
+
+use League\Csv\Exception;
+use League\Csv\TabularDataReader;
+use League\Csv\UnableToProcessCsv;
+
 use function number_format;
 use function pathinfo;
 use function preg_match;
 use function str_starts_with;
 use function trim;
+
+use Wexample\Helpers\Helper\TextHelper;
+use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
+use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\SymfonyHelpers\Helper\FileHelper;
 
 class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
 {
@@ -29,8 +33,8 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
         array $options = []
     ): int {
         $ext = pathinfo(
-        // Allow to pass a different filename for analysis than the
-        // given file path witch might be a temporary upload file name.
+            // Allow to pass a different filename for analysis than the
+            // given file path witch might be a temporary upload file name.
             $options['filename'] ?? $options['filepath']
         )['extension'];
 
@@ -83,6 +87,7 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
                 ]
             )) {
                 $it->next();
+
                 continue;
             }
 
@@ -92,7 +97,7 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
                     $end = true;
                 }
 
-                if (!$end) {
+                if (! $end) {
                     ++$lineCount;
 
                     $matches = [];
@@ -107,11 +112,11 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
                         if ($csvLine) {
                             // Append it.
                             $aggregated[] = $csvLine.'";'.number_format(
-                                    $price,
-                                    2,
-                                    ',',
-                                    ''
-                                );
+                                $price,
+                                2,
+                                ',',
+                                ''
+                            );
                         }
 
                         // Start a new line.
@@ -131,14 +136,14 @@ class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser
 
                         // This is an output.
                         if (preg_match(
-                                '/^\d\d\/\d\d\/\d\d\d\d.*VIREMENT POUR/',
-                                $csvLine,
-                                $matches
-                            ) || preg_match(
-                                '/^\d\d\/\d\d\/\d\d\d\d.*Cotisation Adispo Ass Integral/',
-                                $csvLine,
-                                $matches
-                            )) {
+                            '/^\d\d\/\d\d\/\d\d\d\d.*VIREMENT POUR/',
+                            $csvLine,
+                            $matches
+                        ) || preg_match(
+                            '/^\d\d\/\d\d\/\d\d\d\d.*Cotisation Adispo Ass Integral/',
+                            $csvLine,
+                            $matches
+                        )) {
                             $price = 0 - $price;
                         }
                     } else {

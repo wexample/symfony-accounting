@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: weeger
@@ -8,15 +9,18 @@
 
 namespace Wexample\SymfonyAccounting\Entity\Traits;
 
-use Doctrine\ORM\Mapping\Column;
-use Symfony\Component\Validator\Constraints\Length;
 use function bcmod;
+
+use Doctrine\ORM\Mapping\Column;
+
 use function is_numeric;
 use function ord;
 use function pow;
 use function str_pad;
 use function strlen;
 use function substr;
+
+use Symfony\Component\Validator\Constraints\Length;
 
 trait FrBankInfo2018Trait
 {
@@ -170,12 +174,12 @@ trait FrBankInfo2018Trait
 
         for ($i = 0; $i < $len; ++$i) {
             $car = substr($account, $i, 1);
-            if (!is_numeric($car)) {
+            if (! is_numeric($car)) {
                 $c = ord($car) - (ord('A') - 1);
                 $b = (($c + pow(
-                                2,
-                                ($c - 10) / 9
-                            )) % 10) + (($c > 18 && $c < 25) ? 1 : 0);
+                    2,
+                    ($c - 10) / 9
+                )) % 10) + (($c > 18 && $c < 25) ? 1 : 0);
                 $tab .= $b;
             } else {
                 $tab .= $car;

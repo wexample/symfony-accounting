@@ -2,9 +2,9 @@
 
 namespace Wexample\SymfonyAccounting\Service;
 
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class FrCa2023BankExportParser extends XlsBankExportParser
 {
@@ -18,7 +18,7 @@ class FrCa2023BankExportParser extends XlsBankExportParser
     protected function getCellValue(
         Row $row,
         $cellCoordinate,
-        $default = Null
+        $default = null
     ): ?string {
         $worksheet = $row->getWorksheet();
 

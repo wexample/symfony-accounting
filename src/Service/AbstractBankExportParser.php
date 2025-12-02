@@ -7,13 +7,15 @@ use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+
+use function file_get_contents;
+
 use League\Csv\Exception;
 use League\Csv\Reader;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
-use function file_get_contents;
 
 abstract class AbstractBankExportParser
 {

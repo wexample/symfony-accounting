@@ -6,11 +6,11 @@ use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Row;
+use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
 use Wexample\SymfonyHelpers\Helper\PriceHelper;
-use Wexample\Helpers\Helper\TextHelper;
 
 abstract class XlsBankExportParser extends AbstractBankExportParser
 {
@@ -107,6 +107,7 @@ abstract class XlsBankExportParser extends AbstractBankExportParser
         foreach ($row->getCellIterator() as $cell) {
             $values[] = $cell->getValue();
         }
+
         return implode(', ', $values).PHP_EOL;
     }
 }

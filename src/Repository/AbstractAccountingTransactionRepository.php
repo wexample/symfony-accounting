@@ -2,7 +2,6 @@
 
 namespace Wexample\SymfonyAccounting\Repository;
 
-
 use DateTimeInterface;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
@@ -45,5 +44,5 @@ abstract class AbstractAccountingTransactionRepository extends AbstractRepositor
     /**
      * @return string Might be replaced by EntityManipulator interface.
      */
-    abstract function getEntityType(): string;
+    abstract public function getEntityType(): string;
 }

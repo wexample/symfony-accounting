@@ -34,7 +34,7 @@ class AccountingCollection
     ): void {
         $id = $invoice->getId();
 
-        if (!isset($this->invoices[$id])) {
+        if (! isset($this->invoices[$id])) {
             $this->invoices[$id] = $invoice;
 
             if ($update) {
@@ -73,7 +73,7 @@ class AccountingCollection
     ): void {
         $id = $transaction->getId();
 
-        if (!isset($this->transactions[$id])) {
+        if (! isset($this->transactions[$id])) {
             $this->transactions[$id] = $transaction;
 
             if ($updateFingerPrint) {

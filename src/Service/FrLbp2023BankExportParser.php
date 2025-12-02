@@ -3,8 +3,8 @@
 namespace Wexample\SymfonyAccounting\Service;
 
 use League\Csv\TabularDataReader;
-use Wexample\SymfonyHelpers\Helper\DateHelper;
 use Wexample\Helpers\Helper\TextHelper;
+use Wexample\SymfonyHelpers\Helper\DateHelper;
 
 class FrLbp2023BankExportParser extends CsvWithMetadataBankExportParser
 {

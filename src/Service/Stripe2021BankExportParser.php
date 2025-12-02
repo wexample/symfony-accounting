@@ -16,11 +16,11 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use League\Csv\Exception;
+use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyAccounting\Service\Entity\AbstractAccountingTransactionEntityService;
 use Wexample\SymfonyHelpers\Helper\DateHelper;
-use Wexample\Helpers\Helper\TextHelper;
 
 class Stripe2021BankExportParser extends AbstractBankExportParser
 {
@@ -91,7 +91,7 @@ class Stripe2021BankExportParser extends AbstractBankExportParser
                     $code
                 );
 
-                if (!$invoiceFees) {
+                if (! $invoiceFees) {
                     $invoiceFees =
                         $this
                             ->invoiceService
