@@ -3,7 +3,7 @@
   "description": "A accounting service for Symfony",
   "type": "library",
   "license": "MIT",
-  "version": "1.0.67",
+  "version": "1.0.68",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyAccounting\\": "src/"
@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "wexample/symfony-helpers": "==1.0.70",
+    "wexample/symfony-helpers": "1.0.71",
     "league/csv": "^9.5"
   }
 }
