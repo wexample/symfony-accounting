@@ -1,6 +1,6 @@
 # wexample/symfony-accounting
 
-Version: 1.0.70
+Version: 1.0.71
 
 A accounting service for Symfony
 
@@ -129,7 +129,7 @@ Refer to each package's documentation for specific version compatibility require
 
 ## Dependencies
 
-- wexample/symfony-helpers: 1.0.73
+- wexample/symfony-helpers: 1.0.74
 - league/csv: ^9.5
 
 
