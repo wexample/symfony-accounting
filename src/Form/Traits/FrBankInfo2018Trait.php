@@ -3,8 +3,8 @@
 namespace Wexample\SymfonyAccounting\Form\Traits;
 
 use Symfony\Component\Form\FormBuilderInterface;
-use Wexample\SymfonyHelpers\Form\FloatType;
-use Wexample\SymfonyHelpers\Form\TextType;
+use Wexample\SymfonyForms\Form\FloatType;
+use Wexample\SymfonyForms\Form\TextType;
 use Wexample\SymfonyHelpers\Helper\IconMaterialHelper;
 
 trait FrBankInfo2018Trait

@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "wexample/symfony-helpers": "1.0.80",
+    "wexample/symfony-forms": "*",
     "league/csv": "^9.5"
   }
 }
