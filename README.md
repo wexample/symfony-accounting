@@ -129,7 +129,7 @@ Refer to each package's documentation for specific version compatibility require
 
 ## Dependencies
 
-- wexample/symfony-helpers: 1.0.80
+- wexample/symfony-forms: *
 - league/csv: ^9.5
 
 
