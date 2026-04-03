@@ -1,6 +1,6 @@
 # wexample/symfony-accounting
 
-Version: 1.0.88
+Version: 1.0.89
 
 A accounting service for Symfony
 
