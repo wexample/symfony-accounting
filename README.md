@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 1.0.92
+Version: 1.0.93
 
 A accounting service for Symfony
 
