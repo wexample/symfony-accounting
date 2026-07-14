@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 1.0.94
+Version: 1.0.95
 
 A accounting service for Symfony
 
@@ -27,7 +27,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 
 ## Dependencies
 
-- wexample/symfony-forms: *
+- wexample/symfony-forms: >=1.0.85
 - league/csv: ^9.5
 
 ## Versioning & Compatibility Policy
