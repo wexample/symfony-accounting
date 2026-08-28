@@ -1,19 +1,3 @@
-# symfony_accounting
-
-Version: 1.0.96
-
-`wexample/symfony-accounting` is a Symfony bundle that provides the data layer for financial applications: abstract Doctrine entities for bank organisations and transactions (typed as `statement` or `transaction`), a repository that constructs them, and a deduplication-aware service that persists a record only when `saveTransactionIfNotExists` confirms it is new. It ships concrete bank-export parsers for La Banque Postale CSV (2019 and 2023 formats), Crédit Agricole XLS (2023), and Stripe CSV (2021), together with French bank-info traits (IBAN, BIC, RIB) ready to mix into any entity or form. It is aimed at Symfony developers building financial back-offices who need to ingest real bank exports and reconcile transactions with invoices without writing parsing and deduplication boilerplate from scratch.
-
-## Table of Contents
-
-- [Architecture](#architecture)
-- [Integration in the Suite](#integration-in-the-suite)
-- [Dependencies](#dependencies)
-- [Versioning & Compatibility Policy](#versioning--compatibility-policy)
-- [License](#license)
-- [About us](#about-us)
-- [Migration Notes](#migration-notes)
-
 ## Architecture
 
 The bundle is a pure library — no controllers, no routes. It ships abstract base classes that the host application extends, a set of concrete bank-export parsers, and a small value object. Symfony's service container wires the parsers automatically through src/Resources/config/services.yaml.
@@ -105,48 +89,3 @@ A typical import resolves as follows:
 4. For each record, `saveTransactionOfNotExists()` on the base class calls `AbstractAccountingTransactionRepository::createAccountingTransaction()` to build an unsaved entity, then hands it to `AbstractAccountingTransactionEntityService::saveTransactionIfNotExists()`.
 5. The entity service calls the host-supplied `findSameTransaction()`. If no duplicate exists it persists the record and returns `true`; the parser increments its counter.
 6. `parseFile()` returns the total count of newly saved transactions to the caller.
-
-## Integration in the Suite
-
-This package is part of the Wexample Suite — a collection of high-quality, modular tools designed to work seamlessly together across multiple languages and environments.
-
-### Related Packages
-
-The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
-
-Visit the [Wexample Suite documentation](https://docs.wexample.com) for the complete package ecosystem.
-
-## Dependencies
-
-- wexample/symfony-forms: >=2.0.0
-- league/csv: ^9.5
-
-## Versioning & Compatibility Policy
-
-Wexample packages follow **Semantic Versioning** (SemVer):
-
-- **MAJOR**: Breaking changes
-- **MINOR**: New features, backward compatible
-- **PATCH**: Bug fixes, backward compatible
-
-We maintain backward compatibility within major versions and provide clear migration guides for breaking changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-Free to use in both personal and commercial projects.
-
-## About us
-
-[Wexample](https://wexample.com) stands as a cornerstone of the digital ecosystem — a collective of seasoned engineers, researchers, and creators driven by a relentless pursuit of technological excellence. More than a media platform, it has grown into a vibrant community where innovation meets craftsmanship, and where every line of code reflects a commitment to clarity, durability, and shared intelligence.
-
-This packages suite embodies this spirit. Trusted by professionals and enthusiasts alike, it delivers a consistent, high-quality foundation for modern development — open, elegant, and battle-tested. Its reputation is built on years of collaboration, refinement, and rigorous attention to detail, making it a natural choice for those who demand both robustness and beauty in their tools.
-
-Wexample cultivates a culture of mastery. Each package, each contribution carries the mark of a community that values precision, ethics, and innovation — a community proud to shape the future of digital craftsmanship.
-
-## Migration Notes
-
-When upgrading between major versions, refer to the migration guides in the documentation.
-
-Breaking changes are clearly documented with upgrade paths and examples.
