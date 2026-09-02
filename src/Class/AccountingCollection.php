@@ -32,7 +32,7 @@ class AccountingCollection
         Invoice $invoice,
         bool $update = true
     ): void {
-        $id = $invoice->getId();
+        $id = (string) $invoice->getId();
 
         if (! isset($this->invoices[$id])) {
             $this->invoices[$id] = $invoice;
@@ -71,7 +71,7 @@ class AccountingCollection
         AccountingTransaction $transaction,
         bool $updateFingerPrint = true
     ): void {
-        $id = $transaction->getId();
+        $id = (string) $transaction->getId();
 
         if (! isset($this->transactions[$id])) {
             $this->transactions[$id] = $transaction;
@@ -87,7 +87,7 @@ class AccountingCollection
         $container = $entity instanceof Invoice ? $this->invoices : $this->transactions;
 
         foreach ($container as $containerEntity) {
-            if ($containerEntity->getId() === $entity->getId()) {
+            if ($containerEntity->getId()->equals($entity->getId())) {
                 return true;
             }
         }
