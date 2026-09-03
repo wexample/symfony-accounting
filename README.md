@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 1.0.96
+Version: 2.0.0
 
 `wexample/symfony-accounting` is a Symfony bundle that provides the data layer for financial applications: abstract Doctrine entities for bank organisations and transactions (typed as `statement` or `transaction`), a repository that constructs them, and a deduplication-aware service that persists a record only when `saveTransactionIfNotExists` confirms it is new. It ships concrete bank-export parsers for La Banque Postale CSV (2019 and 2023 formats), Crédit Agricole XLS (2023), and Stripe CSV (2021), together with French bank-info traits (IBAN, BIC, RIB) ready to mix into any entity or form. It is aimed at Symfony developers building financial back-offices who need to ingest real bank exports and reconcile transactions with invoices without writing parsing and deduplication boilerplate from scratch.
 
@@ -118,7 +118,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 
 ## Dependencies
 
-- wexample/symfony-forms: >=2.0.0
+- wexample/symfony-forms: >=3.0.0
 - league/csv: ^9.5
 
 ## Versioning & Compatibility Policy
