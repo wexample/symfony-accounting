@@ -13,7 +13,7 @@ use function trim;
 use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\PhpDate\Helper\DateHelper;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {

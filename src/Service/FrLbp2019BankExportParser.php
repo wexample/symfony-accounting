@@ -20,7 +20,7 @@ use function trim;
 
 use Wexample\Helpers\Helper\TextHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\PhpDate\Helper\DateHelper;
 use Wexample\SymfonyHelpers\Helper\FileHelper;
 
 class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser

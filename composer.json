@@ -17,6 +17,7 @@
   ],
   "require": {
     "php": ">=8.5",
+    "wexample/php-date": ">=1.0.2",
     "wexample/symfony-forms": ">=3.0.0",
     "league/csv": "^9.5"
   },

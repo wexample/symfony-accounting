@@ -4,7 +4,7 @@ namespace Wexample\SymfonyAccounting\Service;
 
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Worksheet\Row;
-use Wexample\SymfonyHelpers\Helper\DateHelper;
+use Wexample\PhpDate\Helper\DateHelper;
 
 class FrCa2023BankExportParser extends XlsBankExportParser
 {
