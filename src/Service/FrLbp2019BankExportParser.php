@@ -19,8 +19,8 @@ use function str_starts_with;
 use function trim;
 
 use Wexample\Helpers\Helper\TextHelper;
-use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\PhpDate\Helper\DateHelper;
+use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
 use Wexample\SymfonyHelpers\Helper\FileHelper;
 
 class FrLbp2019BankExportParser extends CsvWithMetadataBankExportParser

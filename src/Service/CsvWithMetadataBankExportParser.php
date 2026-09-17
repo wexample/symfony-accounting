@@ -11,9 +11,9 @@ use League\Csv\UnableToProcessCsv;
 use function trim;
 
 use Wexample\Helpers\Helper\TextHelper;
+use Wexample\PhpDate\Helper\DateHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\PhpDate\Helper\DateHelper;
 
 abstract class CsvWithMetadataBankExportParser extends AbstractBankExportParser
 {

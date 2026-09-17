@@ -7,9 +7,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 use Wexample\Helpers\Helper\TextHelper;
+use Wexample\PhpDate\Helper\DateHelper;
 use Wexample\SymfonyAccounting\Entity\AbstractAccountingTransactionEntity;
 use Wexample\SymfonyAccounting\Entity\AbstractBankOrganizationEntity;
-use Wexample\PhpDate\Helper\DateHelper;
 use Wexample\SymfonyHelpers\Helper\PriceHelper;
 
 abstract class XlsBankExportParser extends AbstractBankExportParser
