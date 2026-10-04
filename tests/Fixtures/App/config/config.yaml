@@ -1,0 +1,17 @@
+framework:
+  default_locale: en
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  Wexample\SymfonyRemotePayment\Class\FakePaymentProvider:
+    arguments:
+      $name: fake
+      $methods: [card]
+
+  Wexample\SymfonyMoney\Service\MoneyFormatter:
+    arguments:
+      $defaultLocale: en

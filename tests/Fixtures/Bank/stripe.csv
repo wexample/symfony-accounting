@@ -1,0 +1,3 @@
+id,Type,Source,Amount,Fee,Net,Currency,Created (UTC),Available On (UTC),Description
+txn_100,charge,ch_100,100.00,1.75,98.25,eur,2026-01-10 09:12,2026-01-17 00:00,Order 12
+txn_101,payout,po_100,-98.25,0.00,-98.25,eur,2026-01-18 02:00,2026-01-18 00:00,STRIPE PAYOUT

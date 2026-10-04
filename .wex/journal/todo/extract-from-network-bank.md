@@ -4,6 +4,10 @@ Opened: 2026-09-24
 Updated: 2026-09-24
 Author: agent:archeology
 
+## Status (2026-10-04)
+
+Done: BankAccount, BankTransaction (externalId + fingerprint dedup), BankStatement, Allocation (pending/validated/excluded, exclusions kept), ImportPattern; AllocationService (allocate, allocateToAccount, linkTransfer); matchers (provider payment, reference, pattern, transfer, exact amount with an upper date bound and no date mutation); ReconciliationService (balanceAt, statement checks, books vs bank); LetteringService (connected components); ProviderBalanceImporter through `symfony-remote-payment` (no `symfony-stripe`: the owner chose `symfony-remote-payment-stripe`), CSV and API sharing external ids; bookings in the bank journal (one entry per payment, transfers on 58x, cash-basis VAT). Left: the API endpoints and the relations board (with `symfony-accounting-ds`, to be redesigned by the owner), the import form.
+
 ## Read this first — status of this todo
 
 > **This is a proposal for discussion, not an order to code.** It was written by the 2026-09 network archaeology pass. Read it, then discuss it with the owner: every design choice and recommendation below is to be challenged and validated **before** any code is written. Do not start implementing on your own.

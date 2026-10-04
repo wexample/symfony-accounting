@@ -1,0 +1,66 @@
+document:
+  title:
+    bill: Facture
+    credit_note: Avoir
+    quotation: Devis
+    penalty: Pénalités de retard
+    receipt: Reçu
+    pro_forma: Facture pro forma
+  label:
+    date: Date
+    due_date: Échéance
+    valid_until: Valable jusqu'au
+    period: Période
+    item: Désignation
+    quantity: Qté
+    unit_price: PU HT
+    vat: TVA
+    total: Total
+    subtotal: Sous-total
+    discount: Remise
+    net: Total HT
+    paid: Déjà réglé
+    amount_due: Reste à payer
+    credit_note: Avoir
+    payment: Règlement
+    payment_reference: Référence de paiement
+    holder: Titulaire
+
+identity:
+  legal_identifier: Numéro d'entreprise
+  vat_number: Numéro de TVA
+
+mention:
+  vat:
+    franchise: TVA non applicable, franchise des petites entreprises.
+    reverse_charge: Autoliquidation — TVA due par le preneur (art. 196 de la directive 2006/112/CE).
+    intra_eu_goods: Livraison intracommunautaire exonérée (art. 138 de la directive 2006/112/CE).
+    export: Exportation hors UE, exonérée de TVA.
+    exempt: Exonéré de TVA.
+  payment:
+    late_penalties: Paiement à %days% jours. Tout retard entraîne des intérêts au taux de %rate% % l'an et une indemnité forfaitaire de recouvrement de %flat_fee% €.
+
+journal:
+  sales: Ventes
+  purchases: Achats
+  bank: Banque
+  cash: Caisse
+  miscellaneous: Opérations diverses
+  opening: À-nouveaux
+
+report:
+  balance_sheet: Bilan
+  income_statement: Compte de résultat
+  fixed_assets: Actif immobilisé
+  stocks: Stocks
+  receivables: Créances
+  cash: Trésorerie
+  assets: Total actif
+  equity: Capitaux propres
+  year_result: Résultat de l'exercice
+  provisions: Provisions
+  debts: Dettes
+  liabilities: Total passif
+  income: Produits
+  charges: Charges
+  result: Résultat

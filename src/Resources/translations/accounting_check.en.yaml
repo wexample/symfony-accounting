@@ -1,0 +1,32 @@
+invoice:
+  negative_total: The total is negative.
+  payment_on_wrong_status: Payments are allocated to a document in status "%status%".
+  missing_number: The document has no number.
+  missing_party: The document has no customer or supplier.
+  missing_document: The document file is missing.
+  zero_total: The total is zero.
+  not_booked: The document is not booked in the ledger.
+  quotation_expired: The quotation expired on %date%.
+  overpaid: More was paid than expected (%excess%).
+  paid_but_status_not_paid: Fully paid but not marked as paid.
+  status_paid_but_unpaid: Marked as paid but %remaining% is still due.
+  partially_paid: Partially paid, %remaining% left.
+  payment_to_validate: "%count% payment(s) proposed, to validate."
+  overdue: Overdue by %days% days.
+  credit_not_consumed: Credit note not refunded nor deducted for %days% days.
+  item_without_vat_code: Item "%item%" has no VAT code.
+  vat_without_vat_subject: Item "%item%" charges VAT while the company is not liable for VAT.
+bank:
+  unexplained: The line is not explained.
+  partially_explained: "%remaining% of the line is not explained."
+  allocated_exceeded: More is allocated than the line amount (%excess%).
+  transfer_amounts_mismatch: The two sides of the transfer do not have opposite amounts.
+  pending_allocation: An allocation proposed by %origin% waits for validation.
+fiscal_year:
+  draft_entries: "%count% draft entries."
+  unbalanced: The trial balance is not balanced.
+  documents_not_booked: "%count% emitted document(s) not booked."
+  documents_not_emitted: "%count% document(s) of the year not emitted."
+  bank_lines_unexplained: "%account%: %count% bank line(s) not explained."
+  allocations_to_validate: "%account%: %count% allocation(s) to validate."
+  bank_not_reconciled: "%account%: the bank says %bank%, the books %books%."

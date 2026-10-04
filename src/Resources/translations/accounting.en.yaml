@@ -1,0 +1,66 @@
+document:
+  title:
+    bill: Invoice
+    credit_note: Credit note
+    quotation: Quotation
+    penalty: Late payment penalties
+    receipt: Receipt
+    pro_forma: Pro forma invoice
+  label:
+    date: Date
+    due_date: Due date
+    valid_until: Valid until
+    period: Period
+    item: Description
+    quantity: Qty
+    unit_price: Unit price
+    vat: VAT
+    total: Total
+    subtotal: Subtotal
+    discount: Discount
+    net: Total excl. VAT
+    paid: Already paid
+    amount_due: Amount due
+    credit_note: Credit note
+    payment: Payment
+    payment_reference: Payment reference
+    holder: Account holder
+
+identity:
+  legal_identifier: Company number
+  vat_number: VAT number
+
+mention:
+  vat:
+    franchise: VAT not applicable, small business exemption.
+    reverse_charge: Reverse charge — VAT to be accounted for by the recipient (art. 196 of Directive 2006/112/EC).
+    intra_eu_goods: Exempt intra-Community supply of goods (art. 138 of Directive 2006/112/EC).
+    export: Export outside the EU, exempt from VAT.
+    exempt: Exempt from VAT.
+  payment:
+    late_penalties: Payable within %days% days. Late payments bear interest at %rate% % per year and a flat recovery fee of %flat_fee% €.
+
+journal:
+  sales: Sales
+  purchases: Purchases
+  bank: Bank
+  cash: Cash
+  miscellaneous: Miscellaneous operations
+  opening: Opening balances
+
+report:
+  balance_sheet: Balance sheet
+  income_statement: Income statement
+  fixed_assets: Fixed assets
+  stocks: Stocks
+  receivables: Receivables
+  cash: Cash
+  assets: Total assets
+  equity: Equity
+  year_result: Result of the year
+  provisions: Provisions
+  debts: Debts
+  liabilities: Total liabilities
+  income: Income
+  charges: Charges
+  result: Result

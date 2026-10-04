@@ -1,12 +1,17 @@
 {
   "name": "wexample/symfony-accounting",
-  "description": "A accounting service for Symfony",
+  "description": "Accounting for Symfony: ledgers, double-entry bookkeeping, invoices, bank reconciliation, VAT, closing and reports, with country rules in jurisdiction packages",
   "type": "library",
   "license": "MIT",
   "version": "3.0.6",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyAccounting\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Wexample\\SymfonyAccounting\\Tests\\": "tests/"
     }
   },
   "authors": [
@@ -17,10 +22,28 @@
   ],
   "require": {
     "php": ">=8.5",
+    "league/csv": "^9.5",
     "wexample/php-date": ">=2.0.0",
-    "wexample/symfony-forms": ">=9.0.0",
-    "league/csv": "^9.5"
+    "wexample/symfony-helpers": ">=12.0.0",
+    "wexample/symfony-money": ">=4.0.0",
+    "wexample/symfony-geo": ">=3.0.0",
+    "wexample/symfony-check": ">=1.0.0",
+    "wexample/symfony-payment": ">=1.0.0",
+    "wexample/symfony-remote-payment": ">=1.0.0"
   },
+  "require-dev": {
+    "phpunit/phpunit": "*",
+    "wexample/symfony-testing": ">=2.0.0"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "extra": {
     "install": {
       "bundle_env": "all"

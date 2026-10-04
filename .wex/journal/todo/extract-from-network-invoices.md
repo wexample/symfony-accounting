@@ -4,6 +4,10 @@ Opened: 2026-09-24
 Updated: 2026-09-24
 Author: agent:archeology
 
+## Status (2026-10-04)
+
+Done: Invoice, InvoiceItem (position, per-item VAT, quantity ×100, duration), InvoiceRelation (quotation, credit, penalty, rebill, deposit, financing), InvoiceSequence; numbering at emission only (pattern and series configurable); InvoiceWorkflow (transition map); InvoiceEmissionService (VAT resolution, snapshots, InvoiceEmittedEvent); InvoiceFactory (quotation ↔ bill, credit notes, duplicate, models, deposits, createFromLines); LatePenaltyCalculator (annual and monthly); InvoiceChecker; jurisdiction profiles in the core interface; InvoiceDocumentDataBuilder + PdfFactoryDocumentBuilder (validated against a running pdf-factory) + PdfFactoryRenderer. Left: the API endpoints, the item editor front-end (`-ds`), the EPC QR image in the PDF, a "paid" PDF variant, the RIB grid.
+
 ## Read this first — status of this todo
 
 > **This is a proposal for discussion, not an order to code.** It was written by the 2026-09 network archaeology pass. Read it, then discuss it with the owner: every design choice and recommendation below is to be challenged and validated **before** any code is written. Do not start implementing on your own.

@@ -55,3 +55,5 @@ coverage*.lcov
 /dist/
 /out/
 /coverage/
+.phpunit.result.cache
+/tests/Fixtures/App/config/reference.php

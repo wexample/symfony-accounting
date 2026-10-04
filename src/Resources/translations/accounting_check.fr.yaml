@@ -1,0 +1,32 @@
+invoice:
+  negative_total: Le total est négatif.
+  payment_on_wrong_status: Des paiements sont affectés à un document au statut « %status% ».
+  missing_number: Le document n'a pas de numéro.
+  missing_party: Le document n'a ni client ni fournisseur.
+  missing_document: Le fichier du document manque.
+  zero_total: Le total est nul.
+  not_booked: Le document n'est pas comptabilisé.
+  quotation_expired: Le devis a expiré le %date%.
+  overpaid: Il a été payé plus que prévu (%excess%).
+  paid_but_status_not_paid: Entièrement payé mais pas marqué payé.
+  status_paid_but_unpaid: Marqué payé alors que %remaining% reste dû.
+  partially_paid: Payé en partie, reste %remaining%.
+  payment_to_validate: "%count% paiement(s) proposé(s) à valider."
+  overdue: En retard de %days% jours.
+  credit_not_consumed: Avoir ni remboursé ni imputé depuis %days% jours.
+  item_without_vat_code: La ligne « %item% » n'a pas de code TVA.
+  vat_without_vat_subject: La ligne « %item% » facture de la TVA alors que l'entreprise n'y est pas assujettie.
+bank:
+  unexplained: La ligne n'est pas justifiée.
+  partially_explained: "%remaining% de la ligne ne sont pas justifiés."
+  allocated_exceeded: Plus est affecté que le montant de la ligne (%excess%).
+  transfer_amounts_mismatch: Les deux côtés du virement n'ont pas des montants opposés.
+  pending_allocation: Une affectation proposée par %origin% attend validation.
+fiscal_year:
+  draft_entries: "%count% écriture(s) en brouillon."
+  unbalanced: La balance n'est pas équilibrée.
+  documents_not_booked: "%count% document(s) émis non comptabilisé(s)."
+  documents_not_emitted: "%count% document(s) de l'exercice non émis."
+  bank_lines_unexplained: "%account% : %count% ligne(s) bancaire(s) non justifiée(s)."
+  allocations_to_validate: "%account% : %count% affectation(s) à valider."
+  bank_not_reconciled: "%account% : la banque indique %bank%, la comptabilité %books%."

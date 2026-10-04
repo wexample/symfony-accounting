@@ -4,6 +4,10 @@ Opened: 2026-09-24
 Updated: 2026-09-24
 Author: agent:archeology
 
+## Status (2026-10-04)
+
+Done: accounts (roles instead of numbers in code), journals, entries with lettering and VAT tags, fiscal years with any dates; PostingService (balanced, open year, gap-free numbering, reversal); posting from invoices and allocations; FiscalYearClosingService (pluggable checks, result on net balances, opening entries party by party, lock, reopen, appropriation, idempotent); reports (trial balance, general ledger by auxiliary, financial statements from jurisdiction layouts with sign conditions and exclusions, aged balance); exporter/importer interfaces with CSV implementations and a shared EntryImportService; FEC export/import in `-fr`; VAT returns in the core with forms in `-fr`/`-be`. Left: the API endpoints and the report screens (`-ds`).
+
 ## Read this first — status of this todo
 
 > **This is a proposal for discussion, not an order to code.** It was written by the 2026-09 network archaeology pass. Read it, then discuss it with the owner: every design choice and recommendation below is to be challenged and validated **before** any code is written. Do not start implementing on your own.

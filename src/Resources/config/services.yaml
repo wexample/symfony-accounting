@@ -4,6 +4,40 @@ services:
         autoconfigure: true
         public: false
 
-    Wexample\SymfonyAccounting\Service\:
-        resource: '../../Service/*'
-        tags: ['controller.service_arguments']
+    Wexample\SymfonyAccounting\:
+        resource: '../../{Checker,Command,EventSubscriber,Repository,Service}'
+        exclude: '../../Service/{Jurisdiction/AbstractJurisdiction.php,Jurisdiction/DefaultJurisdiction.php,Bank/Parser/AbstractBankStatementParser.php}'
+
+    Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry:
+        public: true
+        arguments:
+            $jurisdictions: !tagged_iterator wexample_symfony_accounting.jurisdiction
+
+    Wexample\SymfonyAccounting\Service\Bank\BankStatementParserRegistry:
+        arguments:
+            $parsers: !tagged_iterator wexample_symfony_accounting.bank_parser
+
+    Wexample\SymfonyAccounting\Service\Bank\MatchingService:
+        arguments:
+            $matchers: !tagged_iterator wexample_symfony_accounting.matcher
+
+    Wexample\SymfonyAccounting\Service\Vat\VatReturnService:
+        arguments:
+            $forms: !tagged_iterator wexample_symfony_accounting.vat_return_form
+
+    Wexample\SymfonyAccounting\Service\Document\PdfFactoryRenderer:
+        arguments:
+            $httpClient: '@?http_client'
+            $baseUrl: '%wexample_symfony_accounting.pdf_factory.url%'
+            $defaultTheme: '%wexample_symfony_accounting.pdf_factory.theme%'
+
+    Wexample\SymfonyAccounting\Interface\DocumentRendererInterface:
+        alias: Wexample\SymfonyAccounting\Service\Document\PdfFactoryRenderer
+
+    Wexample\SymfonyAccounting\Service\Exchange\LedgerExportService:
+        arguments:
+            $exporters: !tagged_iterator wexample_symfony_accounting.ledger_exporter
+
+    Wexample\SymfonyAccounting\Service\Exchange\EntryImportService:
+        arguments:
+            $importers: !tagged_iterator wexample_symfony_accounting.entry_importer
