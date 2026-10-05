@@ -5,8 +5,6 @@ namespace Wexample\SymfonyAccounting\Tests\Integration;
 use DateTimeImmutable;
 use Wexample\SymfonyAccounting\Class\EntryDraft;
 use Wexample\SymfonyAccounting\Class\ReportDefinition;
-use Wexample\SymfonyAccounting\Entity\FiscalYear;
-use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Enum\JournalType;

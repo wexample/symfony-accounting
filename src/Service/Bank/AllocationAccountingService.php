@@ -107,6 +107,7 @@ class AllocationAccountingService
 
             if ([] !== $existing) {
                 $entries[] = $existing[0];
+
                 continue;
             }
 

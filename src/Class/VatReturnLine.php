@@ -50,6 +50,7 @@ final class VatReturnLine
             foreach ($prefixes as $prefix) {
                 if (str_starts_with((string) $number, $prefix)) {
                     $sum += $base;
+
                     break;
                 }
             }

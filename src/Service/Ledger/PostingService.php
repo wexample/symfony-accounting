@@ -12,10 +12,10 @@ use Wexample\SymfonyAccounting\Entity\JournalEntry;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
+use Wexample\SymfonyAccounting\Event\EntryPostedEvent;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Exception\ClosedFiscalYearException;
 use Wexample\SymfonyAccounting\Exception\UnbalancedEntryException;
-use Wexample\SymfonyAccounting\Event\EntryPostedEvent;
 use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
 
 /**

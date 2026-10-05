@@ -1,11 +1,73 @@
 # symfony_accounting
 
-Version: 3.0.6
+Version: 4.0.0
 
-`wexample/symfony-accounting` is a Symfony bundle that provides the data layer for financial applications: abstract Doctrine entities for bank organisations and transactions (typed as `statement` or `transaction`), a repository that constructs them, and a deduplication-aware service that persists a record only when `saveTransactionIfNotExists` confirms it is new. It ships concrete bank-export parsers for La Banque Postale CSV (2019 and 2023 formats), Crédit Agricole XLS (2023), and Stripe CSV (2021), together with French bank-info traits (IBAN, BIC, RIB) ready to mix into any entity or form. It is aimed at Symfony developers building financial back-offices who need to ingest real bank exports and reconcile transactions with invoices without writing parsing and deduplication boilerplate from scratch.
+## A ledger
+
+```php
+$ledger = $ledgerService->create('Acme SRL', 'BE', fiscalYearStart: new DateTimeImmutable('2026-01-01'));
+$ledger->setLegalIdentifier('0123.456.749')->setVatNumber('BE0123456749')->setInvoicePrefix('ACM');
+$customer = $partyService->create($ledger, 'Client SA');           // gets its auxiliary code, CCLIENTSA
+```
+
+`create()` loads the jurisdiction's chart and journals. Accounts missing from the chart are created on first use, labelled after their closest parent. The ledger's settings (`setSettings()`) tune the rest: `default_vat_rate`, `invoice_number_pattern`, `hours_per_day`, `late_penalty_rate`, `auto_post_invoices`… — each documented where it is read.
+
+## Documents
+
+```php
+$invoice = $invoiceFactory->create($ledger, party: $customer);
+$invoiceFactory->addItem($invoice, 'Development', 50000, '2j');   // 2 days at 500.00
+$emissionService->emit($invoice);                                  // numbered, frozen, booked
+```
+
+Emission is the only way a document becomes official: VAT resolved per item (domestic, intra-EU, export, reverse charge, franchise), gap-free number for sales, issuer and party frozen into snapshots, `InvoiceEmittedEvent`, then the entry in the ledger. Quotations convert to bills (`createBillFromQuotation`, deducting deposit bills), bills get credit notes and penalties (`LatePenaltyCalculator`), models renew monthly.
+
+`UblInvoiceBuilder` writes the structured electronic invoice (UBL 2.1, Peppol BIS Billing 3.0 / EN 16931): mandatory for B2B invoices in Belgium since 2026, one of the formats of the French reform. `UblInvoiceReader` does the reverse with received ones: a purchase draft, supplier found by VAT number or created with its IBAN, checked against the supplier's stated total. Sending and receiving through a Peppol access point is left to a remote package. Validate the output on the Peppol testbed before going live.
+
+`InvoiceDocumentDataBuilder` gives everything a printed document shows; `PdfFactoryDocumentBuilder` turns it into a pdf-factory document, and `PdfFactoryRenderer` posts it.
+
+## Bank
+
+```php
+$bankImportService->importContent($bankAccount, $fileContent);     // CAMT, OFX, CODA, LBP…: detected
+$matchingService->run($ledger);                                    // proposals and sure matches
+$allocationService->allocate($line, $invoice);                     // or allocateToAccount(), linkTransfer()
+$letteringService->letterLedger($ledger);
+```
+
+Imports never duplicate a line. Matchers propose (pending) or settle (validated) by provider payment, payment reference, label rules, transfers between the ledger's accounts and exact amounts; refusing a proposal excludes the pair for good. Validated allocations are booked at once, one entry per payment.
+
+A bank account whose `provider` is set (`stripe`) is fed by `ProviderBalanceImporter` through symfony-remote-payment: gross payments, fees (booked on the bank fees account), refunds, payouts (matched as transfers).
+
+## Period end
+
+```php
+$vatReturn = $vatReturnService->compute($ledger, $from, $to);
+$vatReturnService->fillForms($vatReturn);   // CA3, CA12, BE periodic… from the jurisdiction packages
+$vatReturnService->settle($vatReturn);
+$closingService->close($fiscalYear);         // checks, result, opening entries of the next year, lock
+```
+
+Before closing, `DepreciationService` books the year's depreciation of the fixed assets (straight-line, pro rata temporis by day; `accounting:depreciation`), `AccrualService` posts adjustments that reverse themselves on the next year's first day, and the checks warn about anything missing.
+
+Reports are computed on demand: `TrialBalanceService`, `GeneralLedgerService`, `FinancialStatementService` (balance sheet, income statement from the jurisdiction's layouts), `AgedBalanceService`. `LedgerExportService` writes the books (FEC, CSV), `EntryImportService` takes another bookkeeping over.
+
+## Collections and supplier payments
+
+`DunningService` finds the reminders due by level (`dunning_levels`, days late; `accounting:dunning --record`) and keeps their history on the document; the host sends them on `InvoiceReminderRecordedEvent`. `SepaCreditTransferBuilder` writes the pain.001 file paying a batch of purchases, structured references included.
+
+## Checks
+
+`InvoiceChecker`, `BankTransactionChecker` and `FiscalYearChecker` report through symfony-check. Errors of the fiscal year block its closing.
 
 ## Table of Contents
 
+- [A ledger](#a-ledger)
+- [Documents](#documents)
+- [Bank](#bank)
+- [Period end](#period-end)
+- [Collections and supplier payments](#collections-and-supplier-payments)
+- [Checks](#checks)
 - [Architecture](#architecture)
 - [Integration in the Suite](#integration-in-the-suite)
 - [Dependencies](#dependencies)
@@ -16,95 +78,37 @@ Version: 3.0.6
 
 ## Architecture
 
-The bundle is a pure library — no controllers, no routes. It ships abstract base classes that the host application extends, a set of concrete bank-export parsers, and a small value object. Symfony's service container wires the parsers automatically through src/Resources/config/services.yaml.
+### Ledger
 
-### Bundle bootstrap
+src/Entity/Ledger.php is a set of books; every other entity belongs to one. src/Entity/JournalEntry.php and src/Entity/EntryLine.php are the double entry: amounts are int minor units in debit/credit columns, a line may carry a party (its auxiliary account), a letter, and a VAT code with its role (base or tax).
 
-src/WexampleSymfonyAccountingBundle.php extends `AbstractBundle` from `wexample/symfony-helpers`. It adds nothing beyond the class declaration; the loader contract is satisfied by src/DependencyInjection/WexampleSymfonyAccountingExtension.php, whose `load()` calls `$this->loadConfig(__DIR__, $container)` (inherited helper) to register every class under `src/Service/` as an autowired, autoconfigured, private service.
+src/Service/Ledger/PostingService.php is the only way into the books: it checks balance and fiscal year, numbers entries without gaps per fiscal year (fiscal year row locked), and reverses rather than deletes. Callers describe entries with src/Class/EntryDraft.php, naming accounts by number or by src/Enum/AccountRole.php; src/Service/Ledger/ChartService.php resolves roles through the ledger's overrides, then its jurisdiction.
 
-### Entities
+Entries know their source (`sourceType`, `sourceId`): an invoice, an allocation, a transfer, an opening. That is what makes booking idempotent and what lettering follows.
 
-Two abstract Doctrine entities ship with the bundle; the host application must extend both.
+### Jurisdictions
 
-src/Entity/AbstractAccountingTransactionEntity.php extends `AbstractEntity` (symfony-helpers). It declares the only two string constants the rest of the code uses to stamp records: `TYPE_STATEMENT = 'statement'` and `TYPE_TRANSACTION = 'transaction'`. Fields such as bank, type, date, description, and amount are expected on the concrete class; the repository and parsers call setters by name.
+src/Interface/JurisdictionInterface.php holds everything a country decides. src/Service/Jurisdiction/AbstractJurisdiction.php implements the EU VAT rules and generates VAT codes (`S_DOM_2100`, `P_RC_2000`, `S_IEUS_0`…); src/Service/Jurisdiction/DefaultJurisdiction.php serves countries without a package. Jurisdiction packages ship data (charts as CSV, statement layouts as PHP arrays) and the mentions' texts as translations.
 
-src/Entity/AbstractBankOrganizationEntity.php extends `Organization` (symfony-helpers). Concrete bank entities — one per financial institution the application tracks — extend this class.
+### Invoicing
 
-### Repository
+src/Entity/Invoice.php uses the symfony-money priced traits: a parent summing its items, VAT per item, discount spread over the VAT bases. Status changes go through src/Service/Invoice/InvoiceWorkflow.php; emission through src/Service/Invoice/InvoiceEmissionService.php. src/Service/Invoice/InvoiceAccountingService.php turns a document into an entry: bases split per account and VAT code so that they sum exactly to each rate's base, self-assessed VAT booked twice, VAT on payments parked on pending accounts.
 
-src/Repository/AbstractAccountingTransactionRepository.php extends `AbstractRepository` (symfony-helpers) and owns the construction of a bare transaction object. Its `createAccountingTransaction()` resolves the concrete class name through the abstract `getEntityType()`, instantiates it, then calls `setBank()`, `setType()`, `setDateCreated()`, `setDescription()`, and `setAmount()`. The returned object is **not** persisted here; the caller decides whether to save it.
+### Bank
 
-### Service layer
+Parsers (src/Interface/BankStatementParserInterface.php) are pure: content in, src/Class/ParsedStatement.php out. src/Service/Bank/BankImportService.php deduplicates by external id, else by fingerprint counted per occurrence. src/Entity/Allocation.php links a line to a document or an account; src/EventSubscriber/BankAccountingSubscriber.php books it and moves the document's payment status. Matchers (src/Interface/TransactionMatcherInterface.php) only propose; src/Service/Bank/MatchingService.php applies proposals above a threshold and never one that was excluded.
 
-#### AbstractAccountingTransactionEntityService
+src/Service/Ledger/LetteringService.php letters party accounts by connected components: lines of a document, its write-off and its allocations are connected, and payments covering several documents connect them; a balanced component gets a letter.
 
-src/Service/Entity/AbstractAccountingTransactionEntityService.php extends `AbstractEntityService` (symfony-helpers) and implements src/Service/Entity/Interface/AccountingTransactionEntityServiceInterface.php (a marker interface). Its one concrete method, `saveTransactionIfNotExists()`, calls the abstract `findSameTransaction()` (provided by the host subclass) and, when no duplicate is found, calls `$this->getEntityRepository()->add($transaction)`. Every parser delegates persistence through this single point.
+### Period end and reports
 
-### AccountingCollection
+src/Service/Vat/VatReturnService.php sums tagged lines per VAT code — tax only where it is due or deductible, so VAT on debits and on payments need no separate code — and national forms (src/Interface/VatReturnFormInterface.php) place the totals in their boxes. src/Service/Ledger/FiscalYearClosingService.php computes the result on net balances and posts the next year's opening entries, party by party. src/Service/Report/FinancialStatementService.php evaluates the jurisdiction's layouts: an account goes to the first line whose rules take it.
 
-src/Class/AccountingCollection.php is a plain PHP value object, not a service. It holds two keyed arrays — one for `Invoice` objects and one for `AccountingTransaction` objects — both indexed by entity ID to prevent duplicates. After any insertion it recomputes a `fingerPrint`: sorted, prefixed IDs (`I{id}` / `T{id}`) joined with `-`. `contains()` checks membership by ID comparison. The class is used by the host application to group related invoices and transactions before reconciliation.
+### What is not here yet
 
-### Bank-export parsers
-
-All parsers live under `src/Service/` and form a two-level hierarchy beneath a common abstract base.
-
-#### AbstractBankExportParser
-
-src/Service/AbstractBankExportParser.php is the root. Its constructor injects `EntityManagerInterface` and `AbstractAccountingTransactionEntityService`; it resolves the `AccountingTransaction` repository from the entity manager immediately. It provides:
-
-- `parseFile()` — reads the file path into a string then delegates to `parseContent()`.
-- `createCsvFromBody()` — wraps `League\Csv\Reader::createFromString()` with a configurable delimiter.
-- `parseDate()` — trims the input, calls `DateTime::createFromFormat()`, then normalises to midnight via `DateHelper::startOfDay()`.
-- `saveTransactionOfNotExists()` — calls `$this->accountingTransactionRepo->createAccountingTransaction()` then `$this->accountingTransactionEntityService->saveTransactionIfNotExists()`.
-- Abstract `parseContent(AbstractBankOrganizationEntity, $content, array $options): int` — must be implemented by each concrete parser; returns the count of newly persisted records.
-
-#### CsvWithMetadataBankExportParser
-
-src/Service/CsvWithMetadataBankExportParser.php extends `AbstractBankExportParser`. It handles CSV files that carry a multi-row metadata header above the transaction rows. `parseContent()` calls `convertCsvTextToTransaction()`, which:
-
-1. Parses the full file as a `League\Csv\Reader`.
-2. Extracts the export date and opening balance via the abstract `getDateExport()` and `getAccountBalanceStatement()`, then saves a `TYPE_STATEMENT` row.
-3. Skips `$this->headerHeight` rows (set by subclass), then iterates body records through `convertCsvRecords()`, calling the three abstract accessors `getRecordDescription()`, `getRecordDateString()`, and `getRecordAmountString()` for each row.
-
-Concrete subclasses:
-
-- src/Service/FrLbp2023BankExportParser.php — La Banque Postale 2023 CSV, `headerHeight = 6`, extracts the export date by regex from row 2, balance from row 4 column 1.
-- src/Service/FrLbp2019BankExportParser.php — La Banque Postale 2019. Overrides `parseContent()`: if the file extension is `.txt`, it calls `convertPdfTextToTransaction()` instead of the normal CSV path. The `.txt` branch runs `convertPdfTextToCsv()`, a line-by-line state machine that reconstructs `DD/MM/YYYY;"description";amount` CSV from copy-pasted PDF text, handling multi-line descriptions and sign detection for outgoing transfers. For native CSV files it falls through to `parent::parseContent()` with `headerHeight = 8`.
-
-#### XlsBankExportParser
-
-src/Service/XlsBankExportParser.php extends `AbstractBankExportParser`. It overrides `parseFile()` to load the file through `PhpOffice\PhpSpreadsheet\IOFactory::load()` and pass a `Spreadsheet` object to `parseContent()`. `parseContent()` reads the export date from cell `A1` by regex and the opening balance from cell `C7` via `PriceHelper::priceToInt()`, saves a `TYPE_STATEMENT` row if both are present, then iterates worksheet rows from `$this->headerHeight`. Three abstract methods — `getRowDescription()`, `getRowDateString()`, `getRowAmountString()` — each receive a `Row` object.
-
-Concrete subclass:
-
-- src/Service/FrCa2023BankExportParser.php — Crédit Agricole 2023 XLS, `headerHeight = 11`. Date in column A is an Excel serial number decoded via `PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject()`. Amount picks column D (credit) and falls back to `"-" . column C` (debit).
-
-#### Stripe2021BankExportParser
-
-src/Service/Stripe2021BankExportParser.php extends `AbstractBankExportParser` directly. It takes two additional constructor arguments — `InvoiceEntityService` and `InvoiceItemEntityService` from the host application — making it the only parser coupled to the invoice domain. `parseContent()`:
-
-1. Parses a comma-separated CSV with a header row (`setHeaderOffset(0)`).
-2. For each record, saves the main amount as a `TYPE_TRANSACTION` via `saveNewTransactionFromStripeCsvRecord()`.
-3. If the record carries a non-zero `Fee`, saves a second (negated) transaction for the fee, then finds or creates a monthly `Invoice` grouped by accounting code, assigns the fee transaction to it, rebuilds invoice items, and flushes.
-
-### French bank-info traits
-
-Two paired traits carry the French bank-account fields that any concrete bank-organisation entity and its admin form will need.
-
-src/Entity/Traits/FrBankInfo2018Trait.php adds eight mapped columns to an entity: `bank_owner`, `bank_iban`, `bank_bic`, `bank_location`, `bank_rib_bank`, `bank_rib_agency`, `bank_rib_account`, `bank_rib_key`. It also provides `ribValidate()`, which implements the modulo-97 RIB checksum algorithm.
-
-src/Form/Traits/FrBankInfo2018Trait.php provides `buildFrBankInfo2018(FormBuilderInterface $builder)` which adds the matching Symfony form fields (text inputs and one numeric field for the key) in a single call.
-
-### Call path: file to database
-
-A typical import resolves as follows:
-
-1. The host controller or command picks the correct concrete parser (e.g. `FrLbp2023BankExportParser`) and calls `parseFile($bank, '/path/to/export.csv')`.
-2. `AbstractBankExportParser::parseFile()` reads the file and delegates to `parseContent()`.
-3. `CsvWithMetadataBankExportParser::parseContent()` reads the metadata header, saves the opening-balance statement row, then iterates body records.
-4. For each record, `saveTransactionOfNotExists()` on the base class calls `AbstractAccountingTransactionRepository::createAccountingTransaction()` to build an unsaved entity, then hands it to `AbstractAccountingTransactionEntityService::saveTransactionIfNotExists()`.
-5. The entity service calls the host-supplied `findSameTransaction()`. If no duplicate exists it persists the record and returns `true`; the parser increments its counter.
-6. `parseFile()` returns the total count of newly saved transactions to the caller.
+- An HTTP API: its shape depends on the screens of `symfony-accounting-ds`, and access to ledgers (firm staff, clients) is a host decision to make first.
+- Documents in another currency than their ledger's: refused at emission.
+- Partly deductible VAT (cars…), domestic reverse charge (construction), OSS distance sales.
 
 ## Integration in the Suite
 
@@ -119,9 +123,14 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 ## Dependencies
 
 - php: >=8.5
-- wexample/php-date: >=2.0.0
-- wexample/symfony-forms: >=9.0.0
 - league/csv: ^9.5
+- wexample/php-date: >=2.0.0
+- wexample/symfony-helpers: >=14.0.0
+- wexample/symfony-money: >=5.0.0
+- wexample/symfony-geo: >=4.0.0
+- wexample/symfony-check: >=2.0.0
+- wexample/symfony-payment: >=2.0.0
+- wexample/symfony-remote-payment: >=2.0.0
 
 ## Versioning & Compatibility Policy
 

@@ -2,8 +2,8 @@
 
 namespace Wexample\SymfonyAccounting\Repository;
 
-use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Entity\Ledger;
+use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyHelpers\Repository\AbstractRepository;
 
 /**

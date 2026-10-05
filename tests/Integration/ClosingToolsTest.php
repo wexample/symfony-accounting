@@ -3,7 +3,6 @@
 namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use DateTimeImmutable;
-use Wexample\SymfonyAccounting\Entity\FixedAsset;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Helper\IbanHelper;
 use Wexample\SymfonyAccounting\Service\Asset\DepreciationService;
@@ -12,7 +11,6 @@ use Wexample\SymfonyAccounting\Service\Invoice\DunningService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\AccrualService;
-use Wexample\SymfonyAccounting\Service\Ledger\FiscalYearClosingService;
 use Wexample\SymfonyAccounting\Service\Ledger\FiscalYearService;
 use Wexample\SymfonyCheck\Service\CheckService;
 

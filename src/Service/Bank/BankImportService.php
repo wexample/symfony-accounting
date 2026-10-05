@@ -76,6 +76,7 @@ class BankImportService
                 if ($this->transactionRepository->findOneByExternalId($bankAccount, $parsed->externalId)
                     || isset($seenFingerprints['id:'.$parsed->externalId])) {
                     ++$result->duplicates;
+
                     continue;
                 }
 
@@ -90,6 +91,7 @@ class BankImportService
 
                 if (count($existing) >= $occurrence) {
                     ++$result->duplicates;
+
                     continue;
                 }
             }

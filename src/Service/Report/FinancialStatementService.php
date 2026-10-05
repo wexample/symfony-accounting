@@ -165,6 +165,7 @@ class FinancialStatementService
                 foreach (array_merge($line->rules, $line->deduct) as $rule) {
                     if (ReportRule::SIDE_ANY === $rule->side && $rule->matches($number, 0)) {
                         $keys[] = $line->key;
+
                         break;
                     }
                 }

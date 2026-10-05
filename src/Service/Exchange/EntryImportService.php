@@ -74,6 +74,7 @@ class EntryImportService
             foreach ($this->importers as $candidate) {
                 if ($candidate->supports($content)) {
                     $importer = $candidate;
+
                     break;
                 }
             }
