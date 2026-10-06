@@ -15,6 +15,7 @@ use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
+use Wexample\SymfonyGeo\Repository\CountryRepository;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
 
@@ -30,6 +31,7 @@ class UblInvoiceReader
         private readonly InvoiceFactory $invoiceFactory,
         private readonly PartyService $partyService,
         private readonly PartyRepository $partyRepository,
+        private readonly CountryRepository $countryRepository,
     ) {
     }
 
@@ -164,7 +166,13 @@ class UblInvoiceReader
             ?? 'Supplier';
         $country = $this->text($document, $party.'/cac:PostalAddress/cac:Country/cbc:IdentificationCode');
 
-        $supplier = $this->partyService->create($ledger, $name, customer: false, supplier: true, countryCode: $country);
+        $supplier = $this->partyService->create(
+            $ledger,
+            $name,
+            customer: false,
+            supplier: true,
+            country: $country ? $this->countryRepository->findByIsoAlpha2Code(strtoupper($country)) : null,
+        );
         $supplier
             ->setVatNumber($vatNumber)
             ->setLegalIdentifier($this->text($document, $party.'/cac:PartyLegalEntity/cbc:CompanyID'))

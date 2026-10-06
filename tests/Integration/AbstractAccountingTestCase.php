@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Wexample\SymfonyGeo\Entity\Country;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Wexample\SymfonyAccounting\Entity\BankAccount;
@@ -25,6 +26,27 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
         self::bootKernel();
         $entityManager = $this->em();
         (new SchemaTool($entityManager))->createSchema($entityManager->getMetadataFactory()->getAllMetadata());
+    }
+
+    /**
+     * The country row of an ISO code, created on first use.
+     */
+    protected function country(string $code): Country
+    {
+        $repository = $this->em()->getRepository(Country::class);
+        $country = $repository->findOneBy(['isoAlpha2Code' => $code]);
+
+        if (! $country) {
+            $country = (new Country())
+                ->setIsoAlpha2Code($code)
+                ->setIsoAlpha3Code($code.'X')
+                ->setIsoNumericCode(str_pad((string) (ord($code[0]) * 3 + ord($code[1])), 3, '0', STR_PAD_LEFT))
+                ->setName($code);
+            $this->em()->persist($country);
+            $this->em()->flush();
+        }
+
+        return $country;
     }
 
     protected function em(): EntityManagerInterface
@@ -49,7 +71,7 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
     ): Ledger {
         $ledger = $this->service(LedgerService::class)->create(
             'Test Company',
-            $countryCode,
+            $this->country($countryCode),
             fiscalYearStart: new DateTimeImmutable($fiscalYearStart)
         );
         $ledger->setSettings($settings)->setVatNumber($countryCode.'0123456749');
@@ -66,7 +88,7 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
         bool $customer = true,
         bool $supplier = false,
     ): Party {
-        $party = $this->service(PartyService::class)->create($ledger, $name, $customer, $supplier, $countryCode);
+        $party = $this->service(PartyService::class)->create($ledger, $name, $customer, $supplier, $countryCode ? $this->country($countryCode) : null);
         $party->setVatNumber($vatNumber);
         $this->em()->flush();
 

@@ -38,9 +38,9 @@ class InvoiceVatResolver
         $code = $jurisdiction->resolveVatCode(
             new VatContext(
                 direction: $invoice->getDirection(),
-                ledgerCountryCode: (string) $ledger->getCountryCode(),
+                ledgerCountryCode: (string) $ledger->getCountry()?->getIsoAlpha2Code(),
                 ledgerVatSubject: $ledger->isVatSubject(),
-                partyCountryCode: $party?->getCountryCode(),
+                partyCountryCode: $party?->getCountry()?->getIsoAlpha2Code(),
                 partyHasVatNumber: (bool) $party?->hasVatNumber(),
                 partyIsIndividual: (bool) $party?->isIndividual(),
                 goods: $item->isGoods(),

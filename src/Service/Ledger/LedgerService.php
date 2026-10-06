@@ -10,6 +10,7 @@ use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\JournalRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
+use Wexample\SymfonyGeo\Entity\Country;
 
 /**
  * Opening a set of books: identity, journals, chart, first fiscal year.
@@ -30,14 +31,14 @@ class LedgerService
      */
     public function create(
         string $name,
-        string $countryCode,
+        Country $country,
         bool $loadChart = true,
         ?DateTimeImmutable $fiscalYearStart = null,
         string $currencyCode = 'EUR',
     ): Ledger {
         $ledger = (new Ledger())
             ->setName($name)
-            ->setCountryCode($countryCode)
+            ->setCountry($country)
             ->setCurrencyCode($currencyCode);
 
         $this->entityManager->persist($ledger);

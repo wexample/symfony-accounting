@@ -12,7 +12,6 @@ use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Event\InvoiceEmittedEvent;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
-use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
 
 /**
  * The single place where a document becomes official.
@@ -111,7 +110,6 @@ class InvoiceEmissionService
             'phone' => $ledger->getPhone(),
             'website' => $ledger->getWebsite(),
             'legalMentions' => $ledger->getLegalMentions(),
-            'address' => PostalAddressHelper::toArray($ledger),
             'bank' => $bank ? [
                 'label' => $bank->getLabel(),
                 'holder' => $bank->getHolder() ?? $ledger->getName(),
@@ -133,7 +131,6 @@ class InvoiceEmissionService
             'email' => $party->getEmail(),
             'customerCode' => $party->getCustomerCode(),
             'supplierCode' => $party->getSupplierCode(),
-            'address' => PostalAddressHelper::toArray($party),
         ];
     }
 }

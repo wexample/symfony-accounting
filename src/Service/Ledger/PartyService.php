@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
+use Wexample\SymfonyGeo\Entity\Country;
 
 /**
  * Third parties and their auxiliary account codes.
@@ -23,14 +24,14 @@ class PartyService
         string $name,
         bool $customer = true,
         bool $supplier = false,
-        ?string $countryCode = null,
+        ?Country $country = null,
     ): Party {
         $party = (new Party())
             ->setLedger($ledger)
             ->setName($name)
             ->setCustomer($customer)
             ->setSupplier($supplier)
-            ->setCountryCode($countryCode ?? $ledger->getCountryCode());
+            ->setCountry($country ?? $ledger->getCountry());
 
         $this->assignCodes($party);
         $this->entityManager->persist($party);

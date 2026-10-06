@@ -8,7 +8,7 @@ use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
-use Wexample\SymfonyGeo\Class\PostalAddress;
+use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
 use Wexample\SymfonyMoney\Service\MoneyFormatter;
 
@@ -97,8 +97,8 @@ class InvoiceDocumentDataBuilder
                 'periodEnd' => $invoice->getPeriodEnd()?->format('Y-m-d'),
                 'paid' => $invoice->getDatePaid()?->format('Y-m-d'),
             ],
-            'issuer' => $this->identityBlock($issuer, $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
-            'client' => $this->identityBlock($client, $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
+            'issuer' => $this->identityBlock($issuer, $invoice->getLedger(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
+            'client' => $this->identityBlock($client, $invoice->getParty(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
             'items' => $items,
             'credits' => $credits,
             'totals' => [
@@ -156,18 +156,18 @@ class InvoiceDocumentDataBuilder
 
     private function identityBlock(
         array $identity,
+        ?PostalAddressInterface $address,
         string $identifierLabel,
         string $vatLabel,
         bool $identifierInVat,
         ?string $locale
     ): array {
-        $address = PostalAddress::fromArray($identity['address'] ?? []);
         $showIdentifier = ! ($identifierInVat && ! empty($identity['vatNumber']));
 
         return [
             'name' => $identity['name'] ?? null,
             'legalForm' => $identity['legalForm'] ?? null,
-            'addressLines' => PostalAddressHelper::toLines($address),
+            'addressLines' => $address ? PostalAddressHelper::toLines($address) : [],
             'legalIdentifier' => $showIdentifier ? ($identity['legalIdentifier'] ?? null) : null,
             'legalIdentifierLabel' => $this->trans($identifierLabel, [], $locale),
             'vatNumber' => $identity['vatNumber'] ?? null,
@@ -205,7 +205,6 @@ class InvoiceDocumentDataBuilder
             'phone' => $ledger->getPhone(),
             'website' => $ledger->getWebsite(),
             'legalMentions' => $ledger->getLegalMentions(),
-            'address' => PostalAddressHelper::toArray($ledger),
             'bank' => $bank ? ['holder' => $bank->getHolder() ?? $ledger->getName(), 'iban' => $bank->getIban(), 'bic' => $bank->getBic(), 'localDetails' => $bank->getLocalDetails()] : null,
         ];
     }
@@ -219,7 +218,6 @@ class InvoiceDocumentDataBuilder
             'legalIdentifier' => $party->getLegalIdentifier(),
             'vatNumber' => $party->getVatNumber(),
             'email' => $party->getEmail(),
-            'address' => PostalAddressHelper::toArray($party),
         ] : [];
     }
 

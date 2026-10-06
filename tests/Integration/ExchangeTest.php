@@ -28,7 +28,7 @@ class ExchangeTest extends AbstractAccountingTestCase
         $this->assertStringContainsString('VE;Sales;1;2026-03-01;411;Customers;CCLIENTA', $file->content);
 
         // Into another ledger, as an accounting firm taking over the books.
-        $target = $this->service(LedgerService::class)->create('Taken over', 'BE', loadChart: false);
+        $target = $this->service(LedgerService::class)->create('Taken over', $this->country('BE'), loadChart: false);
         $result = $this->service(EntryImportService::class)->importContent($target, $file->content, options: ['create_fiscal_years' => true]);
 
         $this->assertTrue($result->isComplete());

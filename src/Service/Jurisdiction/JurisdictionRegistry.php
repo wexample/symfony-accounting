@@ -38,7 +38,7 @@ class JurisdictionRegistry
 
     public function forLedger(Ledger $ledger): JurisdictionInterface
     {
-        return $this->get($ledger->getCountryCode());
+        return $this->get($ledger->getCountry()?->getIsoAlpha2Code());
     }
 
     public function has(string $countryCode): bool

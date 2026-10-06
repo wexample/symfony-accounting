@@ -9,6 +9,7 @@ use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
+use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
 use Wexample\SymfonyMoney\Helper\RateHelper;
@@ -79,8 +80,8 @@ class UblInvoiceBuilder
             $this->cbc($period, 'EndDate', $invoice->getPeriodEnd()->format('Y-m-d'));
         }
 
-        $this->party($this->cac($root, 'AccountingSupplierParty'), $invoice->getIssuerSnapshot() ?? []);
-        $this->party($this->cac($root, 'AccountingCustomerParty'), $invoice->getPartySnapshot() ?? []);
+        $this->party($this->cac($root, 'AccountingSupplierParty'), $invoice->getIssuerSnapshot() ?? [], $invoice->getLedger());
+        $this->party($this->cac($root, 'AccountingCustomerParty'), $invoice->getPartySnapshot() ?? [], $invoice->getParty());
 
         $bank = $invoice->getIssuerSnapshot()['bank'] ?? null;
         if (! $credit && ($bank['iban'] ?? null)) {
@@ -224,11 +225,11 @@ class UblInvoiceBuilder
 
     private function party(
         DOMElement $parent,
-        array $identity
+        array $identity,
+        ?PostalAddressInterface $address
     ): void {
         $party = $this->cac($parent, 'Party');
-        $address = $identity['address'] ?? [];
-        $country = strtoupper((string) ($address['countryCode'] ?? substr((string) ($identity['vatNumber'] ?? ''), 0, 2)));
+        $country = (string) $address?->getCountry()?->getIsoAlpha2Code();
         [$scheme, $endpoint] = $this->endpoint($identity, $country);
 
         if ($endpoint) {
@@ -238,20 +239,22 @@ class UblInvoiceBuilder
         $this->cbc($this->cac($party, 'PartyName'), 'Name', (string) ($identity['name'] ?? ''));
 
         $postal = $this->cac($party, 'PostalAddress');
-        $lines = array_values(array_filter(preg_split('/\R/', (string) ($address['postalAddress'] ?? ''))));
+        $lines = array_values(array_filter(preg_split('/\R/', (string) $address?->getPostalAddress())));
         if ($lines[0] ?? null) {
             $this->cbc($postal, 'StreetName', $lines[0]);
         }
         if ($lines[1] ?? null) {
             $this->cbc($postal, 'AdditionalStreetName', $lines[1]);
         }
-        if ($address['city'] ?? null) {
-            $this->cbc($postal, 'CityName', $address['city']);
+        if ($address?->getCity()) {
+            $this->cbc($postal, 'CityName', $address->getCity());
         }
-        if ($address['postCode'] ?? null) {
-            $this->cbc($postal, 'PostalZone', $address['postCode']);
+        if ($address?->getPostCode()) {
+            $this->cbc($postal, 'PostalZone', $address->getPostCode());
         }
-        $this->cbc($this->cac($postal, 'Country'), 'IdentificationCode', $country ?: 'BE');
+        if ('' !== $country) {
+            $this->cbc($this->cac($postal, 'Country'), 'IdentificationCode', $country);
+        }
 
         if ($identity['vatNumber'] ?? null) {
             $tax = $this->cac($party, 'PartyTaxScheme');

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93e0c69f173f320c717b04a449eff37f",
+    "content-hash": "c36cb8d13f69e5a8a1ad5832e7c82c72",
     "packages": [
         {
             "name": "dflydev/dot-access-data",
@@ -863,16 +863,16 @@
         },
         {
             "name": "doctrine/orm",
-            "version": "3.7.3",
+            "version": "3.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/orm.git",
-                "reference": "2637802f3bb695a88f54af1a6f0c2e76a4b523fb"
+                "reference": "84e21e325e3da22e46d7facbccdc9258f2332b1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/orm/zipball/2637802f3bb695a88f54af1a6f0c2e76a4b523fb",
-                "reference": "2637802f3bb695a88f54af1a6f0c2e76a4b523fb",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/84e21e325e3da22e46d7facbccdc9258f2332b1e",
+                "reference": "84e21e325e3da22e46d7facbccdc9258f2332b1e",
                 "shasum": ""
             },
             "require": {
@@ -947,9 +947,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/orm/issues",
-                "source": "https://github.com/doctrine/orm/tree/3.7.3"
+                "source": "https://github.com/doctrine/orm/tree/3.7.4"
             },
-            "time": "2026-09-26T21:45:25+00:00"
+            "time": "2026-10-05T18:31:26+00:00"
         },
         {
             "name": "doctrine/persistence",
@@ -8089,18 +8089,18 @@
         },
         {
             "name": "wexample/php-api",
-            "version": "5.0.1",
+            "version": "5.0.2",
             "dist": {
                 "type": "path",
                 "url": "../php-api",
-                "reference": "210f1b363231131092fcb28610fadab3549da196"
+                "reference": "c5164078bd5a130940bf01aecc11184bd9c7d9ab"
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.8",
                 "php": ">=8.5"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8130,19 +8130,19 @@
         },
         {
             "name": "wexample/php-api-entity",
-            "version": "2.0.1",
+            "version": "2.0.3",
             "dist": {
                 "type": "path",
                 "url": "../php-api-entity",
-                "reference": "98b65ffdcb9a0895415f8d893cc3f3ec435c997a"
+                "reference": "fa6624af011886c4db3d897607a6e1fc0f428f39"
             },
             "require": {
                 "php": ">=8.5",
                 "wexample/php-api": ">=5.0.0",
-                "wexample/php-helpers": ">=6.0.0"
+                "wexample/php-helpers": ">=7.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8172,18 +8172,18 @@
         },
         {
             "name": "wexample/php-date",
-            "version": "2.0.1",
+            "version": "2.0.2",
             "dist": {
                 "type": "path",
                 "url": "../php-date",
-                "reference": "55013740b0fc6d0fce199ae9c10d8efe26136464"
+                "reference": "113d37a47a5606d7d794c19b832b76d6dcc605e0"
             },
             "require": {
                 "ext-intl": "*",
                 "php": ">=8.5"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8213,17 +8213,17 @@
         },
         {
             "name": "wexample/php-file",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "dist": {
                 "type": "path",
                 "url": "../php-file",
-                "reference": "e2e023f94a81458d27eb0e538e71156ebf0ba100"
+                "reference": "21fdd8a49e8ab34ece35b404c4c314eeeb0dcc40"
             },
             "require": {
                 "php": ">=8.5"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8253,18 +8253,18 @@
         },
         {
             "name": "wexample/php-helpers",
-            "version": "6.0.0",
+            "version": "7.0.1",
             "dist": {
                 "type": "path",
                 "url": "../php-helpers",
-                "reference": "2f2e8e79d2d823437376212ccf31aa6771aea3e8"
+                "reference": "e2e03b78e21239e96b21c09147b0921b250c9b55"
             },
             "require": {
                 "php": ">=8.5",
                 "symfony/string": "^6.2|^7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8289,18 +8289,18 @@
         },
         {
             "name": "wexample/php-html",
-            "version": "0.1.11",
+            "version": "0.1.13",
             "dist": {
                 "type": "path",
                 "url": "../php-html",
-                "reference": "532dd2a9a99dfd282fe2ca2a4643c21171e9e05d"
+                "reference": "53ac219253eb22bc06deb209600f012c41b7169d"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/php-helpers": ">=6.0.0"
+                "wexample/php-helpers": ">=7.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8330,25 +8330,30 @@
         },
         {
             "name": "wexample/php-pseudocode",
-            "version": "2.1.7",
+            "version": "2.2.2",
             "dist": {
                 "type": "path",
                 "url": "../php-pseudocode",
-                "reference": "f55397df7ae9adad6940851dbdfa68b9f61a05a1"
+                "reference": "116a3e7c3874492e0cac6df42e5ec2837e1582cd"
             },
             "require": {
                 "nikic/php-parser": "^5.0",
                 "php": ">=8.5",
                 "symfony/yaml": "^7.0",
-                "wexample/php-helpers": ">=6.0.0"
+                "wexample/php-helpers": ">=7.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Wexample\\Pseudocode\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Wexample\\Pseudocode\\Tests\\": "tests/"
                 }
             },
             "license": [
@@ -8368,11 +8373,11 @@
         },
         {
             "name": "wexample/php-remote",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "dist": {
                 "type": "path",
                 "url": "../php-remote",
-                "reference": "4dbf9006dabd4fdfde59c592dbc33ceedc82a3ea"
+                "reference": "54b9ac2e550a398cd1019125b733914f458df902"
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.8",
@@ -8380,7 +8385,7 @@
                 "wexample/php-api": ">=5.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8410,19 +8415,19 @@
         },
         {
             "name": "wexample/php-yaml",
-            "version": "2.0.1",
+            "version": "2.0.3",
             "dist": {
                 "type": "path",
                 "url": "../php-yaml",
-                "reference": "f0437c202408ba23cc876d1742ddd359f6186214"
+                "reference": "65e84eeeb831dff308af62613f0c521eb9266928"
             },
             "require": {
                 "php": ">=8.5",
                 "symfony/yaml": "^6.0|^7.0",
-                "wexample/php-helpers": ">=6.0.0"
+                "wexample/php-helpers": ">=7.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "autoload": {
@@ -8446,11 +8451,11 @@
         },
         {
             "name": "wexample/symfony-api",
-            "version": "8.0.1",
+            "version": "11.0.0",
             "dist": {
                 "type": "path",
                 "url": "../symfony-api",
-                "reference": "c81a5b1b310ddac04b622b1ee8cb864c225d8aa2"
+                "reference": "a562ae42e0603e333b353e6e4640b09d12592796"
             },
             "require": {
                 "doctrine/orm": "^3.0",
@@ -8460,16 +8465,16 @@
                 "symfony/validator": "^7.4",
                 "wexample/php-date": ">=2.0.0",
                 "wexample/symfony-content": ">=4.0.0",
-                "wexample/symfony-forms": ">=9.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-loader": ">=17.0.0",
+                "wexample/symfony-forms": ">=10.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-loader": ">=20.0.0",
                 "wexample/symfony-security": ">=2.0.0",
                 "wexample/symfony-testing": ">=5.0.0"
             },
             "require-dev": {
                 "nelmio/api-doc-bundle": "^5.12",
                 "opis/json-schema": "^2.6",
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "symfony/browser-kit": "^7.4",
                 "symfony/monolog-bundle": "^3.10"
             },
@@ -8521,18 +8526,18 @@
         },
         {
             "name": "wexample/symfony-check",
-            "version": "1.0.1",
+            "version": "2.0.3",
             "dist": {
                 "type": "path",
                 "url": "../symfony-check",
-                "reference": "1356a9fab7a1f00b4765105a3e5057491446447f"
+                "reference": "83352bd0cba018cbd968a3ce1dc7d00ab4f8b5b8"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0"
+                "wexample/symfony-helpers": ">=15.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "wexample/symfony-testing": ">=2.0.0"
             },
             "type": "library",
@@ -8568,15 +8573,15 @@
         },
         {
             "name": "wexample/symfony-content",
-            "version": "4.0.4",
+            "version": "4.0.7",
             "dist": {
                 "type": "path",
                 "url": "../symfony-content",
-                "reference": "a3cd4be6d9259609a2b87710357da2443f9f9fce"
+                "reference": "c329ae18288eaedb3604ff1035b475996c61009f"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0"
+                "wexample/symfony-helpers": ">=15.0.0"
             },
             "type": "library",
             "extra": {
@@ -8614,17 +8619,20 @@
         },
         {
             "name": "wexample/symfony-design-system",
-            "version": "26.0.0",
+            "version": "30.0.0",
             "dist": {
                 "type": "path",
                 "url": "../symfony-design-system",
-                "reference": "1a1f638d5f742d36b4c56c56045474323d64d920"
+                "reference": "b9e55b79f120385b9ce428ab5ca30e865ab923be"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-loader": ">=17.0.0",
+                "wexample/symfony-loader": ">=20.0.0",
                 "wexample/symfony-routing": ">=2.0.0",
-                "wexample/symfony-template": ">=2.0.0"
+                "wexample/symfony-template": ">=2.0.5"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "extra": {
@@ -8657,15 +8665,15 @@
         },
         {
             "name": "wexample/symfony-dev",
-            "version": "4.0.11",
+            "version": "4.0.14",
             "dist": {
                 "type": "path",
                 "url": "../symfony-dev",
-                "reference": "3e3d1417a2f66ff48766239dca708525194e40ab"
+                "reference": "1f3746adb88210053026d2d0401ea7d19c7bd672"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
                 "wexample/symfony-testing": ">=5.0.0"
             },
             "require-dev": {
@@ -8700,21 +8708,21 @@
         },
         {
             "name": "wexample/symfony-forms",
-            "version": "9.0.1",
+            "version": "10.0.2",
             "dist": {
                 "type": "path",
                 "url": "../symfony-forms",
-                "reference": "93e2e8f33414197b447253c80466588fb5381dc0"
+                "reference": "93b403684529b068ca1e4d445a8e56f20351245b"
             },
             "require": {
                 "doctrine/orm": "^3.0",
                 "php": ">=8.5",
                 "symfony/form": "^7.4 || ^8.0",
                 "syrtis/php-semantic-schema-web": ">=0.0.19",
-                "wexample/symfony-design-system": ">=26.0.0"
+                "wexample/symfony-design-system": ">=30.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "symfony/browser-kit": "^7.4",
                 "symfony/css-selector": "^7.4",
                 "symfony/security-core": "^7.4 || ^8.0",
@@ -8753,21 +8761,21 @@
         },
         {
             "name": "wexample/symfony-geo",
-            "version": "3.1.5",
+            "version": "4.0.5",
             "dist": {
                 "type": "path",
                 "url": "../symfony-geo",
-                "reference": "bfd0c768c00c5d522f8044bcd0e5103a31410648"
+                "reference": "2ceb27ab318de515a11eb969e04b62f13b8d8b6a"
             },
             "require": {
                 "php": ">=8.5",
                 "rinvex/countries": "^8.0",
-                "wexample/symfony-api": ">=8.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-money": ">=4.0.0"
+                "wexample/symfony-api": ">=11.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-money": ">=5.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "extra": {
@@ -8802,11 +8810,11 @@
         },
         {
             "name": "wexample/symfony-helpers",
-            "version": "12.0.1",
+            "version": "15.0.1",
             "dist": {
                 "type": "path",
                 "url": "../symfony-helpers",
-                "reference": "78935120de59cfd782f338dcea10adcaa023c9ff"
+                "reference": "acbc724ec3b9f5585e7c53b12a7670d7edd715aa"
             },
             "require": {
                 "doctrine/common": "^3.4",
@@ -8817,12 +8825,14 @@
                 "symfony/doctrine-bridge": ">=6.2",
                 "symfony/process": ">=6.2",
                 "symfony/security-core": ">=6.2",
+                "symfony/serializer": ">=6.2",
                 "symfony/twig-bundle": ">=6.2",
                 "symfony/uid": ">=6.2",
+                "symfony/validator": ">=6.2",
                 "twig/string-extra": "^3.6",
                 "wexample/php-date": ">=2.0.0",
                 "wexample/php-file": ">=2.0.0",
-                "wexample/php-helpers": ">=6.0.0"
+                "wexample/php-helpers": ">=7.0.0"
             },
             "type": "library",
             "extra": {
@@ -8852,11 +8862,11 @@
         },
         {
             "name": "wexample/symfony-loader",
-            "version": "17.0.0",
+            "version": "20.0.2",
             "dist": {
                 "type": "path",
                 "url": "../symfony-loader",
-                "reference": "8149200e714aebec159e68a6717fa73274aa77b6"
+                "reference": "1bbc45365a7cf02666ef2e465a8419214de78f06"
             },
             "require": {
                 "fortawesome/font-awesome": "^6.7",
@@ -8866,11 +8876,11 @@
                 "wexample/php-date": ">=2.0.0",
                 "wexample/php-html": ">=0.1.6",
                 "wexample/symfony-dev": ">=4.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-translations": ">=8.0.0"
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-translations": ">=9.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "symfony/browser-kit": "^7.4 || ^8.0",
                 "symfony/css-selector": "^7.4 || ^8.0",
                 "wexample/symfony-testing": ">=1.0.86"
@@ -8911,23 +8921,23 @@
         },
         {
             "name": "wexample/symfony-money",
-            "version": "4.0.8",
+            "version": "5.0.5",
             "dist": {
                 "type": "path",
                 "url": "../symfony-money",
-                "reference": "585d721892ffa8d29b03b46d8498bfed8fae1b77"
+                "reference": "422186a49a10ca4b783c903a3c1ff87e7adcbc96"
             },
             "require": {
                 "php": ">=8.5",
                 "symfony/intl": ">=6.2",
-                "wexample/php-pseudocode": ">=1.0.0",
-                "wexample/symfony-api": ">=8.0.0",
-                "wexample/symfony-forms": ">=9.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
+                "wexample/php-pseudocode": ">=2.2.0",
+                "wexample/symfony-api": ">=11.0.0",
+                "wexample/symfony-forms": ">=10.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
                 "wexample/symfony-pseudocode": ">=3.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "extra": {
@@ -8962,20 +8972,20 @@
         },
         {
             "name": "wexample/symfony-payment",
-            "version": "1.0.1",
+            "version": "2.0.2",
             "dist": {
                 "type": "path",
                 "url": "../symfony-payment",
-                "reference": "754f450713fc2296f2b4c4d7af8fe9bfb6721855"
+                "reference": "6b2c854e677900801cbe39ce02d83bed63d0520f"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-money": ">=4.0.0",
-                "wexample/symfony-remote-payment": ">=1.0.0"
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-money": ">=5.0.0",
+                "wexample/symfony-remote-payment": ">=2.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "wexample/symfony-testing": ">=2.0.0"
             },
             "type": "library",
@@ -9011,19 +9021,19 @@
         },
         {
             "name": "wexample/symfony-pseudocode",
-            "version": "3.0.5",
+            "version": "3.0.9",
             "dist": {
                 "type": "path",
                 "url": "../symfony-pseudocode",
-                "reference": "f5e710cdc337df5f0df7e03758b4b8fc98ccebdf"
+                "reference": "d31a8b5871a540b595780a565d776394493698d8"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/php-pseudocode": ">=2.1.2",
-                "wexample/symfony-helpers": ">=12.0.0"
+                "wexample/php-pseudocode": ">=2.2.0",
+                "wexample/symfony-helpers": ">=15.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5",
+                "phpunit/phpunit": "^13",
                 "symfony/console": "^6.0",
                 "symfony/framework-bundle": "^6.0",
                 "symfony/http-kernel": "^6.0"
@@ -9056,21 +9066,21 @@
         },
         {
             "name": "wexample/symfony-remote",
-            "version": "2.0.0",
+            "version": "2.0.4",
             "dist": {
                 "type": "path",
                 "url": "../symfony-remote",
-                "reference": "b803c81f2f7020b96c7ca70e84cfe87399b81319"
+                "reference": "212572da8ebf38382b92dbab0c585a4d7d5cbce6"
             },
             "require": {
                 "php": ">=8.5",
                 "symfony/rate-limiter": "^7.4",
                 "wexample/php-api": ">=5.0.0",
                 "wexample/php-remote": ">=1.0.2",
-                "wexample/symfony-helpers": ">=12.0.0"
+                "wexample/symfony-helpers": ">=15.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "wexample/symfony-testing": ">=1.0.86"
             },
             "type": "library",
@@ -9106,19 +9116,19 @@
         },
         {
             "name": "wexample/symfony-remote-payment",
-            "version": "1.0.1",
+            "version": "2.0.3",
             "dist": {
                 "type": "path",
                 "url": "../symfony-remote-payment",
-                "reference": "065af9c940670999ffe6a720f5844805286d8e34"
+                "reference": "7c7a96fa5d9a416b150c34de021f53ae3b508057"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
                 "wexample/symfony-remote": ">=2.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "extra": {
@@ -9153,16 +9163,16 @@
         },
         {
             "name": "wexample/symfony-routing",
-            "version": "2.0.0",
+            "version": "2.0.5",
             "dist": {
                 "type": "path",
                 "url": "../symfony-routing",
-                "reference": "0da3b8d6a2bc2b746859cba5c5a571ae152790c5"
+                "reference": "10e9353a321a244ed2282388dfe70d2cc49e437c"
             },
             "require": {
                 "php": ">=8.5",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-template": ">=2.0.0"
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-template": ">=2.0.5"
             },
             "type": "library",
             "extra": {
@@ -9192,11 +9202,11 @@
         },
         {
             "name": "wexample/symfony-security",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "dist": {
                 "type": "path",
                 "url": "../symfony-security",
-                "reference": "bbc3fc1106842d7a37f70116985cebb7c7edd802"
+                "reference": "f0d9b1d0016229893b72a116cbf0f10457ca6a90"
             },
             "require": {
                 "monolog/monolog": "^3.5",
@@ -9210,7 +9220,7 @@
                 "symfony/yaml": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "symfony/framework-bundle": "^7.4 || ^8.0",
                 "symfony/monolog-bundle": "^3.10"
             },
@@ -9250,21 +9260,21 @@
         },
         {
             "name": "wexample/symfony-template",
-            "version": "2.0.3",
+            "version": "2.0.8",
             "dist": {
                 "type": "path",
                 "url": "../symfony-template",
-                "reference": "7ecdd81b5505a422461f4dfc7cb6cb2f2efa6461"
+                "reference": "4677822439cbdcbb96cbc33c4946f29d7d568e1a"
             },
             "require": {
                 "ext-dom": "*",
                 "league/commonmark": "^2.4",
                 "php": ">=8.5",
                 "symfony/yaml": ">=6.2",
-                "wexample/symfony-helpers": ">=12.0.0"
+                "wexample/symfony-helpers": ">=15.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5|^10.0|^11.0|^12.0"
+                "phpunit/phpunit": "^13"
             },
             "type": "library",
             "extra": {
@@ -9299,17 +9309,17 @@
         },
         {
             "name": "wexample/symfony-testing",
-            "version": "5.0.0",
+            "version": "5.0.4",
             "dist": {
                 "type": "path",
                 "url": "../symfony-testing",
-                "reference": "7e3e65e22f7c4cbeb279e082eb54859cd3cf7002"
+                "reference": "83acb6ff51523be4ed4d45ab8ab8b7b9c9297a3a"
             },
             "require": {
                 "php": ">=8.5",
                 "wexample/php-date": ">=2.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-template": ">=2.0.0"
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-template": ">=2.0.5"
             },
             "type": "library",
             "extra": {
@@ -9339,11 +9349,11 @@
         },
         {
             "name": "wexample/symfony-translations",
-            "version": "8.0.0",
+            "version": "9.0.1",
             "dist": {
                 "type": "path",
                 "url": "../symfony-translations",
-                "reference": "46be40ba138ab7cca940f1cee914278982d6e625"
+                "reference": "9ee94c2cb13e2551a3c32ccc95159f9c26f1d8e4"
             },
             "require": {
                 "php": ">=8.5",
@@ -9351,14 +9361,14 @@
                 "symfony/serializer": ">=6.2",
                 "symfony/translation": ">=6.2",
                 "syrtis/php-client": ">=4.0.0",
-                "wexample/php-helpers": ">=6.0.0",
+                "wexample/php-helpers": ">=7.0.0",
                 "wexample/php-yaml": ">=2.0.0",
-                "wexample/symfony-helpers": ">=12.0.0",
-                "wexample/symfony-template": ">=2.0.0",
+                "wexample/symfony-helpers": ">=15.0.0",
+                "wexample/symfony-template": ">=2.0.5",
                 "wexample/symfony-testing": ">=5.0.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "*",
+                "phpunit/phpunit": "^13",
                 "wexample/symfony-testing": ">=1.0.86"
             },
             "type": "library",
@@ -10003,16 +10013,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "13.4.0",
+            "version": "13.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "ef714df238ae4d050e74efaa23f7c428bd01034e"
+                "reference": "ccde40327c501eebff192614b0dcf11806418901"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ef714df238ae4d050e74efaa23f7c428bd01034e",
-                "reference": "ef714df238ae4d050e74efaa23f7c428bd01034e",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ccde40327c501eebff192614b0dcf11806418901",
+                "reference": "ccde40327c501eebff192614b0dcf11806418901",
                 "shasum": ""
             },
             "require": {
@@ -10026,10 +10036,10 @@
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.4.1",
-                "phpunit/php-code-coverage": "^14.4",
+                "phpunit/php-code-coverage": "^14.4.1",
                 "phpunit/php-file-iterator": "^7.0.2",
                 "phpunit/php-invoker": "^7.0.0",
-                "phpunit/php-text-template": "^6.0.0",
+                "phpunit/php-text-template": "^6.0.1",
                 "phpunit/php-timer": "^9.0.0",
                 "sebastian/cli-parser": "^5.0.1",
                 "sebastian/comparator": "^8.4",
@@ -10042,7 +10052,7 @@
                 "sebastian/object-enumerator": "^8.1.0",
                 "sebastian/recursion-context": "^8.0.1",
                 "sebastian/type": "^7.0.2",
-                "sebastian/version": "^7.0.0",
+                "sebastian/version": "^7.0.1",
                 "staabm/side-effects-detector": "^1.0.5"
             },
             "bin": [
@@ -10083,7 +10093,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.4.0"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.4.1"
             },
             "funding": [
                 {
@@ -10091,7 +10101,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-02T03:20:44+00:00"
+            "time": "2026-10-05T05:51:21+00:00"
         },
         {
             "name": "sebastian/cli-parser",
