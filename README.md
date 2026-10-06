@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 4.0.1
+Version: 5.0.0
 
 ## A ledger
 
@@ -20,7 +20,7 @@ $invoiceFactory->addItem($invoice, 'Development', 50000, '2j');   // 2 days at 5
 $emissionService->emit($invoice);                                  // numbered, frozen, booked
 ```
 
-Emission is the only way a document becomes official: VAT resolved per item (domestic, intra-EU, export, reverse charge, franchise), gap-free number for sales, issuer and party frozen into snapshots, `InvoiceEmittedEvent`, then the entry in the ledger. Quotations convert to bills (`createBillFromQuotation`, deducting deposit bills), bills get credit notes and penalties (`LatePenaltyCalculator`), models renew monthly.
+Emission is the only way a document becomes official: VAT resolved per item (domestic, intra-EU, export, reverse charge, franchise), gap-free number for sales, issuer and party identities (name, identifiers, bank) frozen into snapshots — addresses are read from the entities, their country being a relation, `InvoiceEmittedEvent`, then the entry in the ledger. Quotations convert to bills (`createBillFromQuotation`, deducting deposit bills), bills get credit notes and penalties (`LatePenaltyCalculator`), models renew monthly.
 
 `UblInvoiceBuilder` writes the structured electronic invoice (UBL 2.1, Peppol BIS Billing 3.0 / EN 16931): mandatory for B2B invoices in Belgium since 2026, one of the formats of the French reform. `UblInvoiceReader` does the reverse with received ones: a purchase draft, supplier found by VAT number or created with its IBAN, checked against the supplier's stated total. Sending and receiving through a Peppol access point is left to a remote package. Validate the output on the Peppol testbed before going live.
 
@@ -127,7 +127,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - wexample/php-date: >=2.0.0
 - wexample/symfony-helpers: >=15.0.0
 - wexample/symfony-money: >=5.0.0
-- wexample/symfony-geo: >=4.0.0
+- wexample/symfony-geo: >=5.0.0
 - wexample/symfony-check: >=2.0.0
 - wexample/symfony-payment: >=2.0.0
 - wexample/symfony-remote-payment: >=2.0.0

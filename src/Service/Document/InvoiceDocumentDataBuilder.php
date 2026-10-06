@@ -8,8 +8,8 @@ use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
-use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
+use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyMoney\Service\MoneyFormatter;
 
 /**
