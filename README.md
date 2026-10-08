@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 5.0.0
+Version: 5.0.1
 
 ## A ledger
 
@@ -124,12 +124,12 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 
 - php: >=8.5
 - league/csv: ^9.5
-- wexample/php-date: >=2.0.0
+- wexample/php-date: >=2.1.0
 - wexample/symfony-helpers: >=15.0.0
 - wexample/symfony-money: >=5.0.0
 - wexample/symfony-geo: >=5.0.0
 - wexample/symfony-check: >=2.0.0
-- wexample/symfony-payment: >=2.0.0
+- wexample/symfony-payment: >=3.0.0
 - wexample/symfony-remote-payment: >=2.0.0
 
 ## Versioning & Compatibility Policy
