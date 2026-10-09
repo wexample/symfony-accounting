@@ -1,5 +1,6 @@
 # restes de symfony-translations
 
 Opened: 2026-10-09
+Closed: 2026-10-09
 Parent: ce93eaeb1e9a
 Author: agent:main
