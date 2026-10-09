@@ -1,7 +1,8 @@
 # Extract bank transactions, allocation, matching and reconciliation from network
 
 Opened: 2026-09-24
-Updated: 2026-09-24
+Closed: 2026-10-09
+Updated: 2026-10-09
 Author: agent:archeology
 
 ## Status (2026-10-04)
@@ -148,3 +149,7 @@ Issues are in `/home/weeger/Desktop/WIP/WEB/WEXAMPLE/NETWORK/archeo/gitlab/issue
 - `findAmountAt`: a statement plus later lines gives the expected balance. StatementCheck flags a mismatching statement.
 - Lettering: two invoices paid by one transfer, plus one invoice paid by two transfers, yields two components with stable fingerprints.
 - Stripe importer, with a mocked client: one charge with a fee produces two lines; re-running the import creates nothing; the CSV and API imports of the same `txn` do not duplicate.
+
+## Clos le 2026-10-09 (revue de l'extraction, agent:main)
+
+Backend fait (comptes, transactions, relevés, allocations, motifs d'import, 5 matchers, rapprochement, lettrage, `ProviderBalanceImporter` via symfony-remote-payment — il n'y a pas de `symfony-stripe` —, journal de banque écrit par `BankAccountingSubscriber`). Les restes (API, écrans, formulaire d'import) passent dans `api-and-interface.md`.

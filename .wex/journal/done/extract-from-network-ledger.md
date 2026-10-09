@@ -1,7 +1,8 @@
 # Extract the double-entry ledger, fiscal year and reports from network
 
 Opened: 2026-09-24
-Updated: 2026-09-24
+Closed: 2026-10-09
+Updated: 2026-10-09
 Author: agent:archeology
 
 ## Status (2026-10-04)
@@ -149,3 +150,7 @@ Issues are in `/home/weeger/Desktop/WIP/WEB/WEXAMPLE/NETWORK/archeo/gitlab/issue
   - an income-statement pattern including VII computes correctly;
   - the general ledger's running balance is correct.
 - Non-calendar fiscal year (e.g. 2025-07-01 → 2026-06-30): entries fall into the right year.
+
+## Clos le 2026-10-09 (revue de l'extraction, agent:main)
+
+Backend fait (postings, lettrage, clôture idempotente, balance, grand livre, états financiers, balance âgée, CSV, TVA ; FEC dans -fr ; rapports par `ReportDefinition`, comptes par `AccountRole`). Les restes (API, écrans, commande `regenerate` optionnelle) passent dans `api-and-interface.md`.

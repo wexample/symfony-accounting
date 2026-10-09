@@ -1,7 +1,8 @@
 # Extract invoicing from network
 
 Opened: 2026-09-24
-Updated: 2026-09-24
+Closed: 2026-10-09
+Updated: 2026-10-09
 Author: agent:archeology
 
 ## Status (2026-10-04)
@@ -213,3 +214,7 @@ Issues are in `/home/weeger/Desktop/WIP/WEB/WEXAMPLE/NETWORK/archeo/gitlab/issue
 - Late penalty: both policies are computed for a bill 45 days late (fixed dates).
 - Jurisdiction: the resolver picks the profile by country code, with default fallback. A fake profile's mentions appear in `InvoiceDocumentData`.
 - Checker: overpaid, overdue and partial-payment cases produce the expected messages.
+
+## Clos le 2026-10-09 (revue de l'extraction, agent:main)
+
+Backend fait (factures, lignes, relations, séquences, numérotation verrouillée, workflow, émission, `createFromLines`, pénalités, PDF ; profils pays devenus `JurisdictionInterface` dans -fr / -be). Les restes (API, éditeur de lignes, QR EPC, variante payée, grille RIB, test de concurrence) passent dans `api-and-interface.md`.
