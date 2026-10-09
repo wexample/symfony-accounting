@@ -57,3 +57,6 @@ coverage*.lcov
 /coverage/
 .phpunit.result.cache
 /tests/Fixtures/App/config/reference.php
+
+# Example and reference documents, some holding real data: never committed.
+/var/pdf-examples/
