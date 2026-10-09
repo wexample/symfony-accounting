@@ -5,7 +5,7 @@ services:
         public: false
 
     Wexample\SymfonyAccounting\:
-        resource: '../../{Checker,Command,EventSubscriber,Repository,Service}'
+        resource: '../../{Checker,Command,EventSubscriber,Repository,Security,Service}'
         exclude: '../../Service/{Jurisdiction/AbstractJurisdiction.php,Jurisdiction/DefaultJurisdiction.php,Bank/Parser/AbstractBankStatementParser.php}'
 
     Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry:

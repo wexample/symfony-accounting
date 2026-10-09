@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A line of a bank statement: signed amount in minor units, + for money in.
@@ -28,7 +29,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Index(columns: ['bank_account_id', 'date'])]
 #[ORM\Index(columns: ['fingerprint'])]
 #[ORM\HasLifecycleCallbacks]
-class BankTransaction extends AbstractEntity
+class BankTransaction extends AbstractEntity implements BelongsToLedgerInterface
 {
     #[ORM\ManyToOne(targetEntity: BankAccount::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]

@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Repository\BankAccountRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * An account holding the ledger's money: a bank account, a cash box, or the
@@ -16,7 +17,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 #[ORM\Entity(repositoryClass: BankAccountRepository::class)]
 #[ORM\Table(name: 'accounting_bank_account')]
-class BankAccount extends AbstractEntity
+class BankAccount extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

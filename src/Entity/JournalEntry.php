@@ -11,6 +11,7 @@ use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
 use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * One balanced accounting entry (FEC "écriture"): lines whose debits equal credits.
@@ -23,7 +24,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Table(name: 'accounting_journal_entry')]
 #[ORM\Index(columns: ['source_type', 'source_id'])]
 #[ORM\UniqueConstraint(columns: ['fiscal_year_id', 'number'])]
-class JournalEntry extends AbstractEntity
+class JournalEntry extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * The last number given in one series of one year: gap-free numbering.
@@ -13,7 +14,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Entity]
 #[ORM\Table(name: 'accounting_invoice_sequence')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'series', 'year'])]
-class InvoiceSequence extends AbstractEntity
+class InvoiceSequence extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

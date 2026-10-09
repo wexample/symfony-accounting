@@ -8,6 +8,28 @@ $customer = $partyService->create($ledger, 'Client SA');           // gets its a
 
 `create()` loads the jurisdiction's chart and journals. Accounts missing from the chart are created on first use, labelled after their closest parent. The ledger's settings (`setSettings()`) tune the rest: `default_vat_rate`, `invoice_number_pattern`, `hours_per_day`, `late_penalty_rate`, `auto_post_invoices`… — each documented where it is read.
 
+## Who may reach a ledger
+
+Three permissions, asked on a ledger or on anything it holds (an invoice, a party, an entry…, `BelongsToLedgerInterface`): `accounting.view`, `accounting.edit`, `accounting.administer` (`LedgerPermission`).
+
+```twig
+{% if is_granted('accounting.edit', invoice) %}…{% endif %}
+```
+
+`LedgerVoter` grants a permission to whoever holds the role configured for it, else the grant configured for it on the group the application ties the ledger to:
+
+```yaml
+wexample_symfony_accounting:
+    access:
+        roles: { view: ROLE_ADMIN, edit: ROLE_ADMIN, administer: ROLE_ADMIN }  # the defaults
+        grants: { view: client, edit: accountant, administer: partner }         # none by default
+```
+
+- **By role only** (no group): a firm whose accountants see every ledger — give them the role.
+- **By group**: the application implements `LedgerGroupResolverInterface::getGroup($ledger)` — usually from `getExternalReference()` — returning its own group, a firm or a client's team. With symfony-user, that group is a membership group, and its members' grants (`memberships.grants`) answer: an accountant of the firm, a client of their own ledger only. Implementing the interface is enough to be used.
+
+`LedgerAccessService::getAccessible($permission)` lists the ledgers the signed-in user may reach.
+
 ## Documents
 
 ```php

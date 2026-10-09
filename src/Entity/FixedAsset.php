@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Repository\FixedAssetRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * Something the company keeps and uses over several years (a computer, a car,
@@ -20,7 +21,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 #[ORM\Entity(repositoryClass: FixedAssetRepository::class)]
 #[ORM\Table(name: 'accounting_fixed_asset')]
-class FixedAsset extends AbstractEntity
+class FixedAsset extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

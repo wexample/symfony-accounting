@@ -9,6 +9,7 @@ use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A third party of the ledger: customer, supplier, or both.
@@ -21,7 +22,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Table(name: 'accounting_party')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'customer_code'])]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'supplier_code'])]
-class Party extends AbstractEntity implements PostalAddressInterface
+class Party extends AbstractEntity implements PostalAddressInterface, BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
     use HasLegalIdentityTrait;

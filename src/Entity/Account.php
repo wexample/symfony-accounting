@@ -8,6 +8,7 @@ use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\AccountNature;
 use Wexample\SymfonyAccounting\Repository\AccountRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * An account of the ledger's chart. The number is a string of digits ("411",
@@ -16,7 +17,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
 #[ORM\Table(name: 'accounting_account')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'number'])]
-class Account extends AbstractEntity
+class Account extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

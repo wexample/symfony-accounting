@@ -5,9 +5,9 @@ Author: agent:main
 
 Ce qui reste des trois todos d'extraction (banque, factures, grand livre), closes le 2026-10-09 : le backend est fait, il manque ce qui le montre et l'expose. Lire `done/extract-from-network-{bank,invoices,ledger}.md` pour le détail d'origine, `5a40fb66c266.md` pour les décisions.
 
-## Bloqué par une décision du propriétaire
+## Accès aux dossiers : décidé et fait (2026-10-09)
 
-**Qui accède à quel dossier** (cabinet / client, par `Ledger`) : la forme de l'API et des écrans en dépend.
+Décision du propriétaire : par memberships. Fait : `LedgerVoter` (`accounting.view|edit|administer` sur un dossier ou ce qu'il contient), rôle configuré, sinon grant sur le groupe que l'application rattache au dossier (`LedgerGroupResolverInterface`) ; `LedgerAccessService::getAccessible()`. Voir la section « Who may reach a ledger » de l'usage. L'API et les écrans s'appuient dessus.
 
 ## API (symfony-api)
 

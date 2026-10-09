@@ -7,6 +7,7 @@ use Wexample\SymfonyAccounting\Interface\BankStatementParserInterface;
 use Wexample\SymfonyAccounting\Interface\EntryImporterInterface;
 use Wexample\SymfonyAccounting\Interface\JurisdictionInterface;
 use Wexample\SymfonyAccounting\Interface\LedgerExporterInterface;
+use Wexample\SymfonyAccounting\Interface\LedgerGroupResolverInterface;
 use Wexample\SymfonyAccounting\Interface\TransactionMatcherInterface;
 use Wexample\SymfonyAccounting\Interface\VatReturnFormInterface;
 use Wexample\SymfonyHelpers\DependencyInjection\AbstractWexampleSymfonyExtension;
@@ -24,6 +25,8 @@ class WexampleSymfonyAccountingExtension extends AbstractWexampleSymfonyExtensio
     public const string TAG_LEDGER_EXPORTER = 'wexample_symfony_accounting.ledger_exporter';
 
     public const string TAG_ENTRY_IMPORTER = 'wexample_symfony_accounting.entry_importer';
+
+    public const string TAG_LEDGER_GROUP_RESOLVER = 'wexample_symfony_accounting.ledger_group_resolver';
 
     public function load(
         array $configs,
@@ -54,12 +57,18 @@ class WexampleSymfonyAccountingExtension extends AbstractWexampleSymfonyExtensio
             ->registerForAutoconfiguration(EntryImporterInterface::class)
             ->addTag(self::TAG_ENTRY_IMPORTER);
 
+        $container
+            ->registerForAutoconfiguration(LedgerGroupResolverInterface::class)
+            ->addTag(self::TAG_LEDGER_GROUP_RESOLVER);
+
         $this->loadConfig(
             __DIR__,
             $container
         );
 
         $config = $this->processConfiguration(new Configuration(), $configs);
+        $container->setParameter('wexample_symfony_accounting.access.roles', $config['access']['roles']);
+        $container->setParameter('wexample_symfony_accounting.access.grants', $config['access']['grants']);
         $container->setParameter('wexample_symfony_accounting.pdf_factory.url', $config['pdf_factory']['url']);
         $container->setParameter(
             'wexample_symfony_accounting.pdf_factory.theme',

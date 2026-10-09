@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Repository\ImportPatternRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A rule recognizing recurring bank lines by their label ("PRLV FREE MOBILE",
@@ -15,7 +16,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 #[ORM\Entity(repositoryClass: ImportPatternRepository::class)]
 #[ORM\Table(name: 'accounting_import_pattern')]
-class ImportPattern extends AbstractEntity
+class ImportPattern extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

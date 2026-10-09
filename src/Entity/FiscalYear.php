@@ -10,6 +10,7 @@ use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\FiscalYearStatus;
 use Wexample\SymfonyAccounting\Repository\FiscalYearRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * An accounting period with its own start and end: calendar years, offset years
@@ -17,7 +18,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 #[ORM\Entity(repositoryClass: FiscalYearRepository::class)]
 #[ORM\Table(name: 'accounting_fiscal_year')]
-class FiscalYear extends AbstractEntity
+class FiscalYear extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

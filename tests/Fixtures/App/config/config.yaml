@@ -15,3 +15,11 @@ services:
   Wexample\SymfonyMoney\Service\MoneyFormatter:
     arguments:
       $defaultLocale: en
+
+  # Ledgers tied to groups, grants held on them: memberships, as an application has them.
+  Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroupResolver: ~
+  Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGrantVoter: ~
+
+wexample_symfony_accounting:
+  access:
+    grants: { view: client, edit: accountant, administer: partner }

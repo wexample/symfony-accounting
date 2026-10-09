@@ -8,11 +8,12 @@ use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyAccounting\Repository\JournalRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 #[ORM\Entity(repositoryClass: JournalRepository::class)]
 #[ORM\Table(name: 'accounting_journal')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'code'])]
-class Journal extends AbstractEntity
+class Journal extends AbstractEntity implements BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
 

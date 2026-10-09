@@ -21,6 +21,7 @@ use Wexample\SymfonyMoney\Entity\Traits\PricedParentTrait;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
 use Wexample\SymfonyMoney\Interface\PricedParentInterface;
 use Wexample\SymfonyPayment\Interface\PayableInterface;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A commercial document of the ledger: a bill, credit note, quotation, penalty,
@@ -38,7 +39,7 @@ use Wexample\SymfonyPayment\Interface\PayableInterface;
 #[ORM\Table(name: 'accounting_invoice')]
 #[ORM\Index(columns: ['ledger_id', 'status'])]
 #[ORM\Index(columns: ['ledger_id', 'date_invoice'])]
-class Invoice extends AbstractEntity implements PricedParentInterface, DiscountedInterface, PayableInterface
+class Invoice extends AbstractEntity implements PricedParentInterface, DiscountedInterface, PayableInterface, BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
     use PricedParentTrait;
