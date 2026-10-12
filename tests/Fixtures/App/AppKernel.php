@@ -4,15 +4,20 @@ namespace Wexample\SymfonyAccounting\Tests\Fixtures\App;
 
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\DependencyInjection\PublicServicesPass;
 use Wexample\SymfonyAccounting\WexampleSymfonyAccountingBundle;
+use Wexample\SymfonyApi\WexampleSymfonyApiBundle;
 use Wexample\SymfonyCheck\WexampleSymfonyCheckBundle;
 use Wexample\SymfonyGeo\WexampleSymfonyGeoBundle;
+use Wexample\SymfonyLoader\WexampleSymfonyLoaderBundle;
 use Wexample\SymfonyMoney\WexampleSymfonyMoneyBundle;
 use Wexample\SymfonyPayment\WexampleSymfonyPaymentBundle;
 use Wexample\SymfonyRemotePayment\WexampleSymfonyRemotePaymentBundle;
 use Wexample\SymfonyRemotePdfFactory\WexampleSymfonyRemotePdfFactoryBundle;
+use Wexample\SymfonySecurity\WexampleSymfonySecurityBundle;
 use Wexample\SymfonyTesting\Tests\Fixtures\AbstractFixtureKernel;
+use Wexample\SymfonyTranslations\WexampleSymfonyTranslationsBundle;
 
 class AppKernel extends AbstractFixtureKernel
 {
@@ -31,6 +36,10 @@ class AppKernel extends AbstractFixtureKernel
             new WexampleSymfonyPaymentBundle(),
             new WexampleSymfonyRemotePdfFactoryBundle(),
             new WexampleSymfonyAccountingBundle(),
+            new WexampleSymfonySecurityBundle(),
+            new WexampleSymfonyTranslationsBundle(),
+            new WexampleSymfonyLoaderBundle(),
+            new WexampleSymfonyApiBundle(),
         ];
     }
 
@@ -38,6 +47,16 @@ class AppKernel extends AbstractFixtureKernel
     {
         parent::build($container);
         $container->addCompilerPass(new PublicServicesPass(), PassConfig::TYPE_BEFORE_REMOVING);
+    }
+
+    protected function configuresItsOwnSecurity(): bool
+    {
+        return true;
+    }
+
+    protected function configureRoutes(RoutingConfigurator $routes): void
+    {
+        $routes->import(__DIR__.'/../../../src/Resources/config/routes.yaml');
     }
 
     protected function getConfigFiles(): array

@@ -13,6 +13,14 @@ Wexample\SymfonyAccountingFr\WexampleSymfonyAccountingFrBundle::class => ['all' 
 Wexample\SymfonyAccountingBe\WexampleSymfonyAccountingBeBundle::class => ['all' => true],
 ```
 
+The API needs `symfony-api` (and its `symfony-security`, `symfony-translations`, `symfony-loader` bundles) and its routes imported:
+
+```yaml
+# config/routes/wexample_symfony_accounting.yaml
+wexample_symfony_accounting:
+  resource: '@WexampleSymfonyAccountingBundle/Resources/config/routes.yaml'
+```
+
 The entities are mapped automatically (`accounting_*` tables); generate the migration in the app.
 
 ```yaml

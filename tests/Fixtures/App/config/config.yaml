@@ -1,5 +1,22 @@
 framework:
   default_locale: en
+  session:
+    storage_factory_id: session.storage.factory.mock_file
+
+# Signed in through the test client (loginUser), for the API.
+security:
+  providers:
+    memory:
+      memory:
+        # The firm members of LedgerAccessTest and ApiTest; grants come from their groups.
+        users:
+          root: { roles: [ROLE_ADMIN] }
+          anna: { roles: [ROLE_USER] }
+          chris: { roles: [ROLE_USER] }
+  firewalls:
+    main:
+      lazy: true
+      provider: memory
 
 services:
   _defaults:

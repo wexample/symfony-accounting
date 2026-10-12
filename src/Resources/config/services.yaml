@@ -8,6 +8,14 @@ services:
         resource: '../../{Checker,Command,EventSubscriber,Repository,Security,Service}'
         exclude: '../../Service/{Jurisdiction/AbstractJurisdiction.php,Jurisdiction/DefaultJurisdiction.php,Bank/Parser/AbstractBankStatementParser.php}'
 
+    Wexample\SymfonyAccounting\Api\Controller\:
+        resource: '../../Api/Controller/*'
+        tags: ['controller.service_arguments']
+
+    Wexample\SymfonyAccounting\Api\Normalizer\:
+        resource: '../../Api/Normalizer/*'
+        tags: ['serializer.normalizer']
+
     Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry:
         public: true
         arguments:

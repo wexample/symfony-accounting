@@ -11,7 +11,15 @@ Décision du propriétaire : par memberships. Fait : `LedgerVoter` (`accounting.
 
 ## API (symfony-api)
 
-Banque (comptes, transactions, allocations, rapprochement), factures (CRUD, émission, relations, PDF), grand livre (comptes, écritures, exercices, rapports).
+Fait le 2026-10-12 : lecture des dossiers, documents (liste filtrée, fiche, PDF), tiers, comptes bancaires, lignes bancaires (dont celles à rapprocher), allocations, plan comptable, écritures, balance ; écriture des brouillons et de leurs lignes, émission, avoir, suppression d'un brouillon, allocation et son retrait. Voir la section « API » de l'usage, `tests/Integration/ApiTest.php`.
+
+Reste, à faire avec les écrans quand ils en auront besoin :
+
+- tiers : création, modification ;
+- document : modification des champs d'un brouillon (titre, tiers, dates, note), conversion devis → facture, relances ;
+- banque : import de relevé (fichier), proposition de rapprochement (`MatchingService`), virements internes ;
+- grand livre : saisie d'écriture, lettrage, exercices (clôture), déclarations de TVA, états (bilan, compte de résultat, grand livre, FEC) ;
+- réglages du dossier.
 
 ## Écrans : `symfony-accounting-ds` (package à créer) et `-demo`
 

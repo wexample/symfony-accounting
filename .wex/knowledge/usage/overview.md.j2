@@ -78,6 +78,26 @@ Reports are computed on demand: `TrialBalanceService`, `GeneralLedgerService`, `
 
 `DunningService` finds the reminders due by level (`dunning_levels`, days late; `accounting:dunning --record`) and keeps their history on the document; the host sends them on `InvoiceReminderRecordedEvent`. `SepaCreditTransferBuilder` writes the pain.001 file paying a batch of purchases, structured references included.
 
+## API
+
+Each entity is served under its own name, as `js-api-entity` repositories call it, every answer held to the norm of `symfony-api`. A ledger the reader may not reach, or anything in it, does not exist for them (404); reading asks `accounting.view`, writing `accounting.edit` (LedgerVoter). A request breaking a rule of the books is answered 400 with the rule's words.
+
+| Endpoint | What |
+|---|---|
+| `GET api/ledger/list`, `show/{id}` | the ledgers the reader may open |
+| `GET api/invoice/list?ledger=&type=&status=&direction=&year=&search=&sort=` | documents, paginated; `show/{id}`, `pdf/{id}?locale=` |
+| `POST api/invoice/create`, `emit/{id}`, `credit-note/{id}`; `DELETE delete/{id}` | a draft, its emission, its cancellation by a credit note, a draft deleted |
+| `POST api/invoice-item/create`; `DELETE delete/{id}` | the lines of a draft, answered with the whole document |
+| `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}` | customers and suppliers |
+| `GET api/bank-account/list?ledger=` | bank accounts |
+| `GET api/bank-transaction/list?ledger=&bankAccount=&unallocated=1&year=` | bank lines, those still to explain |
+| `GET api/allocation/list?transaction=`; `POST create`; `DELETE delete/{id}` | what a line pays; removing excludes and reverses |
+| `GET api/account/list?ledger=&search=` | the chart, by number or label |
+| `GET api/journal-entry/list?ledger=&journal=&year=` | entries with their lines |
+| `GET api/trial-balance/show?ledger=&year=` | the trial balance of a calendar year |
+
+Amounts are integers in minor units, quantities scaled by 100, VAT rates in basis points. A document carries its party and items as relationships, and what answered it: `amountCredited`, `amountPaid`, `amountDue`.
+
 ## Checks
 
 `InvoiceChecker`, `BankTransactionChecker` and `FiscalYearChecker` report through symfony-check. Errors of the fiscal year block its closing.

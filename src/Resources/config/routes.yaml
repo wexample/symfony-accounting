@@ -1,0 +1,4 @@
+# The endpoints of the books, each entity under its own name (api/invoice/list…).
+wexample_symfony_accounting_api:
+    resource: '../../Api/Controller/'
+    type: attribute
