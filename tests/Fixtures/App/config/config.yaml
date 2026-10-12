@@ -29,6 +29,10 @@ services:
       $name: fake
       $methods: [card]
 
+  Wexample\SymfonyRemotePeppol\Class\FakeAccessPoint:
+    arguments:
+      $name: fake
+
   Wexample\SymfonyMoney\Service\MoneyFormatter:
     arguments:
       $defaultLocale: en

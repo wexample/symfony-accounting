@@ -16,6 +16,7 @@ use Wexample\SymfonyPayment\WexampleSymfonyPaymentBundle;
 use Wexample\SymfonyRemotePayment\WexampleSymfonyRemotePaymentBundle;
 use Wexample\SymfonyRemoteDocumentReader\WexampleSymfonyRemoteDocumentReaderBundle;
 use Wexample\SymfonyRemotePdfFactory\WexampleSymfonyRemotePdfFactoryBundle;
+use Wexample\SymfonyRemotePeppol\WexampleSymfonyRemotePeppolBundle;
 use Wexample\SymfonySecurity\WexampleSymfonySecurityBundle;
 use Wexample\SymfonyTesting\Tests\Fixtures\AbstractFixtureKernel;
 use Wexample\SymfonyTranslations\WexampleSymfonyTranslationsBundle;
@@ -37,6 +38,7 @@ class AppKernel extends AbstractFixtureKernel
             new WexampleSymfonyPaymentBundle(),
             new WexampleSymfonyRemotePdfFactoryBundle(),
             new WexampleSymfonyRemoteDocumentReaderBundle(),
+            new WexampleSymfonyRemotePeppolBundle(),
             new WexampleSymfonyAccountingBundle(),
             new WexampleSymfonySecurityBundle(),
             new WexampleSymfonyTranslationsBundle(),

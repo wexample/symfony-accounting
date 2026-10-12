@@ -206,12 +206,14 @@ class ElectronicInvoiceDataBuilder
     }
 
     /**
-     * The electronic address: the Belgian enterprise number (0208), the French
-     * SIRET (0009), otherwise the VAT number with its country's scheme.
+     * The electronic address (Peppol participant): the Belgian enterprise number
+     * (0208), the French SIRET (0009), otherwise the VAT number with its country's
+     * scheme.
      *
+     * @param array{legalIdentifier?: ?string, vatNumber?: ?string} $identity
      * @return array{scheme: string, id: string}|null
      */
-    private function endpoint(
+    public function endpoint(
         array $identity,
         string $country
     ): ?array {

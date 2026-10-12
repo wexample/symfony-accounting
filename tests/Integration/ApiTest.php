@@ -11,6 +11,8 @@ use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroup;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroupResolver;
 use Wexample\SymfonyApi\Helper\ApiResponseNormHelper;
 use Wexample\SymfonyRemoteDocumentReader\Service\DocumentReaderClient;
+use Wexample\SymfonyRemotePeppol\Class\FakeAccessPoint;
+use Wexample\SymfonyRemotePeppol\Class\PeppolParticipant;
 
 /**
  * The endpoints of the books, called as a front-end calls them: signed in,
@@ -272,6 +274,26 @@ class ApiTest extends AbstractAccountingTestCase
             'file' => new UploadedFile($file, 'invoice.txt', test: true),
         ]);
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testAnInvoiceIsSentOverPeppol(): void
+    {
+        $this->signIn('anna');
+        $this->acme->setLegalIdentifier('0123456749');
+        $party = $this->createParty($this->acme, 'Client SA', 'BE', 'BE0417497106')->setLegalIdentifier('0417497106');
+        $sale = $this->emitSale($this->acme, $party, 50000);
+
+        $this->assertFalse($this->get('api/invoice/peppol/'.$sale->getId())['data']['reachable']);
+        $this->post('api/invoice/peppol/'.$sale->getId(), status: 400);
+
+        static::getContainer()->get(FakeAccessPoint::class)->register(PeppolParticipant::fromString('0208:0417497106'));
+        $sent = $this->post('api/invoice/peppol/'.$sale->getId())['data']['transmission'];
+        $this->assertSame('queued', $sent['status']);
+        $this->assertSame('0208:0417497106', $sent['receiver']);
+
+        $status = $this->get('api/invoice/peppol/'.$sale->getId())['data'];
+        $this->assertTrue($status['reachable']);
+        $this->assertSame([$sent['reference']], array_column($status['transmissions'], 'reference'));
     }
 
     public function testLinesComeFromATable(): void

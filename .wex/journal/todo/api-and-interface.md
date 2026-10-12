@@ -47,6 +47,7 @@ Chaque route de la section « API » de l'usage attend son écran. En plus des p
   - ou le dépôt d'un fichier, lu par `read-table` ;
   - puis un aperçu où l'on choisit la colonne de chaque champ, avec une case pour dire si la première ligne est un en-tête.
   La partie générique (collage, aperçu, choix des colonnes) revient au design system, voir `symfony-design-system/.wex/journal/todo/drawer-editable-grid.md`.
+- Peppol : `api/invoice/peppol/{id}` (GET pour l'état et les transmissions, POST pour envoyer). Il manque à l'écran, sur une vente émise, un bouton « Envoyer par Peppol » quand `reachable`, et la liste des transmissions avec leur statut. Pour un achat reçu par Peppol, il faut aussi afficher les avertissements (`metadata.import_warnings`).
 - Factures électroniques : les routes existent depuis le 2026-10-12 (`api/invoice/electronic/{id}?format=ubl|cii`, `api/invoice/receive`). Il manque à l'écran un bouton de téléchargement sur une facture émise, et un dépôt de facture reçue qui ouvre le brouillon d'achat avec ses avertissements.
 - ~~PDF de facture~~ fait le 2026-10-12 : document par rôles, QR EPC, tampon « payée », forme nationale du compte (RIB FR), avoir citant sa facture, charte sobre, rendu par `symfony-remote-pdf-factory` (`InvoicePdfService`). La charte de marque : `invoice-pdf-brand-charter.md`.
 - ~~Test de concurrence de la numérotation~~ fait le 2026-10-12 (`InvoiceNumberingConcurrencyTest`).
