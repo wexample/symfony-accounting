@@ -31,6 +31,9 @@ class InvoiceDto extends AbstractEntityDto
 
     public string $currencyCode;
 
+    /** For a document in another currency than the ledger's: one unit of it in the ledger's currency, fixed at emission. */
+    public ?string $exchangeRate;
+
     public string $dateInvoice;
 
     public ?string $dateDue;
@@ -74,6 +77,7 @@ class InvoiceDto extends AbstractEntityDto
         $dto->note = $entity->getNote();
         $dto->party = $entity->getParty();
         $dto->currencyCode = $entity->getCurrencyCode();
+        $dto->exchangeRate = $entity->getExchangeRate();
         $dto->dateInvoice = $entity->getDateInvoice()->format('Y-m-d');
         $dto->dateDue = $entity->getType()->isPayable() ? $entity->calcDateDue()->format('Y-m-d') : null;
         $dto->dateValidUntil = $entity->getDateValidUntil()?->format('Y-m-d');

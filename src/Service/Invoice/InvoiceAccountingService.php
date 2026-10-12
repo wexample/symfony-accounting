@@ -169,6 +169,10 @@ class InvoiceAccountingService
             throw new AccountingException(sprintf('Document %s does not balance (%d).', $invoice->getNumber(), $draft->getBalance()));
         }
 
+        if ($invoice->isForeignCurrency()) {
+            $draft->convert($invoice->getLedgerExchangeRate(), $sale ? AccountRole::Customers : AccountRole::Suppliers);
+        }
+
         return $draft;
     }
 

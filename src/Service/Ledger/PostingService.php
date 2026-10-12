@@ -66,6 +66,7 @@ class PostingService
                     ->setParty($line['party'])
                     ->setVat($line['vatCode'], $line['vatRole'])
                     ->setDateDue($line['dateDue'])
+                    ->setCurrency($line['currencyAmount'], $line['currencyCode'])
             );
         }
 

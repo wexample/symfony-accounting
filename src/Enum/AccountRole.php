@@ -44,6 +44,19 @@ enum AccountRole: string
     case VatAdjustmentGain = 'vat_adjustment_gain';
 
     case VatAdjustmentLoss = 'vat_adjustment_loss';
+
+    /** Realized on payment: the document's currency moved between its emission and its payment. */
+    case ExchangeGain = 'exchange_gain';
+
+    case ExchangeLoss = 'exchange_loss';
+
+    /**
+     * Unrealized at closing, on what is still owed in another currency: reversed
+     * the next day. FR keeps them on the balance sheet (476, 477).
+     */
+    case UnrealizedExchangeGain = 'unrealized_exchange_gain';
+
+    case UnrealizedExchangeLoss = 'unrealized_exchange_loss';
     case DoubtfulCustomers = 'doubtful_customers';
     case BadDebts = 'bad_debts';
     case LatePenaltiesIncome = 'late_penalties_income';

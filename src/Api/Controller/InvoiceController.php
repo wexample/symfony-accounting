@@ -261,7 +261,10 @@ class InvoiceController extends AbstractAccountingApiController
             $party,
             $createInvoiceDto->dateInvoice ? new DateTimeImmutable($createInvoiceDto->dateInvoice) : null,
             $createInvoiceDto->title,
-        )->setNote($createInvoiceDto->note));
+        )
+            ->setNote($createInvoiceDto->note)
+            ->setCurrencyCode($createInvoiceDto->currencyCode ?? $ledger->getCurrencyCode())
+            ->setExchangeRate($createInvoiceDto->exchangeRate));
 
         $entityManager->flush();
 
@@ -292,6 +295,8 @@ class InvoiceController extends AbstractAccountingApiController
                 'title' => $invoice->setTitle($invoiceInputDto->title),
                 'note' => $invoice->setNote($invoiceInputDto->note),
                 'dateInvoice' => $invoice->setDateInvoice(new DateTimeImmutable((string) $invoiceInputDto->dateInvoice)),
+                'currencyCode' => $invoice->setCurrencyCode($invoiceInputDto->currencyCode ?? $invoice->getLedger()->getCurrencyCode()),
+                'exchangeRate' => $invoice->setExchangeRate($invoiceInputDto->exchangeRate),
                 'dateValidUntil' => $invoice->setDateValidUntil($invoiceInputDto->dateValidUntil ? new DateTimeImmutable($invoiceInputDto->dateValidUntil) : null),
                 'paymentTermDays' => $invoice->setPaymentTermDays($invoiceInputDto->paymentTermDays),
                 default => null,

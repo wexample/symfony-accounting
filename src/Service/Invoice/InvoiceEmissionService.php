@@ -12,6 +12,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Event\InvoiceEmittedEvent;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
+use Wexample\SymfonyMoney\Service\ExchangeRateService;
 
 /**
  * The single place where a document becomes official.
@@ -29,6 +30,7 @@ class InvoiceEmissionService
         private readonly InvoiceNumberingService $numberingService,
         private readonly InvoiceVatResolver $vatResolver,
         private readonly JurisdictionRegistry $jurisdictionRegistry,
+        private readonly ExchangeRateService $exchangeRateService,
     ) {
     }
 
@@ -45,6 +47,7 @@ class InvoiceEmissionService
         }
 
         $this->assertEmittable($invoice);
+        $this->fixExchangeRate($invoice);
         $this->vatResolver->apply($invoice);
         $invoice->updatePriceTotal();
 
@@ -91,9 +94,30 @@ class InvoiceEmissionService
             throw new AccountingException('A document total cannot be negative; emit a credit note instead.');
         }
 
-        if ($invoice->getCurrencyCode() !== $invoice->getLedger()->getCurrencyCode()) {
-            throw new AccountingException('Documents in another currency than the ledger\'s are not supported yet.');
+    }
+
+    /**
+     * A document in another currency keeps the rate it was typed with, else takes
+     * the provider's rate of its date (symfony-money's ExchangeRateService).
+     */
+    private function fixExchangeRate(Invoice $invoice): void
+    {
+        if (! $invoice->isForeignCurrency()) {
+            $invoice->setExchangeRate(null);
+
+            return;
         }
+
+        if (null !== $invoice->getExchangeRate()) {
+            return;
+        }
+
+        $rate = $this->exchangeRateService->getRate($invoice->getCurrencyCode(), $invoice->getLedger()->getCurrencyCode(), $invoice->getDateInvoice())
+            ?? throw new AccountingException(sprintf('No exchange rate from %s to %s: type one on the document.', $invoice->getCurrencyCode(), $invoice->getLedger()->getCurrencyCode()));
+
+        $invoice
+            ->setExchangeRate($rate->rate)
+            ->setMetadata($invoice->getMetadata() + ['exchange_rate' => ['source' => $rate->source, 'date' => $rate->date->format('Y-m-d')]]);
     }
 
     public function snapshotLedger(Ledger $ledger): array

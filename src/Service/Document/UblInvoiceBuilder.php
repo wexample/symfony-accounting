@@ -55,6 +55,10 @@ class UblInvoiceBuilder
         }
 
         $this->cbc($root, 'DocumentCurrencyCode', $currency);
+
+        if ($data['taxCurrency']) {
+            $this->cbc($root, 'TaxCurrencyCode', $data['taxCurrency']);
+        }
         $this->cbc($root, 'BuyerReference', $data['buyerReference']);
 
         if ($data['period']) {
@@ -97,6 +101,10 @@ class UblInvoiceBuilder
             $this->money($subtotal, 'TaxableAmount', $vat['base'], $currency);
             $this->money($subtotal, 'TaxAmount', $vat['amount'], $currency);
             $this->taxCategory($subtotal, 'TaxCategory', $vat['category'], true);
+        }
+
+        if ($data['taxCurrency']) {
+            $this->money($this->cac($root, 'TaxTotal'), 'TaxAmount', $data['totals']['vatInTaxCurrency'], $data['taxCurrency']);
         }
 
         $totalsData = $data['totals'];

@@ -219,6 +219,13 @@ class PdfFactoryDocumentBuilder
             $rows[] = $row('total', $totals['total']['formatted'], [Node::bold()]);
         }
 
+        if ($inLedger = $totals['vatInLedgerCurrency']) {
+            $rows[] = [
+                Node::textCell($label('vat_in_ledger_currency').' ('.$label('exchange_rate').' '.$inLedger['rate'].')'),
+                Node::textCell($inLedger['formatted'], 'right'),
+            ];
+        }
+
         foreach ($credits as $credit) {
             $rows[] = [
                 Node::textCell($label('credit_note').' '.$credit['number']),

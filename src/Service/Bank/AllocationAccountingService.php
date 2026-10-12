@@ -66,12 +66,20 @@ class AllocationAccountingService
             ->add($bankAccount->getAccountNumber(), $amount);
 
         if ($invoice) {
+            // The customer or supplier is settled at the document's rate; the
+            // difference with what the bank moved is an exchange gain or loss.
+            $settled = $invoice->getLedgerExchangeRate()->convert($allocation->getInvoiceAmount());
             $draft->add(
                 $invoice->isSale() ? AccountRole::Customers : AccountRole::Suppliers,
-                -$amount,
+                -$settled,
                 null,
                 $invoice->getParty()
             );
+
+            if (0 !== $difference = $amount - $settled) {
+                $draft->add($difference > 0 ? AccountRole::ExchangeGain : AccountRole::ExchangeLoss, -$difference);
+            }
+
             $this->addVatOnPayment($draft, $invoice, $allocation);
         } else {
             $this->addDirect($draft, $allocation);
@@ -153,7 +161,7 @@ class AllocationAccountingService
 
         $sale = $invoice->isSale();
         $side = $invoice->isCreditNote() ? -1 : 1;
-        $paid = abs($allocation->getAmount());
+        $paid = abs($allocation->getInvoiceAmount());
 
         foreach ($invoice->calcVatLines() as $rate => $vatLine) {
             if (0 === $vatLine->vat) {
@@ -167,8 +175,9 @@ class AllocationAccountingService
                 continue;
             }
 
-            // A purchase moves what was booked pending, which partial deduction may have cut.
-            $pending = $sale ? $vatLine->vat : $this->bookedPendingDeductible($invoice, $code, $vatLine->vat);
+            // What was booked pending: in the ledger's currency, and for a purchase
+            // cut by partial deduction.
+            $pending = $this->bookedPending($invoice, $code, $vatLine->vat);
             $share = RateHelper::mulDiv($pending, $paid, $invoice->calcPriceFinal());
 
             if ($sale) {
@@ -218,10 +227,10 @@ class AllocationAccountingService
     }
 
     /**
-     * The deductible VAT of the code the purchase's entry booked as pending; the
-     * document's VAT when it is not booked yet.
+     * The VAT of the code the document's entry booked as pending; the document's
+     * VAT when it is not booked yet.
      */
-    private function bookedPendingDeductible(
+    private function bookedPending(
         Invoice $invoice,
         ?string $code,
         int $vat
@@ -232,7 +241,7 @@ class AllocationAccountingService
             return $vat;
         }
 
-        $pendingAccount = $this->chartService->getRoleNumber($invoice->getLedger(), AccountRole::VatDeductiblePending);
+        $pendingAccount = $this->chartService->getRoleNumber($invoice->getLedger(), $invoice->isSale() ? AccountRole::VatCollectedPending : AccountRole::VatDeductiblePending);
         $pending = 0;
 
         foreach ($entry->getLines() as $line) {

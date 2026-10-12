@@ -70,6 +70,9 @@ class CiiInvoiceBuilder
         if ($payment = $data['payment']) {
             $this->ram($settlement, 'PaymentReference', $payment['reference']);
         }
+        if ($data['taxCurrency']) {
+            $this->ram($settlement, 'TaxCurrencyCode', $data['taxCurrency']);
+        }
         $this->ram($settlement, 'InvoiceCurrencyCode', $currency);
 
         if ($payment) {
@@ -127,6 +130,9 @@ class CiiInvoiceBuilder
         }
         $this->ram($totals, 'TaxBasisTotalAmount', $totalsData['net']);
         $this->ram($totals, 'TaxTotalAmount', $totalsData['vat'])->setAttribute('currencyID', $currency);
+        if ($data['taxCurrency']) {
+            $this->ram($totals, 'TaxTotalAmount', $totalsData['vatInTaxCurrency'])->setAttribute('currencyID', $data['taxCurrency']);
+        }
         $this->ram($totals, 'GrandTotalAmount', $totalsData['total']);
         if ($totalsData['paid']) {
             $this->ram($totals, 'TotalPrepaidAmount', $totalsData['paid']);

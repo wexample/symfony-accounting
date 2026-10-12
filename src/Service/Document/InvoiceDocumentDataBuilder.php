@@ -127,6 +127,12 @@ class InvoiceDocumentDataBuilder
                 'final' => $money($breakdown->getFinal()),
                 'paid' => $paid ? $money($paid) : null,
                 'due' => $money($invoice->calcRemainingAmount()),
+                // In another currency, the VAT is also stated in the ledger's (directive 2006/112/EC, art. 230).
+                'vatInLedgerCurrency' => $invoice->isForeignCurrency() && $invoice->getExchangeRate() ? [
+                    'amount' => $vatLedger = $invoice->getLedgerExchangeRate()->convert($breakdown->getVat()),
+                    'formatted' => $this->moneyFormatter->format($vatLedger, $invoice->getLedger()->getCurrencyCode(), $locale),
+                    'rate' => $invoice->getExchangeRate(),
+                ] : null,
             ],
             'payment' => [
                 'reference' => $invoice->getPaymentReference() ?? $invoice->getNumber(),

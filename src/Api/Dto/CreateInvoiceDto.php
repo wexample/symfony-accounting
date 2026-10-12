@@ -2,7 +2,9 @@
 
 namespace Wexample\SymfonyAccounting\Api\Dto;
 
+use Symfony\Component\Validator\Constraints\Currency;
 use Symfony\Component\Validator\Constraints\Date;
+use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Type;
 use Wexample\SymfonyApi\Api\Attribute\RequiredDtoProperty;
 use Wexample\SymfonyApi\Api\Dto\AbstractDto;
@@ -32,4 +34,12 @@ class CreateInvoiceDto extends AbstractDto
 
     #[Date]
     public ?string $dateInvoice = null;
+
+    /** The document's currency, ISO 4217; the ledger's when absent. */
+    #[Currency]
+    public ?string $currencyCode = null;
+
+    /** One unit of it in the ledger's currency; taken from the rate provider at emission when absent. */
+    #[Regex('/^\d+(\.\d+)?$/')]
+    public ?string $exchangeRate = null;
 }

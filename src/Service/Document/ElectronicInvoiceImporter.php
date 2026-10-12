@@ -50,10 +50,6 @@ class ElectronicInvoiceImporter
         $money = fn (?string $amount) => MoneyHelper::fromDecimal($amount ?? '0', $currency);
         $warnings = [];
 
-        if ($currency !== $ledger->getCurrencyCode()) {
-            $warnings[] = sprintf('The invoice is in %s, the ledger in %s.', $currency, $ledger->getCurrencyCode());
-        }
-
         [$supplier, $created] = $this->findOrCreateSupplier($ledger, $data['seller'], $data['payment']['iban'] ?? null);
 
         $invoice = $this->invoiceFactory->create(
@@ -67,7 +63,9 @@ class ElectronicInvoiceImporter
             ->setNumber($data['number'])
             ->setNote($data['note'])
             ->setPaymentReference($data['payment']['reference'] ?? null)
-            ->setOrigin($origin);
+            ->setOrigin($origin)
+            // Another currency than the ledger's takes its rate at recording.
+            ->setCurrencyCode($currency);
 
         if ($data['dueDate']) {
             $invoice->setDateDue(new DateTimeImmutable($data['dueDate']));

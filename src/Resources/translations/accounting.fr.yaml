@@ -15,6 +15,8 @@ document:
     quantity: Qté
     unit_price: PU HT
     vat: TVA
+    vat_in_ledger_currency: TVA en monnaie nationale
+    exchange_rate: taux
     total: Total
     subtotal: Sous-total
     discount: Remise

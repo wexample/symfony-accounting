@@ -44,6 +44,13 @@ class Allocation extends AbstractEntity
     #[ORM\Column(type: Types::BIGINT)]
     protected string $amount;
 
+    /**
+     * What the payment settles of its document, in the document's currency when it
+     * is not the ledger's; null when both are the same and `amount` says it all.
+     */
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    protected ?string $invoiceAmount = null;
+
     #[ORM\Column(type: Types::STRING, length: 20, enumType: AllocationStatus::class)]
     protected AllocationStatus $status = AllocationStatus::Pending;
 
@@ -136,6 +143,22 @@ class Allocation extends AbstractEntity
     public function setAmount(int $amount): static
     {
         $this->amount = (string) $amount;
+
+        return $this;
+    }
+
+    /**
+     * What the payment settles of its document, in the document's currency: the
+     * amount itself when the document is in the ledger's currency.
+     */
+    public function getInvoiceAmount(): int
+    {
+        return null === $this->invoiceAmount ? $this->getAmount() : (int) $this->invoiceAmount;
+    }
+
+    public function setInvoiceAmount(?int $invoiceAmount): static
+    {
+        $this->invoiceAmount = null === $invoiceAmount ? null : (string) $invoiceAmount;
 
         return $this;
     }

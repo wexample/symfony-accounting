@@ -14,6 +14,7 @@ use Wexample\SymfonyAccounting\Event\TransferLinkedEvent;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\AllocationRepository;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
+use Wexample\SymfonyMoney\Service\ExchangeRateService;
 
 /**
  * Explaining bank lines: what each one pays, or which other line it was moved to.
@@ -29,12 +30,17 @@ class AllocationService
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly AllocationRepository $allocationRepository,
         private readonly BankTransactionRepository $transactionRepository,
+        private readonly ExchangeRateService $exchangeRateService,
     ) {
     }
 
     /**
-     * @param int|null $amount Positive part of the line paying the document;
-     *                         what is left of both by default.
+     * @param int|null $amount        Positive part of the line paying the document;
+     *                                what is left of both by default.
+     * @param int|null $invoiceAmount For a document in another currency, what the
+     *                                payment settles of it, in that currency: by
+     *                                default what is left of it when the whole line
+     *                                pays it, else the amount at the day's rate.
      */
     public function allocate(
         BankTransaction $transaction,
@@ -42,6 +48,7 @@ class AllocationService
         ?int $amount = null,
         AllocationStatus $status = AllocationStatus::Validated,
         string $origin = 'manual',
+        ?int $invoiceAmount = null,
     ): Allocation {
         if ($invoice->getLedger() !== $transaction->getLedger()) {
             throw new AccountingException('The document belongs to another ledger.');
@@ -59,6 +66,10 @@ class AllocationService
                 : 'A purchase is paid by money going out, a purchase credit note by money coming in.');
         }
 
+        if ($invoice->isForeignCurrency()) {
+            [$amount, $invoiceAmount] = $this->foreignAmounts($transaction, $invoice, $amount, $invoiceAmount);
+        }
+
         $amount ??= min(abs($transaction->getUnallocatedAmount()), max(0, $invoice->calcRemainingAmount()));
 
         if ($amount <= 0) {
@@ -66,11 +77,42 @@ class AllocationService
         }
 
         return $this->create(
-            (new Allocation())->setInvoice($invoice)->setAmount($sign * $amount),
+            (new Allocation())
+                ->setInvoice($invoice)
+                ->setAmount($sign * $amount)
+                ->setInvoiceAmount(null === $invoiceAmount ? null : $sign * $invoiceAmount),
             $transaction,
             $status,
             $origin
         );
+    }
+
+    /**
+     * The line's part in the ledger's currency and what it settles of the document
+     * in the document's: both given, or one taken from the other at the payment
+     * day's rate, or the whole line settling what is left.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function foreignAmounts(
+        BankTransaction $transaction,
+        Invoice $invoice,
+        ?int $amount,
+        ?int $invoiceAmount
+    ): array {
+        $remaining = max(0, $invoice->calcRemainingAmount());
+
+        if (null === $amount && null === $invoiceAmount) {
+            return [abs($transaction->getUnallocatedAmount()), $remaining];
+        }
+
+        $rate = $this->exchangeRateService->getRate($invoice->getCurrencyCode(), $invoice->getLedger()->getCurrencyCode(), $transaction->getDate())
+            ?? $invoice->getLedgerExchangeRate();
+
+        return [
+            $amount ?? $rate->convert($invoiceAmount),
+            $invoiceAmount ?? $rate->invert()->convert($amount),
+        ];
     }
 
     /**

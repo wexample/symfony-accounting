@@ -63,6 +63,14 @@ Imports never duplicate a line. Matchers propose (pending) or settle (validated)
 
 A bank account whose `provider` is set (`stripe`) is fed by `ProviderBalanceImporter` through symfony-remote-payment: gross payments, fees (booked on the bank fees account), refunds, payouts (matched as transfers).
 
+## Documents in another currency
+
+A document may be in another currency than its ledger's (`setCurrencyCode()`). At emission it fixes its exchange rate (`exchangeRate`): the one typed on it, else the provider's rate of its date through symfony-money's `ExchangeRateService` (`symfony-remote-ecb`). Without either, emission refuses.
+- The entry is booked in the ledger's currency, each line keeping its amount in the document's currency beside it. Rounding goes to the customer or supplier line.
+- A payment allocated to the document settles it in its currency (`Allocation::invoiceAmount`, by default what is left when the whole bank line pays it, else converted at the day's rate). The customer or supplier is cleared at the document's rate, and the difference with what the bank moved is an exchange gain or loss (`ExchangeGain`, `ExchangeLoss`: 766/666 FR, 754/654 BE).
+- At closing, `ExchangeRevaluationService` values what is still owed at the day's rate, posts the gap as unrealized (`UnrealizedExchangeGain`, `UnrealizedExchangeLoss`: 477/476 FR, 754/654 BE) and reverses it the next day.
+- The PDF states the VAT in the ledger's currency too, with the rate. UBL and CII carry the tax currency and the VAT total in it.
+
 ## One-Stop Shop (OSS)
 
 Distance sales to consumers in other EU countries are taxed at the customer's country's standard rate (`EuVatRateHelper`) once the EU-wide threshold of 10 000 € is passed, this year or the last. The sale that passes it is the first one taxed there. A ledger registered from the start (setting `oss_registered`) is taxed there from its first such sale.

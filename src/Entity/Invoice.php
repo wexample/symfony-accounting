@@ -16,6 +16,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyMoney\Class\ExchangeRate;
 use Wexample\SymfonyMoney\Entity\Traits\HasPriceCurrencyTrait;
 use Wexample\SymfonyMoney\Entity\Traits\HasPriceDiscountTrait;
 use Wexample\SymfonyMoney\Entity\Traits\PricedParentTrait;
@@ -125,6 +126,14 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     /** The reference the payer should give (BE structured communication). */
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
     protected ?string $paymentReference = null;
+
+    /**
+     * A document in another currency than the ledger's: what one unit of its
+     * currency was worth in the ledger's, fixed at emission. The books keep the
+     * ledger's currency at this rate.
+     */
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
+    protected ?string $exchangeRate = null;
 
     /** The stored document (PDF path or URL); purchases keep the supplier's file here. */
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
@@ -641,7 +650,7 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
                 : $allocation->getStatus()->isActive();
 
             if ($counts) {
-                $paid += $allocation->getAmount() * $this->getPaymentSign();
+                $paid += $allocation->getInvoiceAmount() * $this->getPaymentSign();
             }
         }
 
@@ -656,6 +665,36 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     public function isFullyPaid(): bool
     {
         return $this->calcPaidAmount() >= $this->calcAmountExpected() && $this->calcAmountExpected() > 0;
+    }
+
+    public function isForeignCurrency(): bool
+    {
+        return $this->getCurrencyCode() !== $this->getLedger()->getCurrencyCode();
+    }
+
+    public function getExchangeRate(): ?string
+    {
+        return $this->exchangeRate;
+    }
+
+    public function setExchangeRate(?string $exchangeRate): static
+    {
+        $this->exchangeRate = $exchangeRate;
+
+        return $this;
+    }
+
+    /**
+     * The document's currency into the ledger's at the rate fixed at emission;
+     * identity for a document in the ledger's currency.
+     */
+    public function getLedgerExchangeRate(): ExchangeRate
+    {
+        if (! $this->isForeignCurrency()) {
+            return ExchangeRate::identity($this->getCurrencyCode(), $this->getDateInvoice());
+        }
+
+        return new ExchangeRate($this->getCurrencyCode(), $this->getLedger()->getCurrencyCode(), (string) $this->exchangeRate, $this->getDateInvoice());
     }
 
     public function getMetadata(): array

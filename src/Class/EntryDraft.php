@@ -3,10 +3,12 @@
 namespace Wexample\SymfonyAccounting\Class;
 
 use DateTimeImmutable;
+use LogicException;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyAccounting\Enum\VatRole;
+use Wexample\SymfonyMoney\Class\ExchangeRate;
 
 /**
  * An entry being described before it is booked: accounts by number or by role,
@@ -18,7 +20,7 @@ use Wexample\SymfonyAccounting\Enum\VatRole;
 final class EntryDraft
 {
     /**
-     * @var list<array{account: string|AccountRole, amount: int, label: string, party: ?Party, vatCode: ?string, vatRole: ?VatRole, dateDue: ?DateTimeImmutable}>
+     * @var list<array{account: string|AccountRole, amount: int, label: string, party: ?Party, vatCode: ?string, vatRole: ?VatRole, dateDue: ?DateTimeImmutable, currencyAmount: ?int, currencyCode: ?string}>
      */
     private array $lines = [];
 
@@ -120,9 +122,40 @@ final class EntryDraft
             'vatCode' => $vatCode,
             'vatRole' => $vatRole,
             'dateDue' => $dateDue,
+            'currencyAmount' => null,
+            'currencyCode' => null,
         ];
 
         return $this;
+    }
+
+    /**
+     * Every line moved into the ledger's currency at $rate, its amount in the
+     * document's currency kept beside it. Converting line by line rounds: what is
+     * left goes to the line booked on $balancing (the customer or the supplier),
+     * so that the entry still balances.
+     */
+    public function convert(
+        ExchangeRate $rate,
+        string|AccountRole $balancing
+    ): self {
+        foreach ($this->lines as $index => $line) {
+            $this->lines[$index]['currencyAmount'] = $line['amount'];
+            $this->lines[$index]['currencyCode'] = $rate->from;
+            $this->lines[$index]['amount'] = $rate->convert($line['amount']);
+        }
+
+        $left = $this->getBalance();
+
+        foreach ($this->lines as $index => $line) {
+            if ($line['account'] === $balancing) {
+                $this->lines[$index]['amount'] -= $left;
+
+                return $this;
+            }
+        }
+
+        throw new LogicException('No line to carry the rounding of the conversion.');
     }
 
     public function getLines(): array

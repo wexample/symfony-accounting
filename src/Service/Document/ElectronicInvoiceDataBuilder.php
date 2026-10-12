@@ -76,6 +76,8 @@ class ElectronicInvoiceDataBuilder
             'dueDate' => $credit ? null : $invoice->calcDateDue(),
             'note' => $invoice->getNote() ?: null,
             'currency' => $currency,
+            // A document in another currency states its VAT in the ledger's too (BT-6, BT-111).
+            'taxCurrency' => $invoice->isForeignCurrency() ? $invoice->getLedger()->getCurrencyCode() : null,
             'buyerReference' => $invoice->getTitle() ?? (string) $invoice->getNumber(),
             'period' => $invoice->getPeriodStart() && $invoice->getPeriodEnd()
                 ? ['start' => $invoice->getPeriodStart(), 'end' => $invoice->getPeriodEnd()]
@@ -95,6 +97,9 @@ class ElectronicInvoiceDataBuilder
                 'allowances' => $breakdown->discount > 0 ? $amount($lineTotal - $breakdown->getNet()) : null,
                 'net' => $amount($breakdown->getNet()),
                 'vat' => $amount($breakdown->getVat()),
+                'vatInTaxCurrency' => $invoice->isForeignCurrency()
+                    ? MoneyHelper::toDecimal($invoice->getLedgerExchangeRate()->convert($breakdown->getVat()), $invoice->getLedger()->getCurrencyCode())
+                    : null,
                 'total' => $amount($breakdown->getTotal()),
                 'paid' => $paid > 0 ? $amount($paid) : null,
                 'payable' => $amount($breakdown->getTotal() - $paid),
