@@ -24,7 +24,7 @@ class JournalEntryDto extends AbstractEntityDto
 
     public string $status;
 
-    /** @var list<array{account: string, label: string, debit: int, credit: int, letter: ?string}> */
+    /** @var list<array{id: string, account: string, label: string, debit: int, credit: int, letter: ?string}> Lettering addresses a line by its id. */
     public array $lines;
 
     /**
@@ -41,6 +41,7 @@ class JournalEntryDto extends AbstractEntityDto
         $dto->pieceReference = $entity->getPieceReference();
         $dto->status = $entity->getStatus()->value;
         $dto->lines = array_map(fn (EntryLine $line) => [
+            'id' => (string) $line->getId(),
             'account' => $line->getAccount()->getNumber(),
             'label' => $line->getLabel(),
             'debit' => $line->getDebit(),

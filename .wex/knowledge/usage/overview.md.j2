@@ -84,17 +84,23 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 
 | Endpoint | What |
 |---|---|
-| `GET api/ledger/list`, `show/{id}` | the ledgers the reader may open |
+| `GET api/ledger/list`, `show/{id}`; `POST update/{id}` | the ledgers the reader may open; their settings (`accounting.administer`) |
 | `GET api/invoice/list?ledger=&type=&status=&direction=&year=&search=&sort=` | documents, paginated; `show/{id}`, `pdf/{id}?locale=` |
-| `POST api/invoice/create`, `emit/{id}`, `credit-note/{id}`; `DELETE delete/{id}` | a draft, its emission, its cancellation by a credit note, a draft deleted |
+| `POST api/invoice/create`, `update/{id}`, `emit/{id}`, `credit-note/{id}`, `bill/{id}`, `duplicate/{id}`; `DELETE delete/{id}` | a draft, its fields, its emission, its cancellation by a credit note, the bill of a quotation, a copy, a draft deleted |
 | `POST api/invoice-item/create`; `DELETE delete/{id}` | the lines of a draft, answered with the whole document |
-| `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}` | customers and suppliers |
+| `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}`; `POST create`, `update/{id}` | customers and suppliers |
 | `GET api/bank-account/list?ledger=` | bank accounts |
-| `GET api/bank-transaction/list?ledger=&bankAccount=&unallocated=1&year=` | bank lines, those still to explain |
+| `GET api/bank-transaction/list?ledger=&bankAccount=&unallocated=1&year=`, `proposals/{id}`; `POST import?bankAccount=` (multipart `file`), `match?ledger=`, `link-transfer`, `unlink-transfer/{id}` | bank lines, statements imported, matching, internal transfers |
 | `GET api/allocation/list?transaction=`; `POST create`; `DELETE delete/{id}` | what a line pays; removing excludes and reverses |
 | `GET api/account/list?ledger=&search=` | the chart, by number or label |
-| `GET api/journal-entry/list?ledger=&journal=&year=` | entries with their lines |
+| `GET api/journal-entry/list?ledger=&journal=&year=`; `POST create`, `reverse/{id}` | entries with their lines; written by hand, reversed |
+| `POST api/entry-line/letter`, `unletter/{id}` | lettering |
+| `GET api/fiscal-year/list?ledger=`, `check/{id}`; `POST next?ledger=`, `close/{id}?force=`, `reopen/{id}` | fiscal years (closing asks `accounting.administer`) |
+| `GET api/vat-return/show?ledger=&from=&to=`; `POST settle` | the VAT of a period, the forms' boxes, its settlement |
+| `GET api/accounting-report/statement?fiscalYear=&key=`, `general-ledger?fiscalYear=&account=`, `export?fiscalYear=&format=` | statements, general ledger, exports (the formats offered without `format`) |
 | `GET api/trial-balance/show?ledger=&year=` | the trial balance of a calendar year |
+
+An update changes the fields sent, and only those: a field sent as null is emptied, one left out kept.
 
 Amounts are integers in minor units, quantities scaled by 100, VAT rates in basis points. A document carries its party and items as relationships, and what answered it: `amountCredited`, `amountPaid`, `amountDue`.
 

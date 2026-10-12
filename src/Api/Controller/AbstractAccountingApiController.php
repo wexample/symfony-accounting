@@ -31,6 +31,8 @@ abstract class AbstractAccountingApiController extends AbstractApiController
 
     final public const string ROUTE_CREATE = 'create';
 
+    final public const string ROUTE_UPDATE = 'update';
+
     final public const string ROUTE_DELETE = 'delete';
 
     final public const string QUERY_OPTION_LEDGER = 'ledger';
@@ -79,6 +81,17 @@ abstract class AbstractAccountingApiController extends AbstractApiController
         }
 
         return $subject;
+    }
+
+    /**
+     * The fields the request body carries: an update changes those, and only
+     * those — a field sent as null is emptied, one left out is kept.
+     *
+     * @return list<string>
+     */
+    protected static function sentFields(Request $request): array
+    {
+        return array_keys((array) json_decode($request->getContent() ?: '{}', true));
     }
 
     /**

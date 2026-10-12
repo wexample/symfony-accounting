@@ -11,8 +11,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Wexample\SymfonyAccounting\Api\Dto\CreateCreditNoteDto;
 use Wexample\SymfonyAccounting\Api\Dto\CreateInvoiceDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceDto;
+use Wexample\SymfonyAccounting\Api\Dto\InvoiceInputDto;
 use Wexample\SymfonyAccounting\Api\Normalizer\Entity\Invoice\DefaultInvoiceNormalizer;
 use Wexample\SymfonyAccounting\Entity\Invoice;
+use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
@@ -46,6 +48,10 @@ class InvoiceController extends AbstractAccountingApiController
     final public const string ROUTE_CREDIT_NOTE = 'credit_note';
 
     final public const string ROUTE_PDF = 'pdf';
+
+    final public const string ROUTE_BILL = 'bill';
+
+    final public const string ROUTE_DUPLICATE = 'duplicate';
 
     final public const string QUERY_OPTION_TYPE = 'type';
 
@@ -132,15 +138,7 @@ class InvoiceController extends AbstractAccountingApiController
         DefaultInvoiceNormalizer $normalizer,
     ): ApiResponse {
         $ledger = $this->reachable($this->ledgerRepository->find($createInvoiceDto->ledger), LedgerPermission::EDIT);
-        $party = null;
-
-        if ($createInvoiceDto->party) {
-            $party = $partyRepository->find($createInvoiceDto->party);
-
-            if (! $party instanceof Party || $party->getLedger() !== $ledger) {
-                throw new BadRequestHttpException('The party is not one of these books.');
-            }
-        }
+        $party = $createInvoiceDto->party ? $this->partyOf($ledger, $createInvoiceDto->party, $partyRepository) : null;
 
         $invoice = $this->withinTheRules(fn () => $factory->create(
             $ledger,
@@ -154,6 +152,78 @@ class InvoiceController extends AbstractAccountingApiController
         $entityManager->flush();
 
         return self::apiResponseSuccess(data: $normalizer->normalize($invoice));
+    }
+
+    #[Route(path: 'update/{id}', name: self::ROUTE_UPDATE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ValidateRequestContent(dto: InvoiceInputDto::class, attributeName: 'invoiceInputDto')]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function update(
+        string $id,
+        Request $request,
+        InvoiceInputDto $invoiceInputDto,
+        InvoiceRepository $repository,
+        PartyRepository $partyRepository,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $invoice = $this->reachable($repository->find($id), LedgerPermission::EDIT);
+
+        if (! $invoice->isEditable()) {
+            throw new BadRequestHttpException('An emitted document cannot change: issue a credit note.');
+        }
+
+        foreach (self::sentFields($request) as $field) {
+            match ($field) {
+                'party' => $invoice->setParty($invoiceInputDto->party ? $this->partyOf($invoice->getLedger(), $invoiceInputDto->party, $partyRepository) : null),
+                'title' => $invoice->setTitle($invoiceInputDto->title),
+                'note' => $invoice->setNote($invoiceInputDto->note),
+                'dateInvoice' => $invoice->setDateInvoice(new DateTimeImmutable((string) $invoiceInputDto->dateInvoice)),
+                'dateValidUntil' => $invoice->setDateValidUntil($invoiceInputDto->dateValidUntil ? new DateTimeImmutable($invoiceInputDto->dateValidUntil) : null),
+                'paymentTermDays' => $invoice->setPaymentTermDays($invoiceInputDto->paymentTermDays),
+                default => null,
+            };
+        }
+
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($invoice));
+    }
+
+    /**
+     * The bill of an accepted quotation, as a draft: its items, its deposits deducted.
+     */
+    #[Route(path: 'bill/{id}', name: self::ROUTE_BILL, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function bill(
+        string $id,
+        InvoiceRepository $repository,
+        InvoiceFactory $factory,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $quotation = $this->reachable($repository->find($id), LedgerPermission::EDIT);
+        $bill = $this->withinTheRules(fn () => $factory->createBillFromQuotation($quotation));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($bill));
+    }
+
+    /**
+     * A new draft with the same content and items: never the number, the dates nor the payments.
+     */
+    #[Route(path: 'duplicate/{id}', name: self::ROUTE_DUPLICATE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function duplicate(
+        string $id,
+        InvoiceRepository $repository,
+        InvoiceFactory $factory,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $copy = $factory->duplicate($this->reachable($repository->find($id), LedgerPermission::EDIT));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($copy));
     }
 
     /**
@@ -218,5 +288,19 @@ class InvoiceController extends AbstractAccountingApiController
         $entityManager->flush();
 
         return self::apiResponseSuccess();
+    }
+
+    private function partyOf(
+        Ledger $ledger,
+        string $id,
+        PartyRepository $repository
+    ): Party {
+        $party = $repository->find($id);
+
+        if (! $party instanceof Party || $party->getLedger() !== $ledger) {
+            throw new BadRequestHttpException('The party is not one of these books.');
+        }
+
+        return $party;
     }
 }

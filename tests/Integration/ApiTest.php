@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroup;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroupResolver;
@@ -125,6 +126,121 @@ class ApiTest extends AbstractAccountingTestCase
         $balance = $this->get('api/trial-balance/show?ledger='.$this->acme->getId().'&year=2026')['data'];
         $this->assertTrue($balance['balanced']);
         $this->assertSame($balance['totalDebit'], $balance['totalCredit']);
+    }
+
+    public function testPartiesAreWrittenFieldByField(): void
+    {
+        $this->signIn('anna');
+        $france = $this->country('FR');
+
+        $party = $this->post('api/party/create', [
+            'ledger' => (string) $this->acme->getId(),
+            'name' => 'Atelier SA',
+            'email' => 'hello@atelier.example',
+            'country' => (string) $france->getId(),
+        ])['data']['entity'];
+        $this->assertSame('Atelier SA', $party['name']);
+        $this->assertNotNull($party['customerCode']);
+
+        $updated = $this->post('api/party/update/'.$party['id'], ['phone' => '01 23 45 67 89', 'email' => null])['data']['entity'];
+        $this->assertSame('Atelier SA', $updated['name'], 'A field left out is kept.');
+        $this->assertSame('01 23 45 67 89', $updated['phone']);
+        $this->assertNull($updated['email'], 'A field sent as null is emptied.');
+    }
+
+    public function testAQuotationBecomesABillAndADraftChanges(): void
+    {
+        $this->signIn('anna');
+        // Written before the requests: each request resets the entity manager the test holds.
+        $emitted = $this->emitSale($this->acme, $this->createParty($this->acme));
+        $quotation = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'party' => (string) $this->createParty($this->acme)->getId(), 'type' => 'quotation', 'dateInvoice' => '2026-03-01'])['data']['entity'];
+        $this->post('api/invoice-item/create', ['invoice' => $quotation['id'], 'title' => 'Design', 'unitPrice' => 10000]);
+
+        $draft = $this->post('api/invoice/update/'.$quotation['id'], ['title' => 'Website v2', 'note' => 'Two weeks'])['data']['entity'];
+        $this->assertSame('Website v2', $draft['title']);
+
+        $this->post('api/invoice/emit/'.$quotation['id']);
+        $bill = $this->post('api/invoice/bill/'.$quotation['id'])['data']['entity'];
+        $this->assertSame('bill', $bill['type']);
+        $this->assertSame('draft', $bill['status']);
+        $this->assertCount(1, $bill['items']);
+
+        $copy = $this->post('api/invoice/duplicate/'.$bill['id'])['data']['entity'];
+        $this->assertNotSame($bill['id'], $copy['id']);
+        $this->post('api/invoice/update/'.$emitted->getId(), ['title' => 'Too late'], 400);
+    }
+
+    public function testStatementsAreImportedAndTransfersLinked(): void
+    {
+        $this->signIn('anna');
+        $main = $this->createBankAccount($this->acme)->setIban('BE68539007547034');
+        $savings = $this->createBankAccount($this->acme, 'Savings', '5122');
+        $this->em()->flush();
+
+        $this->client->request('POST', '/api/bank-transaction/import?bankAccount='.$main->getId(), files: [
+            'file' => new UploadedFile(__DIR__.'/../Fixtures/Bank/camt053.xml', 'camt053.xml', test: true),
+        ]);
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode(), $this->client->getResponse()->getContent());
+        $this->assertSame(2, json_decode($this->client->getResponse()->getContent(), true)['data']['created']);
+
+        $out = $this->createTransaction($main, -5000, label: 'To savings');
+        $in = $this->createTransaction($savings, 5000, label: 'From main');
+        $this->post('api/bank-transaction/link-transfer', ['transaction' => (string) $out->getId(), 'peer' => (string) $in->getId()]);
+        $this->assertTrue($this->get('api/bank-transaction/list?ledger='.$this->acme->getId().'&year=2026&search=savings')['data']['items'][0]['entity']['transfer']);
+        $this->post('api/bank-transaction/unlink-transfer/'.$out->getId());
+
+        $this->assertIsArray($this->get('api/bank-transaction/proposals/'.$in->getId())['data']);
+        $this->assertArrayHasKey('matched', $this->post('api/bank-transaction/match?ledger='.$this->acme->getId())['data']);
+    }
+
+    public function testTheLedgerIsWrittenLetteredReportedAndClosed(): void
+    {
+        $this->signIn('anna');
+        $invoice = $this->emitSale($this->acme, $this->createParty($this->acme));
+        $line = $this->createTransaction($this->createBankAccount($this->acme), $invoice->calcRemainingAmount());
+        $this->post('api/allocation/create', ['transaction' => (string) $line->getId(), 'invoice' => (string) $invoice->getId()]);
+
+        $entry = $this->post('api/journal-entry/create', [
+            'ledger' => (string) $this->acme->getId(),
+            'journal' => 'OD',
+            'date' => '2026-03-20',
+            'label' => 'Bank fees',
+            'lines' => [['account' => '627', 'debit' => 500], ['account' => '5121', 'credit' => 500]],
+        ])['data']['entity'];
+        $this->assertSame(500, $entry['lines'][0]['debit']);
+        $this->post('api/journal-entry/create', ['ledger' => (string) $this->acme->getId(), 'journal' => 'OD', 'date' => '2026-03-20', 'label' => 'Unbalanced', 'lines' => [['account' => '627', 'debit' => 500], ['account' => '5121', 'credit' => 400]]], 400);
+        $this->post('api/journal-entry/reverse/'.$entry['id'].'?date=2026-03-21');
+
+        $customers = array_values(array_filter(
+            array_merge(...array_column(array_column($this->get('api/journal-entry/list?ledger='.$this->acme->getId().'&year=2026&length=50')['data']['items'], 'entity'), 'lines')),
+            fn (array $entryLine) => '411' === $entryLine['account']
+        ));
+        $this->assertCount(2, $customers);
+        $letter = $this->post('api/entry-line/letter', ['lines' => array_column($customers, 'id')])['data']['letter'];
+        $this->assertNotEmpty($letter);
+        $this->post('api/entry-line/unletter/'.$customers[0]['id']);
+
+        $fiscalYear = $this->get('api/fiscal-year/list?ledger='.$this->acme->getId())['data']['items'][0]['entity'];
+        $this->assertArrayHasKey('findings', $this->get('api/fiscal-year/check/'.$fiscalYear['id'])['data']);
+        $this->post('api/fiscal-year/close/'.$fiscalYear['id'], status: 404);
+
+        $this->assertArrayHasKey('net', $this->get('api/vat-return/show?ledger='.$this->acme->getId().'&from=2026-01-01&to=2026-03-31')['data']);
+        $this->assertSame('balance_sheet', $this->get('api/accounting-report/statement?fiscalYear='.$fiscalYear['id'].'&key=balance_sheet')['data']['key']);
+        $this->assertNotEmpty($this->get('api/accounting-report/general-ledger?fiscalYear='.$fiscalYear['id'].'&account=411')['data']);
+        $this->assertArrayHasKey('csv_entries', $this->get('api/accounting-report/export?fiscalYear='.$fiscalYear['id'])['data']);
+
+        $this->client->request('GET', '/api/accounting-report/export?fiscalYear='.$fiscalYear['id'].'&format=csv_entries');
+        $this->assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
+    }
+
+    public function testOnlyAnAdministratorSetsTheBooksUp(): void
+    {
+        $this->signIn('anna');
+        $this->post('api/ledger/update/'.$this->acme->getId(), ['invoicePrefix' => 'ACM'], 404);
+
+        $this->signIn('root');
+        $ledger = $this->post('api/ledger/update/'.$this->acme->getId(), ['invoicePrefix' => 'ACM', 'settings' => ['default_vat_rate' => 2100]])['data']['entity'];
+        $this->assertSame('ACM', $ledger['invoicePrefix']);
     }
 
     /**
