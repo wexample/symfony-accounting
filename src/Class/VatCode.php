@@ -24,6 +24,8 @@ final readonly class VatCode
         public ?AccountRole $accountRole,
         public ?AccountRole $selfAssessedRole = null,
         public ?string $label = null,
+        /** The EU country an OSS sale is taxed in, ISO alpha-2. */
+        public ?string $country = null,
     ) {
     }
 
@@ -37,6 +39,6 @@ final readonly class VatCode
      */
     public function isCharged(): bool
     {
-        return VatKind::Domestic === $this->kind && $this->rate > 0;
+        return in_array($this->kind, [VatKind::Domestic, VatKind::Oss], true) && $this->rate > 0;
     }
 }

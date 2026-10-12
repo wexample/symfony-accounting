@@ -63,6 +63,13 @@ Imports never duplicate a line. Matchers propose (pending) or settle (validated)
 
 A bank account whose `provider` is set (`stripe`) is fed by `ProviderBalanceImporter` through symfony-remote-payment: gross payments, fees (booked on the bank fees account), refunds, payouts (matched as transfers).
 
+## One-Stop Shop (OSS)
+
+Distance sales to consumers in other EU countries are taxed at the customer's country's standard rate (`EuVatRateHelper`) once the EU-wide threshold of 10 000 € is passed, this year or the last. The sale that passes it is the first one taxed there. A ledger registered from the start (setting `oss_registered`) is taxed there from its first such sale.
+- Goods count. Services count only for a ledger selling services delivered electronically (setting `oss_electronic_services`). Other services to consumers stay taxed where the seller is.
+- Reduced rates are not chosen: an OSS sale is charged the standard rate.
+- `OssService` keeps the VAT on its own account (`AccountRole::VatCollectedOss`) and leaves it out of the national return. It computes the quarter's return by country and rate, exports it as CSV for the portal, and settles it into VAT payable.
+
 ## VAT position
 
 `VatPositionService::build($ledger, $year)` reads where the year's VAT stands, one column per return period — months, quarters, or half-years for an annual regime —: VAT collected, deductible (the part on fixed assets apart), net, deposits paid as booked, and the deposits the jurisdiction expects from last year's net VAT (`getVatDepositSchedule()`: the July and December deposits of the French simplified regime), then the balance left for the year. Deductible VAT on fixed assets (`isFixedAssetAccount()`: class 2 without 28 and 29) is booked on its own account (`AccountRole::VatDeductibleAssets`), which the forms read apart.
@@ -108,6 +115,7 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 | `POST api/entry-line/letter`, `unletter/{id}` | lettering |
 | `GET api/fiscal-year/list?ledger=`, `check/{id}`; `POST next?ledger=`, `close/{id}?force=`, `reopen/{id}` | fiscal years (closing asks `accounting.administer`) |
 | `GET api/vat-return/show?ledger=&from=&to=`; `POST settle`; `GET position?ledger=&year=` | the VAT of a period, the forms' boxes, its settlement; where the year's VAT stands |
+| `GET api/vat-return/oss?ledger=&from=&to=`; `POST oss-settle` | the OSS return by country and rate, the year's distance sales against the threshold, its CSV; its settlement |
 | `GET api/accounting-report/statement?fiscalYear=&key=`, `general-ledger?fiscalYear=&account=`, `export?fiscalYear=&format=` | statements, general ledger, exports (the formats offered without `format`) |
 | `GET api/trial-balance/show?ledger=&year=` | the trial balance of a calendar year |
 

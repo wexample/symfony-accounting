@@ -40,6 +40,7 @@ class DefaultJurisdiction extends AbstractJurisdiction
             'payment_provider' => '517',
             'bank_fees' => '627',
             'vat_collected' => '4457',
+            'vat_collected_oss' => '44570',
             'vat_collected_pending' => '4458',
             'vat_deductible' => '4456',
             'vat_deductible_pending' => '4459',

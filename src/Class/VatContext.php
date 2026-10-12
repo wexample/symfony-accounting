@@ -22,6 +22,11 @@ final readonly class VatContext
         public bool $goods = false,
         /** The item falls under a domestic reverse charge (construction works). */
         public bool $domesticReverseCharge = false,
+        /**
+         * The sale is taxed in the customer's country through the One-Stop Shop,
+         * should it be a distance sale to a consumer in another EU country.
+         */
+        public bool $ossApplies = false,
     ) {
     }
 }

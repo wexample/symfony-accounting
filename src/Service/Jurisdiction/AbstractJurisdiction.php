@@ -15,6 +15,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyAccounting\Helper\EuHelper;
+use Wexample\SymfonyAccounting\Helper\EuVatRateHelper;
 use Wexample\SymfonyAccounting\Interface\JurisdictionInterface;
 
 /**
@@ -160,7 +161,8 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
 
             if (EuHelper::isMemberState($partyCountry)) {
                 if (! $partyBusiness) {
-                    return VatKind::Domestic;
+                    // A consumer: the seller's VAT, until the One-Stop Shop applies.
+                    return $context->ossApplies ? VatKind::Oss : VatKind::Domestic;
                 }
 
                 return $context->goods ? VatKind::IntraEuGoods : VatKind::IntraEuServices;
@@ -196,6 +198,12 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
     ): VatCode {
         $kind = $this->resolveVatKind($context);
 
+        if (VatKind::Oss === $kind) {
+            $country = strtoupper((string) $context->partyCountryCode);
+
+            return $this->buildOssVatCode($country, EuVatRateHelper::getStandardRate($country) ?? $rate);
+        }
+
         // A company not liable for VAT pays its suppliers' VAT as a cost.
         if (InvoiceDirection::Purchase === $context->direction && ! $context->ledgerVatSubject && VatKind::Domestic === $kind && $rate > 0) {
             return new VatCode('P_NDED_'.$rate, $rate, InvoiceDirection::Purchase, VatKind::Domestic, null);
@@ -208,6 +216,10 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
     {
         if (preg_match('/^P_NDED_(\d+)$/', $code, $matches)) {
             return new VatCode($code, (int) $matches[1], InvoiceDirection::Purchase, VatKind::Domestic, null);
+        }
+
+        if (preg_match('/^S_OSS_([A-Z]{2})_(\d+)$/', $code, $matches)) {
+            return $this->buildOssVatCode($matches[1], (int) $matches[2]);
         }
 
         if (! preg_match('/^([SP])_([A-Z_]+)_(\d+)$/', $code, $matches)) {
@@ -232,6 +244,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         'exempt' => 'EXE',
         'franchise' => 'FRA',
         'out_of_scope' => 'OUT',
+        'oss' => 'OSS',
     ];
 
     public function buildVatCode(
@@ -263,6 +276,17 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
             AccountRole::VatDeductible,
             VatKind::Domestic === $kind ? null : AccountRole::VatSelfAssessed,
         );
+    }
+
+    /**
+     * A sale taxed in another EU country, its country in the code (`S_OSS_DE_1900`)
+     * so that the OSS return reports it there.
+     */
+    public function buildOssVatCode(
+        string $country,
+        int $rate
+    ): VatCode {
+        return new VatCode('S_OSS_'.$country.'_'.$rate, $rate, InvoiceDirection::Sale, VatKind::Oss, AccountRole::VatCollectedOss, country: $country);
     }
 
     /**

@@ -20,6 +20,14 @@ enum VatKind: string
     /** Outside the EU. */
     case Export = 'export';
 
+    /**
+     * A distance sale to a consumer in another EU country (goods, or services
+     * delivered electronically) once the One-Stop Shop applies: taxed at the
+     * customer's country's rate, declared quarterly through the OSS, apart from
+     * the national return.
+     */
+    case Oss = 'oss';
+
     /** Purchase of goods from another EU country, VAT self-assessed. */
     case IntraEuAcquisition = 'intra_eu_acquisition';
 

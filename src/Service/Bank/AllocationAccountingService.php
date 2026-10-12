@@ -158,8 +158,14 @@ class AllocationAccountingService
                 continue;
             }
 
-            $share = RateHelper::mulDiv($vatLine->vat, $paid, $invoice->calcPriceFinal());
             $code = $this->findChargedCode($invoice, $rate);
+
+            // OSS VAT is booked as due at once, never pending.
+            if (str_starts_with((string) $code, 'S_OSS_')) {
+                continue;
+            }
+
+            $share = RateHelper::mulDiv($vatLine->vat, $paid, $invoice->calcPriceFinal());
 
             if ($sale) {
                 $draft->add(AccountRole::VatCollectedPending, $side * $share, null, null, $code, VatRole::Tax);

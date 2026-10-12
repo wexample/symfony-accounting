@@ -10,6 +10,7 @@ use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Enum\JournalType;
+use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyAccounting\Enum\VatRole;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Interface\VatReturnFormInterface;
@@ -62,6 +63,12 @@ class VatReturnService
 
         foreach ($this->lineRepository->findVatLines($ledger, $from, $to) as $line) {
             $code = $jurisdiction->getVatCode($line->getVatCode());
+
+            // Declared through the One-Stop Shop, not in the national return (OssService).
+            if (VatKind::Oss === $code?->kind) {
+                continue;
+            }
+
             $returnLine = $vatReturn->getLine($line->getVatCode(), $code?->direction, $code?->kind, $code?->rate ?? 0);
             $number = $line->getAccount()->getNumber();
 

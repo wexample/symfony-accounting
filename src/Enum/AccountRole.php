@@ -26,6 +26,9 @@ enum AccountRole: string
     case PaymentProvider = 'payment_provider';
     case BankFees = 'bank_fees';
     case VatCollected = 'vat_collected';
+
+    /** VAT collected for other EU countries through the One-Stop Shop. */
+    case VatCollectedOss = 'vat_collected_oss';
     /** VAT invoiced, due only once paid (VAT on payments). */
     case VatCollectedPending = 'vat_collected_pending';
     case VatDeductible = 'vat_deductible';
