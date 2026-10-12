@@ -3,11 +3,14 @@
 namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroup;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroupResolver;
 use Wexample\SymfonyApi\Helper\ApiResponseNormHelper;
+use Wexample\SymfonyRemoteDocumentReader\Service\DocumentReaderClient;
 
 /**
  * The endpoints of the books, called as a front-end calls them: signed in,
@@ -269,6 +272,45 @@ class ApiTest extends AbstractAccountingTestCase
             'file' => new UploadedFile($file, 'invoice.txt', test: true),
         ]);
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testLinesComeFromATable(): void
+    {
+        $this->signIn('anna');
+        $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'dateInvoice' => '2026-03-01'])['data'];
+
+        $filled = $this->post('api/invoice-item/import', [
+            'invoice' => $draft['entity']['id'],
+            'rows' => [['Design', '2', '500,00'], ['Printing', '1', '50']],
+            'columns' => ['title' => 0, 'quantity' => 1, 'unitPrice' => 2],
+        ])['data'];
+        $this->assertCount(2, $filled['entity']['items']);
+        $this->assertSame(105000, $filled['entity']['amountNet']);
+
+        $this->post('api/invoice-item/import', [
+            'invoice' => $draft['entity']['id'],
+            'rows' => [['', '1', '50']],
+            'columns' => ['title' => 0, 'unitPrice' => 2],
+        ], 400);
+
+        $sent = null;
+        $cell = fn (string $text) => ['type' => 'tableCell', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => $text]]]]];
+        static::getContainer()->set(DocumentReaderClient::class, new DocumentReaderClient(new MockHttpClient(function (string $method, string $url) use (&$sent, $cell) {
+            $sent = $url;
+
+            return new MockResponse(json_encode(['ok' => true, 'document' => ['type' => 'doc', 'content' => [
+                ['type' => 'table', 'content' => [['type' => 'tableRow', 'content' => [$cell('Title'), $cell('Price')]], ['type' => 'tableRow', 'content' => [$cell('Design'), $cell('500')]]]],
+            ]], 'unmapped' => ['file' => [], 'attachments' => [], 'content' => []]]));
+        }), 'http://reader'));
+
+        $file = tempnam(sys_get_temp_dir(), 'xlsx');
+        file_put_contents($file, 'PK');
+        $this->client->request('POST', '/api/invoice-item/read-table?ledger='.$this->acme->getId(), files: [
+            'file' => new UploadedFile($file, 'Lignes été.XLSX', test: true),
+        ]);
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode(), $this->client->getResponse()->getContent());
+        $this->assertSame([[['Title', 'Price'], ['Design', '500']]], json_decode($this->client->getResponse()->getContent(), true)['data']['tables']);
+        $this->assertStringContainsString('name=table.xlsx', $sent);
     }
 
     public function testOnlyAnAdministratorSetsTheBooksUp(): void

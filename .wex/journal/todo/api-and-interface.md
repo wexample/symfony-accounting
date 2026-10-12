@@ -25,6 +25,11 @@ Complétée le 2026-10-12 (même jour) : tiers, brouillons (modification, devis 
 
 ## Finitions du backend (petites, sans décision)
 
+- Lignes depuis un tableur : le backend est prêt depuis le 2026-10-12 (`api/invoice-item/import`, `api/invoice-item/read-table`). Il manque à l'écran trois choses :
+  - le collage d'un tableau dans la grille des lignes : le presse-papier donne du TSV, que le front découpe ;
+  - ou le dépôt d'un fichier, lu par `read-table` ;
+  - puis un aperçu où l'on choisit la colonne de chaque champ, avec une case pour dire si la première ligne est un en-tête.
+  La partie générique (collage, aperçu, choix des colonnes) revient au design system, voir `symfony-design-system/.wex/journal/todo/drawer-editable-grid.md`.
 - Factures électroniques : les routes existent depuis le 2026-10-12 (`api/invoice/electronic/{id}?format=ubl|cii`, `api/invoice/receive`). Il manque à l'écran un bouton de téléchargement sur une facture émise, et un dépôt de facture reçue qui ouvre le brouillon d'achat avec ses avertissements.
 - ~~PDF de facture~~ fait le 2026-10-12 : document par rôles, QR EPC, tampon « payée », forme nationale du compte (RIB FR), avoir citant sa facture, charte sobre, rendu par `symfony-remote-pdf-factory` (`InvoicePdfService`). La charte de marque : `invoice-pdf-brand-charter.md`.
 - ~~Test de concurrence de la numérotation~~ fait le 2026-10-12 (`InvoiceNumberingConcurrencyTest`).

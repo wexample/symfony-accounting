@@ -96,6 +96,8 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 | `GET api/invoice/electronic/{id}?format=ubl\|cii` | an emitted document as a structured electronic invoice, UBL (Peppol) or CII (Factur-X) |
 | `POST api/invoice/receive?ledger=` (multipart `file`) | a received Factur-X PDF, CII or UBL made a purchase draft, with `partyCreated` and `warnings` |
 | `POST api/invoice-item/create`; `DELETE delete/{id}` | the lines of a draft, answered with the whole document |
+| `POST api/invoice-item/import` (`invoice`, `rows`, `columns`) | lines from a table: rows without their header, the column of each field (`title`, `unitPrice` required; `quantity`, `vatRate`, `description`); numbers as typed (`1 234,50 €`, `20 %`); one bad row adds nothing |
+| `POST api/invoice-item/read-table?ledger=` (multipart `file`) | the tables of a file (CSV, XLSX, ODS, DOCX, PDF…) as rows of texts, read by document-reader, for choosing the columns |
 | `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}`; `POST create`, `update/{id}` | customers and suppliers |
 | `GET api/bank-account/list?ledger=` | bank accounts |
 | `GET api/bank-transaction/list?ledger=&bankAccount=&unallocated=1&year=`, `proposals/{id}`; `POST import?bankAccount=` (multipart `file`), `match?ledger=`, `link-transfer`, `unlink-transfer/{id}` | bank lines, statements imported, matching, internal transfers |
