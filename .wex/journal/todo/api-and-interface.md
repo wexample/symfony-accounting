@@ -21,7 +21,7 @@ Reste, à faire avec les écrans quand ils en auront besoin :
 - grand livre : saisie d'écriture, lettrage, exercices (clôture), déclarations de TVA, états (bilan, compte de résultat, grand livre, FEC) ;
 - réglages du dossier.
 
-## Écrans : `symfony-accounting-ds` (package à créer) et `-demo`
+## Écrans : `symfony-accounting-ds` (package à créer) et `-demo` — pour l'agent design system
 
 - Éditeur de lignes de facture façon tableur, collage multi-lignes.
 - Prix et TVA recalculés en direct dans les formulaires de lignes (ex-étape 3 de `symfony-money/…/done/extract-from-network-sweep.md` ; source network `develop-131-fos-user/src/Wex/BaseBundle/Resources/js/forms/priced.ts`), avec `numberFormatMoney` du design system et `RateHelper` côté serveur.
