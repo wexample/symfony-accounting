@@ -51,7 +51,7 @@ class PdfFactoryDocumentBuilder
 
         $content[] = Node::section('dates', Node::paragraphs($this->dateLines($data, $label)));
         $content[] = Node::section('lines', $this->lines($data, $label));
-        $content[] = Node::section('totals', [Node::table($this->totalRows($data['totals'], $label))]);
+        $content[] = Node::section('totals', [Node::table($this->totalRows($data['totals'], $data['credits'], $label))]);
 
         if ($this->isSettled($data)) {
             $content[] = Node::section('settlement', [
@@ -168,24 +168,19 @@ class PdfFactoryDocumentBuilder
             ];
         }
 
-        foreach ($data['credits'] as $credit) {
-            $rows[] = [
-                Node::textCell($label('credit_note').' '.$credit['number']),
-                Node::textCell(''),
-                Node::textCell(''),
-                Node::textCell(''),
-                Node::textCell($credit['total']['formatted'], 'right'),
-            ];
-        }
-
         return array_values(array_filter([
             $data['subject'] ? Node::heading($data['subject'], 2) : null,
             Node::table($rows),
         ]));
     }
 
+    /**
+     * The document's own total as issued, then what answered it — credit notes,
+     * payments — down to what is still due.
+     */
     private function totalRows(
         array $totals,
+        array $credits,
         callable $label
     ): array {
         $row = fn (string $key, string $amount, array $marks = []) => [
@@ -217,8 +212,18 @@ class PdfFactoryDocumentBuilder
             $rows[] = $row('total', $totals['total']['formatted'], [Node::bold()]);
         }
 
+        foreach ($credits as $credit) {
+            $rows[] = [
+                Node::textCell($label('credit_note').' '.$credit['number']),
+                Node::textCell($credit['total']['formatted'], 'right'),
+            ];
+        }
+
         if ($totals['paid']) {
             $rows[] = $row('paid', '-'.$totals['paid']['formatted']);
+        }
+
+        if ($credits || $totals['paid']) {
             $rows[] = $row('amount_due', $totals['due']['formatted'], [Node::bold()]);
         }
 

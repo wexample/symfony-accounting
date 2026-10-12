@@ -6,16 +6,20 @@ use DateTimeImmutable;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
+use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Event\AllocationChangedEvent;
+use Wexample\SymfonyAccounting\Event\InvoiceEmittedEvent;
 use Wexample\SymfonyAccounting\Event\TransferLinkedEvent;
+use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
 use Wexample\SymfonyAccounting\Service\Bank\AllocationAccountingService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceWorkflow;
 
 /**
  * Keeps the books and the documents in step with the bank:
  * validated allocations and transfers are booked, removed ones reversed, and
- * each paid document moves between emitted, partially paid and paid.
+ * each paid document moves between emitted, partially paid and paid — a credit
+ * note emitted counting as what it takes back.
  *
  * A ledger can turn booking off with the setting `auto_post_bank: false`.
  */
@@ -24,6 +28,7 @@ class BankAccountingSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly AllocationAccountingService $accountingService,
         private readonly InvoiceWorkflow $workflow,
+        private readonly InvoiceRelationRepository $relationRepository,
     ) {
     }
 
@@ -32,7 +37,19 @@ class BankAccountingSubscriber implements EventSubscriberInterface
         return [
             AllocationChangedEvent::class => 'onAllocationChanged',
             TransferLinkedEvent::class => 'onTransferLinked',
+            InvoiceEmittedEvent::class => 'onInvoiceEmitted',
         ];
+    }
+
+    public function onInvoiceEmitted(InvoiceEmittedEvent $event): void
+    {
+        if (! $event->invoice->isCreditNote()) {
+            return;
+        }
+
+        foreach ($this->relationRepository->findBy(['target' => $event->invoice, 'type' => InvoiceRelationType::Credit]) as $relation) {
+            $this->updatePaymentStatus($relation->getSource());
+        }
     }
 
     public function onAllocationChanged(AllocationChangedEvent $event): void
@@ -73,8 +90,9 @@ class BankAccountingSubscriber implements EventSubscriberInterface
         }
 
         $paid = $invoice->calcPaidAmount();
+        $expected = $invoice->calcAmountExpected();
         $target = match (true) {
-            $paid >= $invoice->calcAmountExpected() && $invoice->calcAmountExpected() > 0 => InvoiceStatus::Paid,
+            $paid >= $expected && ($expected > 0 || $invoice->calcCreditedAmount() > 0) => InvoiceStatus::Paid,
             $paid > 0 => InvoiceStatus::PartiallyPaid,
             default => InvoiceStatus::Emitted,
         };

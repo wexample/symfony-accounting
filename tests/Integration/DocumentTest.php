@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Tests\Integration;
 use DateTimeImmutable;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
+use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Event\InvoiceDocumentEvent;
 use Wexample\SymfonyAccounting\Service\Bank\AllocationService;
 use Wexample\SymfonyAccounting\Service\Document\InvoiceDocumentDataBuilder;
@@ -105,6 +106,47 @@ class DocumentTest extends AbstractAccountingTestCase
 
         $this->assertStringEndsWith('h1 { color: #c00; }', $prepared->theme->stylesheet);
         $this->assertContains('brand', $this->roles($prepared->document));
+    }
+
+    public function testACreditNoteIsWhatTheBillNoLongerAsks(): void
+    {
+        $bill = $this->emitDocumented();   // 500,00 + 20 % = 600,00
+        $credit = $this->service(InvoiceFactory::class)->createCreditNote($bill, 20000);   // 200,00 + 20 %
+        $this->em()->flush();
+        $this->service(InvoiceEmissionService::class)->emit($credit);
+
+        $this->assertSame(24000, $bill->calcCreditedAmount());
+        $this->assertSame(36000, $bill->calcRemainingAmount());
+
+        $prepared = $this->service(InvoicePdfService::class)->prepare($bill, 'en');
+        $totals = array_map(
+            fn (array $row) => array_map(fn (array $cell) => $cell['content'][0]['content'][0]['text'], $row['content']),
+            $this->section($prepared->document, 'totals')[0]['content']
+        );
+
+        $this->assertSame(['Credit note '.$credit->getNumber(), '-€240.00'], $totals[3]);
+        $this->assertSame(['Amount due', '€360.00'], $totals[4]);
+        $this->assertStringContainsString("\nEUR360.00\n", $prepared->data['payment']['epcQr']);
+        $this->assertCount(2, $this->section($prepared->document, 'lines')[1]['content'], 'The credit note is no line of the bill.');
+
+        // The rest paid: the bill is settled, the credit note counting as paid back.
+        $bank = $bill->getLedger()->getDefaultBankAccount();
+        $this->service(AllocationService::class)->allocate($this->createTransaction($bank, 36000), $bill);
+        $this->em()->flush();
+
+        $this->assertSame(InvoiceStatus::Paid, $bill->getStatus());
+    }
+
+    public function testAFullyCreditedBillIsSettledWithoutPayment(): void
+    {
+        $bill = $this->emitDocumented();
+        $credit = $this->service(InvoiceFactory::class)->createCreditNote($bill);
+        $this->em()->flush();
+        $this->service(InvoiceEmissionService::class)->emit($credit);
+
+        $this->assertSame(0, $bill->calcRemainingAmount());
+        $this->assertSame(InvoiceStatus::Paid, $bill->getStatus());
+        $this->assertNull($this->service(InvoicePdfService::class)->prepare($bill, 'en')->data['payment']['epcQr']);
     }
 
     private function emitDocumented(): Invoice

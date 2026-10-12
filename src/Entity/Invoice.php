@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
+use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
@@ -146,6 +147,10 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     #[ORM\OneToMany(targetEntity: Allocation::class, mappedBy: 'invoice')]
     protected Collection $allocations;
 
+    /** @var Collection<int, InvoiceRelation> Links from this document: to its bill, its credit notes… */
+    #[ORM\OneToMany(targetEntity: InvoiceRelation::class, mappedBy: 'source')]
+    protected Collection $outgoingRelations;
+
     #[ORM\Column(type: Types::JSON)]
     protected array $metadata = [];
 
@@ -154,6 +159,7 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
         parent::__construct();
         $this->items = new ArrayCollection();
         $this->allocations = new ArrayCollection();
+        $this->outgoingRelations = new ArrayCollection();
         $this->dateCreated = new DateTimeImmutable();
         $this->dateInvoice = $this->dateCreated->setTime(0, 0);
         $this->priceTotal = 0;
@@ -580,11 +586,46 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     }
 
     /**
-     * What should actually be paid: the final price minus what was written off.
+     * What should actually be paid: the final price minus what was written off
+     * and what emitted credit notes took back.
      */
     public function calcAmountExpected(): int
     {
-        return $this->calcPriceFinal() - $this->priceLoss;
+        return $this->calcPriceFinal() - $this->priceLoss - $this->calcCreditedAmount();
+    }
+
+    /**
+     * What emitted credit notes cancel of this document, VAT included. The
+     * document itself stays as issued: a credit note answers it, never edits it.
+     */
+    public function calcCreditedAmount(): int
+    {
+        $credited = 0;
+
+        foreach ($this->outgoingRelations as $relation) {
+            if (InvoiceRelationType::Credit === $relation->getType() && $relation->getTarget()->getStatus()->isEmitted()) {
+                $credited += $relation->getTarget()->calcPriceFinal();
+            }
+        }
+
+        return $credited;
+    }
+
+    /**
+     * @return Collection<int, InvoiceRelation>
+     */
+    public function getOutgoingRelations(): Collection
+    {
+        return $this->outgoingRelations;
+    }
+
+    public function addOutgoingRelation(InvoiceRelation $relation): static
+    {
+        if (! $this->outgoingRelations->contains($relation)) {
+            $this->outgoingRelations->add($relation);
+        }
+
+        return $this;
     }
 
     /**

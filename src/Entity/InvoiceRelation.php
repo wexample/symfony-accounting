@@ -17,7 +17,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 #[ORM\Table(name: 'accounting_invoice_relation')]
 class InvoiceRelation extends AbstractEntity
 {
-    #[ORM\ManyToOne(targetEntity: Invoice::class)]
+    #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'outgoingRelations')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     protected Invoice $source;
 
@@ -39,6 +39,7 @@ class InvoiceRelation extends AbstractEntity
     public function setSource(Invoice $source): static
     {
         $this->source = $source;
+        $source->addOutgoingRelation($this);
 
         return $this;
     }
