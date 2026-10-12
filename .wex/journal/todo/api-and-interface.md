@@ -34,4 +34,3 @@ Complétée le 2026-10-12 (même jour) : tiers, brouillons (modification, devis 
 - ~~PDF de facture~~ fait le 2026-10-12 : document par rôles, QR EPC, tampon « payée », forme nationale du compte (RIB FR), avoir citant sa facture, charte sobre, rendu par `symfony-remote-pdf-factory` (`InvoicePdfService`). La charte de marque : `invoice-pdf-brand-charter.md`.
 - ~~Test de concurrence de la numérotation~~ fait le 2026-10-12 (`InvoiceNumberingConcurrencyTest`).
 - ~~Avoir sur une facture~~ réglé le 2026-10-12 : la facture reste telle qu'émise ; les avoirs émis sont déduits du montant attendu (`Invoice::calcCreditedAmount()`), donc du reste à payer, des relances, du rapprochement, du QR, et le statut est recalculé à l'émission de l'avoir. Sur le PDF, l'avoir apparaît dans les totaux, avant le reste à payer. À revoir avec la nouvelle version de network.
-- Commande `regenerate` de reprise de l'historique : optionnelle.
