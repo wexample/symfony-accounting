@@ -11,6 +11,7 @@ use Wexample\SymfonyAccounting\Service\Bank\AllocationService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Vat\VatPeriodService;
+use Wexample\SymfonyAccounting\Service\Vat\VatPositionService;
 use Wexample\SymfonyAccounting\Service\Vat\VatReturnService;
 
 class VatTest extends AbstractAccountingTestCase
@@ -121,5 +122,30 @@ class VatTest extends AbstractAccountingTestCase
         $year = $this->vat()->compute($ledger, new DateTimeImmutable('2026-01-01'), new DateTimeImmutable('2026-12-31'));
         $this->assertSame(5500, $year->deposits);
         $this->assertSame(20000 - 5500, $year->getNet());
+    }
+
+    public function testFixedAssetVatIsBookedApartAndThePositionReadsTheYear(): void
+    {
+        $ledger = $this->createLedger('BE');
+        $ledger->setVatPeriodicity(VatPeriodicity::Quarterly);
+        $supplier = $this->createParty($ledger, 'Supplier', customer: false, supplier: true);
+        $this->emitSale($ledger, $this->createParty($ledger), 100000, '2026-01-15');
+
+        $factory = $this->service(InvoiceFactory::class);
+        $purchase = $factory->create($ledger, direction: InvoiceDirection::Purchase, party: $supplier, dateInvoice: new DateTimeImmutable('2026-05-04'))
+            ->setNumber('P-'.uniqid());
+        $factory->addItem($purchase, 'Laptop', 150000, vatRate: 2000, accountNumber: '2400');
+        $factory->addItem($purchase, 'Paper', 10000, vatRate: 2000);
+        $this->service(InvoiceEmissionService::class)->emit($purchase);
+
+        $this->assertContains('4452:30000/0', $this->describeLines($this->entryOf($purchase)));
+
+        $position = $this->service(VatPositionService::class)->build($ledger, 2026);
+
+        $this->assertCount(4, $position->periods);
+        $this->assertSame(20000, $position->periods[0]->collected);
+        $this->assertSame(32000, $position->periods[1]->deductible);
+        $this->assertSame(30000, $position->periods[1]->deductibleAssets);
+        $this->assertSame(-12000, $position->getBalance());
     }
 }

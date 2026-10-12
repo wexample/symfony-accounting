@@ -39,6 +39,14 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         return 'identity.vat_number';
     }
 
+    public function getVatDepositSchedule(
+        Ledger $ledger,
+        int $year,
+        int $previousNetVat
+    ): array {
+        return [];
+    }
+
     public function getBankLocalDetails(string $iban): array
     {
         return [];
@@ -98,6 +106,17 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
     public function getDepreciationAccountNumber(string $assetAccountNumber): string
     {
         return '28'.substr($assetAccountNumber, 1);
+    }
+
+    /**
+     * Class 2 of the French and Belgian charts, depreciation (28) and
+     * impairment (29) aside.
+     */
+    public function isFixedAssetAccount(string $accountNumber): bool
+    {
+        return str_starts_with($accountNumber, '2')
+            && ! str_starts_with($accountNumber, '28')
+            && ! str_starts_with($accountNumber, '29');
     }
 
     public function isBalanceSheetAccount(string $accountNumber): bool

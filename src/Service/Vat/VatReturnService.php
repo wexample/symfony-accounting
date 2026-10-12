@@ -57,6 +57,7 @@ class VatReturnService
         $vatReturn = new VatReturn($ledger, $from->setTime(0, 0), $to->setTime(0, 0));
         $dueAccounts = $this->roleNumbers($ledger, [AccountRole::VatCollected, AccountRole::VatSelfAssessed]);
         $deductibleAccounts = $this->roleNumbers($ledger, [AccountRole::VatDeductible, AccountRole::VatDeductibleAssets]);
+        $assetAccounts = $this->roleNumbers($ledger, [AccountRole::VatDeductibleAssets]);
         $onPayments = $ledger->isVatOnPayments();
 
         foreach ($this->lineRepository->findVatLines($ledger, $from, $to) as $line) {
@@ -80,6 +81,10 @@ class VatReturnService
             } elseif (in_array($number, $deductibleAccounts, true)) {
                 $returnLine->deductible += $line->getBalance();
                 $returnLine->deductibleReversed += max(0, -$line->getBalance());
+
+                if (in_array($number, $assetAccounts, true)) {
+                    $returnLine->deductibleAssets += $line->getBalance();
+                }
             }
         }
 

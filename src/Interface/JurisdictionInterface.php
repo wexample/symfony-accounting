@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyAccounting\Interface;
 
+use DateTimeImmutable;
 use Wexample\SymfonyAccounting\Class\ChartAccountDefinition;
 use Wexample\SymfonyAccounting\Class\LatePenaltyPolicy;
 use Wexample\SymfonyAccounting\Class\LegalMention;
@@ -34,6 +35,19 @@ interface JurisdictionInterface
     public function getLegalIdentifierLabel(): string;
 
     public function getVatNumberLabel(): string;
+
+    /**
+     * The VAT deposits due in $year, where the regime asks for some (the
+     * French simplified regime: July and December), from the previous year's
+     * net VAT. Empty elsewhere.
+     *
+     * @return list<array{date: DateTimeImmutable, amount: int}>
+     */
+    public function getVatDepositSchedule(
+        Ledger $ledger,
+        int $year,
+        int $previousNetVat
+    ): array;
 
     /**
      * The national form of a bank account printed beside its IBAN (the French RIB):
@@ -79,6 +93,12 @@ interface JurisdictionInterface
      * rather than closed into the result (income statement).
      */
     public function isBalanceSheetAccount(string $accountNumber): bool;
+
+    /**
+     * Whether an account holds fixed assets, whose deductible VAT is booked
+     * and declared apart (AccountRole::VatDeductibleAssets).
+     */
+    public function isFixedAssetAccount(string $accountNumber): bool;
 
     /**
      * Whether an account is part of the result: income (true) or charge.

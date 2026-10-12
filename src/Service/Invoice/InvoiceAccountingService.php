@@ -113,7 +113,16 @@ class InvoiceAccountingService
             if ($code->isCharged()) {
                 $tax = $breakdown->getVatLine($code->rate)?->vat ?? RateHelper::rateOf($base, $code->rate);
                 $total += $tax;
-                $draft->add($this->taxRole($invoice, $code->accountRole), ($sale ? -1 : 1) * $side * $tax, null, null, $code->code, VatRole::Tax);
+                // Deductible VAT on fixed assets is booked apart, in proportion of their base.
+                $assetTax = AccountRole::VatDeductible === $code->accountRole
+                    ? $this->assetShare($bases, $code->code, $base, $tax, $jurisdiction)
+                    : 0;
+
+                if (0 !== $assetTax) {
+                    $draft->add(AccountRole::VatDeductibleAssets, $side * $assetTax, null, null, $code->code, VatRole::Tax);
+                }
+
+                $draft->add($this->taxRole($invoice, $code->accountRole), ($sale ? -1 : 1) * $side * ($tax - $assetTax), null, null, $code->code, VatRole::Tax);
             } elseif ($code->isSelfAssessed()) {
                 $tax = RateHelper::rateOf($base, $code->rate);
                 $draft->add($code->accountRole, $side * $tax, null, null, $code->code, VatRole::Tax);
@@ -288,6 +297,29 @@ class InvoiceAccountingService
     /**
      * @param list<array{account: string, code: ?string, amount: int}> $bases
      */
+    /**
+     * The part of $tax due to the fixed assets among the bases of $code.
+     *
+     * @param list<array{account: string, code: ?string, amount: int}> $bases
+     */
+    private function assetShare(
+        array $bases,
+        string $code,
+        int $base,
+        int $tax,
+        JurisdictionInterface $jurisdiction
+    ): int {
+        $assetBase = 0;
+
+        foreach ($bases as $line) {
+            if ($line['code'] === $code && $jurisdiction->isFixedAssetAccount($line['account'])) {
+                $assetBase += $line['amount'];
+            }
+        }
+
+        return 0 === $base ? 0 : RateHelper::mulDiv($tax, $assetBase, $base);
+    }
+
     private function mainAccountOf(
         array $bases,
         string $code

@@ -50,6 +50,11 @@ final class VatReturn
         return array_sum(array_map(fn (VatReturnLine $line) => $line->deductible, $this->lines));
     }
 
+    public function getDeductibleAssets(): int
+    {
+        return array_sum(array_map(fn (VatReturnLine $line) => $line->deductibleAssets, $this->lines));
+    }
+
     public function getNet(): int
     {
         return $this->getDue() - $this->getDeductible() - $this->previousCredit - $this->deposits;

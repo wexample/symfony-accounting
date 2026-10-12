@@ -16,6 +16,9 @@ final class VatReturnLine
 
     public int $deductible = 0;
 
+    /** The part of `deductible` paid on fixed assets, which forms and the VAT position show apart. */
+    public int $deductibleAssets = 0;
+
     /**
      * The reversed parts already netted in base, due and deductible: credit notes,
      * which some forms report in boxes of their own. Positive amounts.

@@ -6,13 +6,17 @@ use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Wexample\PhpDate\Helper\DateHelper;
 use Wexample\SymfonyAccounting\Class\VatReturn;
 use Wexample\SymfonyAccounting\Class\VatReturnLine;
 use Wexample\SymfonyAccounting\Enum\LedgerPermission;
+use Wexample\SymfonyAccounting\Service\Vat\VatPositionService;
 use Wexample\SymfonyAccounting\Service\Vat\VatReturnService;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\StringQueryOption;
+use Wexample\SymfonyApi\Api\Attribute\QueryOption\YearQueryOption;
 use Wexample\SymfonyApi\Api\Class\ApiResponse;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
+use Wexample\SymfonyHelpers\Helper\VariableHelper;
 
 /**
  * The VAT of a period (`from`, `to`): computed to be read, the boxes of the
@@ -22,6 +26,24 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
 class VatReturnController extends AbstractAccountingApiController
 {
     final public const string ROUTE_SETTLE = 'settle';
+
+    final public const string ROUTE_POSITION = 'position';
+
+    /**
+     * Where the year's VAT stands, period by period, deposits paid and expected.
+     */
+    #[Route(path: 'position', name: self::ROUTE_POSITION, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[StringQueryOption(key: self::QUERY_OPTION_LEDGER, required: true)]
+    #[YearQueryOption]
+    public function position(
+        Request $request,
+        VatPositionService $positionService,
+    ): ApiResponse {
+        return self::apiResponseSuccess(data: $positionService->build(
+            $this->resolveLedger($request),
+            (int) self::getQueryOptionValue($request, VariableHelper::YEAR, DateHelper::getCurrentYearInt()),
+        )->toArray());
+    }
 
     #[Route(path: 'show', name: self::ROUTE_SHOW, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
     #[StringQueryOption(key: self::QUERY_OPTION_LEDGER, required: true)]

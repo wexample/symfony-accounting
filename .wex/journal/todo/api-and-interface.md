@@ -32,4 +32,4 @@ Complétée le 2026-10-12 (même jour) : tiers, brouillons (modification, devis 
 
 ## À faire relire par un comptable
 
-PCMN et rôles de comptes BE, cases CA3 / CA12 / 2033, mentions légales FR et BE.
+PCMN et rôles de comptes BE, cases CA3 / CA12 / 2033 (la TVA sur immobilisations remplit la ligne 19 de la CA3 ; sur la CA12, elle reste avec le reste faute d'être sûr de la case), mentions légales FR et BE.
