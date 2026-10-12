@@ -233,6 +233,44 @@ class ApiTest extends AbstractAccountingTestCase
         $this->assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
     }
 
+    public function testAnInvoiceLeavesAndArrivesAsAnElectronicInvoice(): void
+    {
+        $this->signIn('root');
+        $party = $this->createParty($this->acme, 'Globex SA')->setVatNumber('BE0417497106');
+        $sale = $this->emitSale($this->acme, $party, 50000);
+
+        $this->client->request('GET', '/api/invoice/electronic/'.$sale->getId());
+        $ubl = $this->client->getResponse()->getContent();
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode(), $ubl);
+        $this->assertStringContainsString('<Invoice', $ubl);
+
+        $this->client->request('GET', '/api/invoice/electronic/'.$sale->getId().'?format=cii');
+        $this->assertStringContainsString('<rsm:CrossIndustryInvoice', $this->client->getResponse()->getContent());
+
+        $this->client->request('GET', '/api/invoice/electronic/'.$sale->getId().'?format=pdf');
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+
+        $file = tempnam(sys_get_temp_dir(), 'ubl');
+        file_put_contents($file, $ubl);
+        $this->client->request('POST', '/api/invoice/receive?ledger='.$this->globex->getId(), files: [
+            'file' => new UploadedFile($file, 'invoice.xml', test: true),
+        ]);
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode(), $this->client->getResponse()->getContent());
+        $received = json_decode($this->client->getResponse()->getContent(), true)['data'];
+
+        $this->assertSame([], $received['warnings']);
+        $this->assertTrue($received['partyCreated']);
+        $this->assertSame('purchase', $received['invoice']['entity']['direction']);
+        $this->assertSame('draft', $received['invoice']['entity']['status']);
+        $this->assertSame($sale->getNumber(), $received['invoice']['entity']['number']);
+
+        file_put_contents($file, 'hello');
+        $this->client->request('POST', '/api/invoice/receive?ledger='.$this->globex->getId(), files: [
+            'file' => new UploadedFile($file, 'invoice.txt', test: true),
+        ]);
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+    }
+
     public function testOnlyAnAdministratorSetsTheBooksUp(): void
     {
         $this->signIn('anna');

@@ -24,10 +24,9 @@ class FacturXInvoiceReader
      */
     public function read(
         Ledger $ledger,
-        string $pdf,
-        string $fileName = 'invoice.pdf'
+        string $pdf
     ): ElectronicInvoiceImportResult {
-        $reading = $this->documentReader->read($fileName, $pdf, pages: false);
+        $reading = $this->documentReader->read('invoice.pdf', $pdf, pages: false);
         $xml = $reading->getFacturXXml();
 
         if (null === $xml) {

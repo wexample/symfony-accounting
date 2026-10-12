@@ -93,6 +93,8 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 | `GET api/ledger/list`, `show/{id}`; `POST update/{id}` | the ledgers the reader may open; their settings (`accounting.administer`) |
 | `GET api/invoice/list?ledger=&type=&status=&direction=&year=&search=&sort=` | documents, paginated; `show/{id}`, `pdf/{id}?locale=` |
 | `POST api/invoice/create`, `update/{id}`, `emit/{id}`, `credit-note/{id}`, `bill/{id}`, `duplicate/{id}`; `DELETE delete/{id}` | a draft, its fields, its emission, its cancellation by a credit note, the bill of a quotation, a copy, a draft deleted |
+| `GET api/invoice/electronic/{id}?format=ubl\|cii` | an emitted document as a structured electronic invoice, UBL (Peppol) or CII (Factur-X) |
+| `POST api/invoice/receive?ledger=` (multipart `file`) | a received Factur-X PDF, CII or UBL made a purchase draft, with `partyCreated` and `warnings` |
 | `POST api/invoice-item/create`; `DELETE delete/{id}` | the lines of a draft, answered with the whole document |
 | `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}`; `POST create`, `update/{id}` | customers and suppliers |
 | `GET api/bank-account/list?ledger=` | bank accounts |

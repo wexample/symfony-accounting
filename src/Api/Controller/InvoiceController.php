@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Api\Controller;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -21,7 +22,10 @@ use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\LedgerPermission;
 use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
+use Wexample\SymfonyAccounting\Service\Document\CiiInvoiceBuilder;
+use Wexample\SymfonyAccounting\Service\Document\ElectronicInvoiceReceiver;
 use Wexample\SymfonyAccounting\Service\Document\InvoicePdfService;
+use Wexample\SymfonyAccounting\Service\Document\UblInvoiceBuilder;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyApi\Api\Attribute\ApiResponseData;
@@ -38,7 +42,8 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
 
 /**
  * The documents of a ledger: listed, read, drafted, emitted, cancelled by a
- * credit note, printed. Reading asks `accounting.view`, the rest `accounting.edit`.
+ * credit note, printed, exchanged as electronic invoices. Reading asks
+ * `accounting.view`, the rest `accounting.edit`.
  */
 #[Route(path: 'api/invoice/', name: 'api_invoice_')]
 class InvoiceController extends AbstractAccountingApiController
@@ -48,6 +53,16 @@ class InvoiceController extends AbstractAccountingApiController
     final public const string ROUTE_CREDIT_NOTE = 'credit_note';
 
     final public const string ROUTE_PDF = 'pdf';
+
+    final public const string ROUTE_ELECTRONIC = 'electronic';
+
+    final public const string ROUTE_RECEIVE = 'receive';
+
+    final public const string QUERY_OPTION_FORMAT = 'format';
+
+    final public const string FORMAT_UBL = 'ubl';
+
+    final public const string FORMAT_CII = 'cii';
 
     final public const string ROUTE_BILL = 'bill';
 
@@ -124,6 +139,62 @@ class InvoiceController extends AbstractAccountingApiController
         return new Response($pdfService->render($invoice, $locale), Response::HTTP_OK, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => sprintf('inline; filename="%s.pdf"', $invoice->getNumber() ?? 'draft-'.$invoice->getId()),
+        ]);
+    }
+
+    /**
+     * An emitted document as a structured electronic invoice: UBL (Peppol, the
+     * default) or CII (the XML of Factur-X).
+     */
+    #[Route(path: 'electronic/{id}', name: self::ROUTE_ELECTRONIC, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[StringQueryOption(key: self::QUERY_OPTION_FORMAT, default: self::FORMAT_UBL)]
+    public function electronic(
+        string $id,
+        Request $request,
+        InvoiceRepository $repository,
+        UblInvoiceBuilder $ublBuilder,
+        CiiInvoiceBuilder $ciiBuilder,
+    ): Response {
+        $invoice = $this->reachable($repository->find($id));
+        $format = (string) self::getQueryOptionValue($request, self::QUERY_OPTION_FORMAT, self::FORMAT_UBL);
+        $builder = match ($format) {
+            self::FORMAT_UBL => $ublBuilder,
+            self::FORMAT_CII => $ciiBuilder,
+            default => throw new BadRequestHttpException('Unknown format: ubl or cii.'),
+        };
+
+        return new Response($this->withinTheRules(fn () => $builder->build($invoice)), Response::HTTP_OK, [
+            'Content-Type' => 'application/xml',
+            'Content-Disposition' => sprintf('attachment; filename="%s.%s.xml"', $invoice->getNumber(), $format),
+        ]);
+    }
+
+    /**
+     * A received electronic invoice (`file`, multipart): a Factur-X PDF, a CII or a
+     * UBL XML, made a purchase draft. What a person should check comes as `warnings`.
+     */
+    #[Route(path: 'receive', name: self::ROUTE_RECEIVE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[StringQueryOption(key: self::QUERY_OPTION_LEDGER, required: true)]
+    public function receive(
+        Request $request,
+        ElectronicInvoiceReceiver $receiver,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $ledger = $this->resolveLedger($request, LedgerPermission::EDIT);
+        $file = $request->files->get('file');
+
+        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+            throw new BadRequestHttpException('Send the invoice as the multipart field "file".');
+        }
+
+        $result = $this->withinTheRules(fn () => $receiver->receive($ledger, (string) file_get_contents($file->getPathname())));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: [
+            'invoice' => $normalizer->normalize($result->invoice),
+            'partyCreated' => $result->partyCreated,
+            'warnings' => $result->warnings,
         ]);
     }
 
