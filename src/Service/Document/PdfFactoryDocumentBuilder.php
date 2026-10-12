@@ -17,7 +17,9 @@ use Wexample\SymfonyRemotePdfFactory\Helper\DocumentNodeHelper as Node;
  * - payment (where and how to pay: EPC code, holder, national account form, IBAN), terms.
  *
  * `meta` carries the reference, an imprint (the issuer in one line) and the
- * ledger's legal mentions, for a charter to run in the page margins.
+ * ledger's legal mentions, for a charter to run in the page margins. The file's
+ * properties name the issuer as author, the language, and the emission as creation
+ * date, which makes a render reproducible.
  */
 class PdfFactoryDocumentBuilder
 {
@@ -87,7 +89,12 @@ class PdfFactoryDocumentBuilder
             $meta['legal'] = Node::paragraphs(preg_split('/\R/', $data['legalMentions']));
         }
 
-        return Node::doc($title, [Node::section('body', $content)], $meta);
+        return Node::doc($title, [Node::section('body', $content)], $meta, array_filter([
+            'author' => $data['issuer']['name'],
+            'subject' => $data['subject'],
+            'language' => $locale ? str_replace('_', '-', $locale) : null,
+            'created' => $data['created'],
+        ]));
     }
 
     /**

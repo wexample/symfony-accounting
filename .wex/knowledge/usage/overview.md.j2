@@ -44,6 +44,8 @@ Emission is the only way a document becomes official: VAT resolved per item (dom
 
 `InvoiceDocumentDataBuilder` gives everything a printed document shows; `PdfFactoryDocumentBuilder` turns it into a pdf-factory document whose parts are sections named by their role (parties, dates, lines, totals, settlement, notes, payment with the EPC code and the national account form, terms); `InvoicePdfService::render()` dresses it with the charter and posts it. The application has the last word through `InvoiceDocumentEvent`: it may add sections of its own (a letterhead) and change the theme (its stylesheet, a logo block) before the document leaves.
 
+The PDF carries the document data as an embedded `invoice.json` (relationship `Data`), so a printed invoice can be checked against the books. The issuer is the file's author, and the emission date is its creation date, so two renders give the same bytes. The event can embed more files (`attachments`) or ask for a Factur-X output (`output`, `PdfOutput::facturX()`). The CII XML that Factur-X embeds is not built yet: only UBL is.
+
 ```php
 $pdf = $invoicePdfService->render($invoice, 'fr');
 ```

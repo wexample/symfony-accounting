@@ -32,6 +32,8 @@ document:
   pagination:
     before: "Page "
     between: " / "
+  attachment:
+    data: "Les données du document, pour le contrôler face à la comptabilité"
 
 identity:
   legal_identifier: Numéro d'entreprise

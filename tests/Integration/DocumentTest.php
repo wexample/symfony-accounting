@@ -68,6 +68,22 @@ class DocumentTest extends AbstractAccountingTestCase
         $this->assertSame(['pagination-before' => 'Page ', 'pagination-between' => ' / '], $prepared->theme->variables);
     }
 
+    public function testThePdfCarriesItsDataAndSaysWhoMadeItAndWhen(): void
+    {
+        $invoice = $this->emitDocumented();
+        $prepared = $this->service(InvoicePdfService::class)->prepare($invoice, 'fr_BE');
+
+        $this->assertSame('fr-BE', $prepared->document['language']);
+        $this->assertSame($prepared->data['issuer']['name'], $prepared->document['author']);
+        $this->assertSame($invoice->getDateEmitted()->format(DATE_ATOM), $prepared->document['created']);
+
+        [$attachment] = $prepared->attachments;
+        $this->assertSame('invoice.json', $attachment->name);
+        $this->assertSame('Data', $attachment->relationship);
+        $this->assertSame($invoice->getNumber(), json_decode($attachment->content, true)['number']);
+        $this->assertNull($prepared->output);
+    }
+
     public function testACreditNoteAsksNobodyToPay(): void
     {
         $invoice = $this->emitDocumented();

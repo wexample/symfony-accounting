@@ -6,13 +6,15 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Event\InvoiceDocumentEvent;
+use Wexample\SymfonyRemotePdfFactory\Class\PdfAttachment;
 use Wexample\SymfonyRemotePdfFactory\Class\PdfTheme;
 use Wexample\SymfonyRemotePdfFactory\Service\PdfFactoryClient;
 
 /**
  * An invoice as a PDF: its data, its semantic document, the charter (the default
- * one, then the application's stylesheets), the application's last word through
- * InvoiceDocumentEvent, and pdf-factory's rendering.
+ * one, then the application's stylesheets), its data embedded as `invoice.json`
+ * so the PDF can be checked against the books, the application's last word
+ * through InvoiceDocumentEvent, and pdf-factory's rendering.
  */
 class InvoicePdfService
 {
@@ -47,6 +49,7 @@ class InvoicePdfService
                 'pagination-before' => $this->trans('document.pagination.before', $locale),
                 'pagination-between' => $this->trans('document.pagination.between', $locale),
             ]),
+            [PdfAttachment::json('invoice.json', $data, $this->trans('document.attachment.data', $locale))],
         ));
     }
 
@@ -59,7 +62,7 @@ class InvoicePdfService
     ): string {
         $prepared = $this->prepare($invoice, $locale);
 
-        return $this->client->render($prepared->document, $prepared->theme);
+        return $this->client->render($prepared->document, $prepared->theme, $prepared->attachments, $prepared->output);
     }
 
     private function trans(

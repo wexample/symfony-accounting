@@ -102,6 +102,7 @@ class InvoiceDocumentDataBuilder
             'subject' => $invoice->getTitle(),
             'note' => $invoice->getNote(),
             'currency' => $currency,
+            'created' => ($invoice->getDateEmitted() ?? $invoice->getDateCreated())->format(DATE_ATOM),
             'dates' => [
                 'invoice' => $date($invoice->getDateInvoice()),
                 'due' => $date($invoice->calcDateDue()),
