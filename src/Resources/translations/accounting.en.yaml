@@ -43,6 +43,7 @@ mention:
   vat:
     franchise: VAT not applicable, small business exemption.
     reverse_charge: Reverse charge — VAT to be accounted for by the recipient (art. 196 of Directive 2006/112/EC).
+    domestic_reverse_charge: Reverse charge — VAT to be accounted for by the client, VAT-registered in the same country.
     intra_eu_goods: Exempt intra-Community supply of goods (art. 138 of Directive 2006/112/EC).
     export: Export outside the EU, exempt from VAT.
     exempt: Exempt from VAT.

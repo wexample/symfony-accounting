@@ -44,6 +44,7 @@ class InvoiceVatResolver
                 partyHasVatNumber: (bool) $party?->hasVatNumber(),
                 partyIsIndividual: (bool) $party?->isIndividual(),
                 goods: $item->isGoods(),
+                domesticReverseCharge: $item->isDomesticReverseCharge(),
             ),
             $item->getPriceVat()
         );

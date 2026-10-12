@@ -23,8 +23,18 @@ enum VatKind: string
     /** Purchase of goods from another EU country, VAT self-assessed. */
     case IntraEuAcquisition = 'intra_eu_acquisition';
 
-    /** Purchase where the buyer pays the VAT instead of the seller. */
+    /** Services bought from another EU country, VAT self-assessed by the buyer. */
     case ReverseCharge = 'reverse_charge';
+
+    /** Services bought outside the EU, VAT self-assessed by the buyer. */
+    case ImportedServices = 'imported_services';
+
+    /**
+     * Between two VAT-registered companies of the same country, where the law moves
+     * the VAT to the buyer: construction works (BE art. 20 AR n° 1, FR art. 283-2
+     * nonies CGI). The seller charges none, the buyer self-assesses it.
+     */
+    case DomesticReverseCharge = 'domestic_reverse_charge';
 
     /** Exempt by law (medical, education, …). */
     case Exempt = 'exempt';

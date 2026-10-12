@@ -20,6 +20,8 @@ final readonly class VatContext
         public bool $partyIsIndividual,
         /** Goods (true) or services (false). */
         public bool $goods = false,
+        /** The item falls under a domestic reverse charge (construction works). */
+        public bool $domesticReverseCharge = false,
     ) {
     }
 }

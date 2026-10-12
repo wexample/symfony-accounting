@@ -43,6 +43,7 @@ mention:
   vat:
     franchise: TVA non applicable, franchise des petites entreprises.
     reverse_charge: Autoliquidation — TVA due par le preneur (art. 196 de la directive 2006/112/CE).
+    domestic_reverse_charge: Autoliquidation — TVA due par le client, assujetti dans le même pays.
     intra_eu_goods: Livraison intracommunautaire exonérée (art. 138 de la directive 2006/112/CE).
     export: Exportation hors UE, exonérée de TVA.
     exempt: Exonéré de TVA.

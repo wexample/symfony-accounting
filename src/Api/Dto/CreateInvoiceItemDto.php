@@ -36,4 +36,7 @@ class CreateInvoiceItemDto extends AbstractDto
     public ?string $description = null;
 
     public bool $goods = false;
+
+    /** Construction works between VAT-registered companies of one country: the client self-assesses the VAT. */
+    public bool $domesticReverseCharge = false;
 }

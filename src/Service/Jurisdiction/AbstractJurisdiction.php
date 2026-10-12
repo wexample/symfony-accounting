@@ -155,7 +155,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
             }
 
             if ($sameCountry) {
-                return VatKind::Domestic;
+                return $context->domesticReverseCharge && $partyBusiness ? VatKind::DomesticReverseCharge : VatKind::Domestic;
             }
 
             if (EuHelper::isMemberState($partyCountry)) {
@@ -170,7 +170,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         }
 
         if ($sameCountry) {
-            return VatKind::Domestic;
+            return $context->domesticReverseCharge && $context->ledgerVatSubject ? VatKind::DomesticReverseCharge : VatKind::Domestic;
         }
 
         if (! $context->ledgerVatSubject) {
@@ -182,8 +182,12 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
             return VatKind::IntraEuAcquisition;
         }
 
-        // Services bought abroad, from the EU or elsewhere: reverse charge.
-        return $context->goods ? VatKind::Domestic : VatKind::ReverseCharge;
+        if ($context->goods) {
+            return VatKind::Domestic;
+        }
+
+        // Services bought abroad: self-assessed, from the EU or from elsewhere, which forms report apart.
+        return EuHelper::isMemberState($partyCountry) ? VatKind::ReverseCharge : VatKind::ImportedServices;
     }
 
     public function resolveVatCode(
@@ -223,6 +227,8 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         'export' => 'EXP',
         'intra_eu_acquisition' => 'IEUA',
         'reverse_charge' => 'RC',
+        'imported_services' => 'RCX',
+        'domestic_reverse_charge' => 'DRC',
         'exempt' => 'EXE',
         'franchise' => 'FRA',
         'out_of_scope' => 'OUT',
@@ -235,7 +241,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
     ): VatCode {
         $taxed = match ($kind) {
             VatKind::Domestic => $rate > 0,
-            VatKind::IntraEuAcquisition, VatKind::ReverseCharge => InvoiceDirection::Purchase === $direction,
+            VatKind::IntraEuAcquisition, VatKind::ReverseCharge, VatKind::ImportedServices, VatKind::DomesticReverseCharge => InvoiceDirection::Purchase === $direction,
             default => false,
         };
         $rate = $taxed ? $rate : 0;
@@ -274,6 +280,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
             $key = match ($kind) {
                 VatKind::Franchise => 'mention.vat.franchise',
                 VatKind::IntraEuServices => 'mention.vat.reverse_charge',
+                VatKind::DomesticReverseCharge => 'mention.vat.domestic_reverse_charge',
                 VatKind::IntraEuGoods => 'mention.vat.intra_eu_goods',
                 VatKind::Export => 'mention.vat.export',
                 VatKind::Exempt => 'mention.vat.exempt',

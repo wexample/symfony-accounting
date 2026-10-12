@@ -64,8 +64,10 @@ class VatTest extends AbstractAccountingTestCase
         $domesticSales = $return->sum(InvoiceDirection::Sale, VatKind::Domestic);
         $this->assertSame(['base' => 100000, 'due' => 20000, 'deductible' => 0], array_slice($domesticSales, 0, 3));
         $this->assertSame(50000, $return->sum(InvoiceDirection::Sale, VatKind::IntraEuServices)['base']);
-        $reverseCharge = $return->sum(InvoiceDirection::Purchase, VatKind::ReverseCharge);
-        $this->assertSame(['base' => 10000, 'due' => 2000, 'deductible' => 2000], array_slice($reverseCharge, 0, 3));
+        // Services bought outside the EU: self-assessed, apart from those bought in the EU.
+        $importedServices = $return->sum(InvoiceDirection::Purchase, VatKind::ImportedServices);
+        $this->assertSame(['base' => 10000, 'due' => 2000, 'deductible' => 2000], array_slice($importedServices, 0, 3));
+        $this->assertSame(0, $return->sum(InvoiceDirection::Purchase, VatKind::ReverseCharge)['base']);
         $this->assertSame(22000, $return->getDue());
         $this->assertSame(8000, $return->getDeductible());
         $this->assertSame(14000, $return->getNet());

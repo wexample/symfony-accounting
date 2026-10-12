@@ -59,6 +59,10 @@ class InvoiceItem extends AbstractEntity implements PricedChildInterface, Quanti
     #[ORM\Column(type: Types::BOOLEAN)]
     protected bool $goods = false;
 
+    /** Under a domestic reverse charge (construction works between VAT-registered companies). */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    protected bool $domesticReverseCharge = false;
+
     #[ORM\Column(type: Types::STRING, length: 30, nullable: true)]
     protected ?string $vatCode = null;
 
@@ -180,6 +184,18 @@ class InvoiceItem extends AbstractEntity implements PricedChildInterface, Quanti
         return $this;
     }
 
+    public function isDomesticReverseCharge(): bool
+    {
+        return $this->domesticReverseCharge;
+    }
+
+    public function setDomesticReverseCharge(bool $domesticReverseCharge): static
+    {
+        $this->domesticReverseCharge = $domesticReverseCharge;
+
+        return $this;
+    }
+
     public function getVatCode(): ?string
     {
         return $this->vatCode;
@@ -224,6 +240,7 @@ class InvoiceItem extends AbstractEntity implements PricedChildInterface, Quanti
             ->setDuration($this->duration)
             ->setUnit($this->unit)
             ->setGoods($this->goods)
+            ->setDomesticReverseCharge($this->domesticReverseCharge)
             ->setAccountNumber($this->accountNumber);
         $copy->priceRaw = $this->priceRaw;
         $copy->priceVat = $this->priceVat;

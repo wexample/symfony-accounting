@@ -106,7 +106,7 @@ class InvoiceItemController extends AbstractAccountingApiController
             $createInvoiceItemDto->quantity,
             $createInvoiceItemDto->vatRate,
             $createInvoiceItemDto->goods,
-        )->setDescription($createInvoiceItemDto->description));
+        )->setDescription($createInvoiceItemDto->description)->setDomesticReverseCharge($createInvoiceItemDto->domesticReverseCharge));
 
         $entityManager->flush();
 

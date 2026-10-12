@@ -127,7 +127,7 @@ class ElectronicInvoiceDataBuilder
         $rate = (int) $item->getPriceVat();
 
         return match ($item->getVatKind()) {
-            VatKind::IntraEuServices, VatKind::ReverseCharge, VatKind::IntraEuAcquisition => $this->category('AE', $rate, 'Reverse charge', 'VATEX-EU-AE'),
+            VatKind::IntraEuServices, VatKind::ReverseCharge, VatKind::ImportedServices, VatKind::DomesticReverseCharge, VatKind::IntraEuAcquisition => $this->category('AE', $rate, 'Reverse charge', 'VATEX-EU-AE'),
             VatKind::IntraEuGoods => $this->category('K', $rate, 'Intra-Community supply', 'VATEX-EU-IC'),
             VatKind::Export => $this->category('G', $rate, 'Export outside the EU', 'VATEX-EU-G'),
             VatKind::Exempt => $this->category('E', $rate, 'Exempt'),
