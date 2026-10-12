@@ -23,6 +23,23 @@ Complétée le 2026-10-12 (même jour) : tiers, brouillons (modification, devis 
 - Rapprochement bancaire, transactions, formulaire d'import de relevé (aujourd'hui seulement `BankImportCommand`).
 - Balance, bilan, compte de résultat, validation des écritures.
 
+Chaque route de la section « API » de l'usage attend son écran. En plus des points ci-dessus :
+
+- les dossiers et leurs réglages (`accounting.administer`) ;
+- les documents :
+  - liste filtrée et fiche ;
+  - création, modification, émission ;
+  - avoir, devis transformé en facture, duplication ;
+  - PDF ;
+- les tiers, clients et fournisseurs ;
+- le plan comptable ;
+- les écritures :
+  - saisie à la main et contre-passation ;
+  - lettrage ;
+- les exercices : contrôle, clôture, réouverture, exercice suivant ;
+- la TVA : déclaration d'une période avec ses cases, liquidation, suivi de l'année avec les acomptes ;
+- le grand livre d'un compte, les exports (CSV, FEC).
+
 ## Finitions du backend (petites, sans décision)
 
 - Lignes depuis un tableur : le backend est prêt depuis le 2026-10-12 (`api/invoice-item/import`, `api/invoice-item/read-table`). Il manque à l'écran trois choses :
