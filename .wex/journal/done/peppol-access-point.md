@@ -41,3 +41,7 @@ Le fournisseur du point d'accès, et si l'on vise aussi les PDP françaises.
 - France : savoir si une PDP se branche comme un point d'accès (mêmes interfaces) ou demande autre chose.
 - Envoi automatique à l'émission : non fait volontairement. Un échec réseau ne doit pas faire échouer l'émission ; à reprendre avec une file (messenger) si on le veut.
 - Les réponses de l'acheteur (Invoice Response : acceptée, refusée, payée) : un autre type de document, pas encore lu.
+
+## Classé (2026-10-12)
+
+Décision du propriétaire : classé comme fait. L'adaptateur d'un fournisseur viendra quand une application en aura besoin.
