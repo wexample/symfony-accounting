@@ -30,3 +30,7 @@ Author: agent:main
 
 - Les PDF réels de network : `var/pdf-examples/network/`, ignorés par git (données réelles, ne jamais les publier).
 - Le code TCPDF d'origine, en lecture seule : `NETWORK/local/network/src/Pdf/Page/Traits/WexPdfPageTrait.php`, `InvoiceLanding.php`, `InvoiceItems.php`, `front/pdf/partials/`.
+
+## Classé (2026-10-12)
+
+Décision du propriétaire : classé comme fait. La charte de marque viendra avec la nouvelle version de la plateforme, qui la produira ; les connecteurs décrits plus haut sont prêts.
