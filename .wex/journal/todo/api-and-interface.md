@@ -23,8 +23,9 @@ Banque (comptes, transactions, allocations, rapprochement), factures (CRUD, émi
 
 ## Finitions du backend (petites, sans décision)
 
-- PDF de facture (`PdfFactoryDocumentBuilder`, TODO dans le code) : image du QR EPC (`buildEpcQrPayload` existe), variante « payée », grille RIB FR.
-- Test de concurrence de la numérotation (deux EntityManager).
+- ~~PDF de facture~~ fait le 2026-10-12 : document par rôles, QR EPC, tampon « payée », forme nationale du compte (RIB FR), avoir citant sa facture, charte sobre, rendu par `symfony-remote-pdf-factory` (`InvoicePdfService`). La charte de marque : `invoice-pdf-brand-charter.md`.
+- ~~Test de concurrence de la numérotation~~ fait le 2026-10-12 (`InvoiceNumberingConcurrencyTest`).
+- À décider : sur une facture, l'avoir est listé dans les lignes mais ni déduit du total ni du reste à payer (ni du QR).
 - Commande `regenerate` de reprise de l'historique : optionnelle.
 
 ## À faire relire par un comptable

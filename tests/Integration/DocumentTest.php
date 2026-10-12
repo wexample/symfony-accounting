@@ -2,8 +2,13 @@
 
 namespace Wexample\SymfonyAccounting\Tests\Integration;
 
+use DateTimeImmutable;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Wexample\SymfonyAccounting\Entity\Invoice;
+use Wexample\SymfonyAccounting\Event\InvoiceDocumentEvent;
 use Wexample\SymfonyAccounting\Service\Bank\AllocationService;
 use Wexample\SymfonyAccounting\Service\Document\InvoiceDocumentDataBuilder;
+use Wexample\SymfonyAccounting\Service\Document\InvoicePdfService;
 use Wexample\SymfonyAccounting\Service\Document\PdfFactoryDocumentBuilder;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
@@ -47,5 +52,93 @@ class DocumentTest extends AbstractAccountingTestCase
 
         // Kept for the schema check run beside the tests.
         file_put_contents(sys_get_temp_dir().'/accounting-invoice-document.json', json_encode(['document' => $document], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
+    public function testTheDocumentNamesItsPartsAndItsThemeDressesThem(): void
+    {
+        $invoice = $this->emitDocumented();
+        $prepared = $this->service(InvoicePdfService::class)->prepare($invoice, 'en');
+
+        $this->assertSame(['parties', 'dates', 'lines', 'totals', 'payment', 'terms'], $this->roles($prepared->document));
+        $this->assertSame('03/01/2026', $prepared->data['dates']['invoice']['formatted']);
+        $this->assertSame('qrCode', $this->section($prepared->document, 'payment')[1]['type']);
+        $this->assertSame([['paragraph']], array_map(fn ($node) => [$node['type']], $prepared->document['meta']['imprint']));
+        $this->assertStringContainsString('section[data-role="parties"]', $prepared->theme->stylesheet);
+        $this->assertSame(['pagination-before' => 'Page ', 'pagination-between' => ' / '], $prepared->theme->variables);
+    }
+
+    public function testACreditNoteAsksNobodyToPay(): void
+    {
+        $invoice = $this->emitDocumented();
+        $credit = $this->service(InvoiceFactory::class)->createCreditNote($invoice);
+        $this->em()->flush();
+        $this->service(InvoiceEmissionService::class)->emit($credit);
+
+        $document = $this->service(InvoicePdfService::class)->prepare($credit, 'en')->document;
+
+        $this->assertNotContains('payment', $this->roles($document));
+        $this->assertSame('Credits invoice : '.$invoice->getNumber().' (03/01/2026)', $this->section($document, 'dates')[1]['content'][0]['text']);
+    }
+
+    public function testAPaidDocumentSaysSo(): void
+    {
+        $invoice = $this->emitDocumented();
+        $bank = $invoice->getLedger()->getDefaultBankAccount();
+        $this->service(AllocationService::class)->allocate($this->createTransaction($bank, $invoice->calcRemainingAmount(), '2026-03-10'), $invoice);
+        $this->em()->flush();
+
+        $prepared = $this->service(InvoicePdfService::class)->prepare($invoice, 'en');
+        $settlement = $this->section($prepared->document, 'settlement');
+
+        $this->assertSame('Paid', $settlement[0]['content'][0]['text']);
+        $this->assertNotContains('qrCode', array_column($this->section($prepared->document, 'payment'), 'type'));
+    }
+
+    public function testTheApplicationHasTheLastWord(): void
+    {
+        $this->service(EventDispatcherInterface::class)->addListener(InvoiceDocumentEvent::class, function (InvoiceDocumentEvent $event) {
+            $event->theme = $event->theme->withStylesheet('h1 { color: #c00; }');
+            $event->document['content'][0]['content'][] = ['type' => 'section', 'attrs' => ['role' => 'brand'], 'content' => [['type' => 'paragraph']]];
+        });
+
+        $prepared = $this->service(InvoicePdfService::class)->prepare($this->emitDocumented(), 'en');
+
+        $this->assertStringEndsWith('h1 { color: #c00; }', $prepared->theme->stylesheet);
+        $this->assertContains('brand', $this->roles($prepared->document));
+    }
+
+    private function emitDocumented(): Invoice
+    {
+        $ledger = $this->createLedger();
+        $ledger->setName('Wexample SRL')->setPostalAddress('Rue Neuve 1')->setPostCode('1000')->setCity('Bruxelles');
+        $bank = $this->createBankAccount($ledger)->setIban('BE68 5390 0754 7034')->setBic('GKCCBEBB');
+        $ledger->setDefaultBankAccount($bank);
+        $factory = $this->service(InvoiceFactory::class);
+        $invoice = $factory->create($ledger, party: $this->createParty($ledger, 'Client SA'), title: 'Website', dateInvoice: new DateTimeImmutable('2026-03-01'));
+        $factory->addItem($invoice, 'Design', 50000, 100);
+        $this->em()->flush();
+
+        return $this->service(InvoiceEmissionService::class)->emit($invoice);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function roles(array $document): array
+    {
+        return array_column(array_column(array_filter($document['content'][0]['content'], fn ($node) => 'section' === $node['type']), 'attrs'), 'role');
+    }
+
+    private function section(
+        array $document,
+        string $role
+    ): array {
+        foreach ($document['content'][0]['content'] as $node) {
+            if ('section' === $node['type'] && $role === $node['attrs']['role']) {
+                return $node['content'];
+            }
+        }
+
+        $this->fail('No section '.$role);
     }
 }

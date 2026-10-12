@@ -36,6 +36,14 @@ interface JurisdictionInterface
     public function getVatNumberLabel(): string;
 
     /**
+     * The national form of a bank account printed beside its IBAN (the French RIB):
+     * a label (translation key) and a value per part, empty where none is customary.
+     *
+     * @return list<array{label: string, value: string}>
+     */
+    public function getBankLocalDetails(string $iban): array;
+
+    /**
      * Whether the VAT number contains the company identifier (BE), so that
      * documents print only one of them.
      */

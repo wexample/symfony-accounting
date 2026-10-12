@@ -39,6 +39,11 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         return 'identity.vat_number';
     }
 
+    public function getBankLocalDetails(string $iban): array
+    {
+        return [];
+    }
+
     public function isLegalIdentifierIncludedInVatNumber(): bool
     {
         return false;

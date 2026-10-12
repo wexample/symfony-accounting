@@ -22,9 +22,16 @@ document:
     paid: Already paid
     amount_due: Amount due
     credit_note: Credit note
+    credited_bill: Credits invoice
     payment: Payment
     payment_reference: Payment reference
     holder: Account holder
+    settled: Paid
+    settled_on: on
+    scan_to_pay: "SEPA transfer: scan to pay"
+  pagination:
+    before: "Page "
+    between: " / "
 
 identity:
   legal_identifier: Company number

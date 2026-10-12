@@ -1,0 +1,75 @@
+/* The default invoice charter: sober, black on white, readable without a brand.
+   Every selector is a role the document names (PdfFactoryDocumentBuilder); an
+   application dresses its own documents with a stylesheet listed after this one
+   (wexample_symfony_accounting.document.stylesheets). */
+
+@page {
+    size: A4;
+    margin: 18mm 16mm 22mm;
+    @bottom-left { content: element(meta-reference); font-size: 8pt; color: #555; }
+    @bottom-right {
+        content: var(--pagination-before) counter(page) var(--pagination-between) counter(pages);
+        font-size: 8pt;
+        color: #555;
+    }
+}
+
+:root { font-size: 9.5pt; line-height: 1.4; }
+
+h1 { font-size: 20pt; margin: 0 0 8mm; }
+
+/* The issuer and the recipient side by side, the recipient boxed: an envelope window
+   reads that box. */
+section[data-role="parties"] { display: flex; gap: 12mm; margin-bottom: 6mm; }
+section[data-role="issuer"], section[data-role="recipient"] { flex: 1; }
+section[data-role="issuer"] p, section[data-role="recipient"] p { margin: 0; }
+section[data-role="issuer"] p:first-child,
+section[data-role="recipient"] p:first-child { font-weight: bold; margin-bottom: 1mm; }
+section[data-role="recipient"] { border: 0.5pt solid #000; padding: 4mm 5mm; }
+
+section[data-role="dates"] { margin-bottom: 6mm; }
+section[data-role="dates"] p { margin: 0; }
+
+section[data-role="lines"] h2 { font-size: 12pt; margin: 0 0 3mm; }
+section[data-role="lines"] table { width: 100%; margin-bottom: 3mm; }
+section[data-role="lines"] th,
+section[data-role="lines"] td { border: none; border-bottom: 0.5pt solid #bbb; padding: 1.8mm 2mm; }
+section[data-role="lines"] th { border-bottom: 1pt solid #000; }
+
+section[data-role="totals"] table { margin-left: auto; width: 78mm; }
+section[data-role="totals"] td { border: none; padding: 1.2mm 2mm; }
+section[data-role="totals"] tr:last-child td { border-top: 1pt solid #000; font-size: 11pt; padding-top: 2mm; }
+
+/* A paid invoice says so with a stamp, pulled up into the empty space left of the
+   totals and tilted the way a hand stamps it. */
+section[data-role="settlement"] {
+    width: 46mm;
+    margin: -24mm 0 6mm 10mm;
+    padding: 2mm 3mm;
+    border: 2pt solid #000;
+    border-radius: 2mm;
+    text-align: center;
+    text-transform: uppercase;
+    transform: rotate(-8deg);
+}
+section[data-role="settlement"] p { margin: 0; }
+section[data-role="settlement"] p:first-child { font-size: 16pt; letter-spacing: 2pt; }
+
+section[data-role="notes"] { margin-top: 4mm; font-style: italic; }
+
+/* What the reader needs to pay: the details on the left, the code to scan on the right. */
+section[data-role="payment"] { margin-top: 8mm; padding-top: 4mm; border-top: 0.5pt solid #000; }
+section[data-role="payment"] h2 { font-size: 11pt; margin: 0 0 3mm; }
+section[data-role="payment"] p { margin: 0 0 1mm; }
+section[data-role="payment"] img[data-code="qr"] { float: right; width: 32mm; height: 32mm; margin: -3mm 0 0 6mm; }
+section[data-role="payment"] table { margin-top: 3mm; }
+section[data-role="payment"] th,
+section[data-role="payment"] td { font-size: 8.5pt; padding: 1mm 2.5mm; }
+section[data-role="payment"] th { background: #eee; }
+
+section[data-role="terms"] { clear: both; margin-top: 8mm; font-size: 7.5pt; color: #444; }
+
+/* What the jurisdiction asks the issuer to state beside its name (individual
+   entrepreneur, registration exemption). */
+section[data-role="registration"] { margin: -3mm 0 6mm; font-size: 8pt; color: #444; }
+section[data-role="registration"] p { margin: 0; }

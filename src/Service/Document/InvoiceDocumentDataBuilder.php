@@ -2,10 +2,15 @@
 
 namespace Wexample\SymfonyAccounting\Service\Document;
 
+use DateTimeInterface;
+use IntlDateFormatter;
+use IntlDatePatternGenerator;
+use Locale;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
+use Wexample\SymfonyAccounting\Interface\JurisdictionInterface;
 use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
@@ -17,7 +22,7 @@ use Wexample\SymfonyMoney\Service\MoneyFormatter;
  * legal mentions, where to pay. The contract between the books and whatever
  * renders documents (pdf-factory, an HTML preview, an e-invoicing export).
  *
- * Amounts are given twice: in minor units, and formatted for the locale.
+ * Amounts and dates are given twice: as values, and formatted for the locale.
  */
 class InvoiceDocumentDataBuilder
 {
@@ -38,6 +43,7 @@ class InvoiceDocumentDataBuilder
         $currency = $invoice->getCurrencyCode();
         $breakdown = $invoice->calcPriceBreakdown();
         $money = fn (int $amount) => ['amount' => $amount, 'formatted' => $this->moneyFormatter->format($amount, $currency, $locale)];
+        $date = fn (?DateTimeInterface $value) => $value ? ['value' => $value->format('Y-m-d'), 'formatted' => $this->formatDate($value, $locale)] : null;
         $issuer = $invoice->getIssuerSnapshot() ?? $this->liveIssuer($invoice);
         $client = $invoice->getPartySnapshot() ?? $this->liveParty($invoice);
 
@@ -60,6 +66,13 @@ class InvoiceDocumentDataBuilder
             if ($credit->getStatus()->isEmitted()) {
                 $credits[] = ['number' => $credit->getNumber(), 'total' => $money(-$credit->calcPriceFinal())];
             }
+        }
+
+        // What a credit note cancels: the bills it names, as the law asks it to.
+        $credited = [];
+        foreach ($this->relationRepository->findBy(['target' => $invoice, 'type' => InvoiceRelationType::Credit]) as $relation) {
+            $bill = $relation->getSource();
+            $credited[] = ['number' => $bill->getNumber(), 'date' => $date($bill->getDateInvoice())];
         }
 
         $mentions = array_map(fn ($mention) => [
@@ -90,17 +103,18 @@ class InvoiceDocumentDataBuilder
             'note' => $invoice->getNote(),
             'currency' => $currency,
             'dates' => [
-                'invoice' => $invoice->getDateInvoice()->format('Y-m-d'),
-                'due' => $invoice->calcDateDue()->format('Y-m-d'),
-                'validUntil' => $invoice->getDateValidUntil()?->format('Y-m-d'),
-                'periodStart' => $invoice->getPeriodStart()?->format('Y-m-d'),
-                'periodEnd' => $invoice->getPeriodEnd()?->format('Y-m-d'),
-                'paid' => $invoice->getDatePaid()?->format('Y-m-d'),
+                'invoice' => $date($invoice->getDateInvoice()),
+                'due' => $date($invoice->calcDateDue()),
+                'validUntil' => $date($invoice->getDateValidUntil()),
+                'periodStart' => $date($invoice->getPeriodStart()),
+                'periodEnd' => $date($invoice->getPeriodEnd()),
+                'paid' => $date($invoice->getDatePaid()),
             ],
             'issuer' => $this->identityBlock($issuer, $invoice->getLedger(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
             'client' => $this->identityBlock($client, $invoice->getParty(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
             'items' => $items,
             'credits' => $credits,
+            'credited' => $credited,
             'totals' => [
                 'subTotal' => $money($breakdown->subTotal),
                 'discount' => $breakdown->discount ? $money($breakdown->discount) : null,
@@ -116,7 +130,7 @@ class InvoiceDocumentDataBuilder
             'payment' => [
                 'reference' => $invoice->getPaymentReference() ?? $invoice->getNumber(),
                 'termDays' => $invoice->getPaymentTermDays(),
-                'bank' => $issuer['bank'] ?? null,
+                'bank' => $this->bankBlock($issuer['bank'] ?? null, $jurisdiction, $locale),
                 'epcQr' => $this->buildEpcQrPayload($invoice, $issuer),
             ],
             'mentions' => $mentions,
@@ -152,6 +166,42 @@ class InvoiceDocumentDataBuilder
             '',
             mb_substr((string) ($invoice->getPaymentReference() ?? $invoice->getNumber()), 0, 140),
         ]);
+    }
+
+    /**
+     * The account to pay to, with its national form when the books keep none
+     * (the French RIB), labels translated.
+     */
+    private function bankBlock(
+        ?array $bank,
+        JurisdictionInterface $jurisdiction,
+        ?string $locale
+    ): ?array {
+        if (! $bank) {
+            return null;
+        }
+
+        $details = ($bank['localDetails'] ?? []) ?: $jurisdiction->getBankLocalDetails((string) ($bank['iban'] ?? ''));
+        $bank['localDetails'] = array_map(
+            fn (array $detail) => ['label' => $this->trans($detail['label'], [], $locale), 'value' => $detail['value']],
+            $details
+        );
+
+        return $bank;
+    }
+
+    /**
+     * Day, month and year in the order and with the separators of the locale:
+     * 20/03/2026 in French, 03/20/2026 in English.
+     */
+    private function formatDate(
+        DateTimeInterface $date,
+        ?string $locale
+    ): string {
+        $locale ??= Locale::getDefault();
+        $pattern = (new IntlDatePatternGenerator($locale))->getBestPattern('ddMMyyyy');
+
+        return (string) (new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, null, null, $pattern))->format($date);
     }
 
     private function identityBlock(

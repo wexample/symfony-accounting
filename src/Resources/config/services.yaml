@@ -25,14 +25,9 @@ services:
         arguments:
             $forms: !tagged_iterator wexample_symfony_accounting.vat_return_form
 
-    Wexample\SymfonyAccounting\Service\Document\PdfFactoryRenderer:
+    Wexample\SymfonyAccounting\Service\Document\InvoicePdfService:
         arguments:
-            $httpClient: '@?http_client'
-            $baseUrl: '%wexample_symfony_accounting.pdf_factory.url%'
-            $defaultTheme: '%wexample_symfony_accounting.pdf_factory.theme%'
-
-    Wexample\SymfonyAccounting\Interface\DocumentRendererInterface:
-        alias: Wexample\SymfonyAccounting\Service\Document\PdfFactoryRenderer
+            $stylesheets: '%wexample_symfony_accounting.document.stylesheets%'
 
     Wexample\SymfonyAccounting\Service\Exchange\LedgerExportService:
         arguments:

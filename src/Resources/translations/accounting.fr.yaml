@@ -22,9 +22,16 @@ document:
     paid: Déjà réglé
     amount_due: Reste à payer
     credit_note: Avoir
+    credited_bill: Avoir sur la facture
     payment: Règlement
     payment_reference: Référence de paiement
     holder: Titulaire
+    settled: Payée
+    settled_on: le
+    scan_to_pay: "Virement SEPA : scanner pour payer"
+  pagination:
+    before: "Page "
+    between: " / "
 
 identity:
   legal_identifier: Numéro d'entreprise

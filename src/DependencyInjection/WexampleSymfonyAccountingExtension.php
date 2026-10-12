@@ -69,10 +69,9 @@ class WexampleSymfonyAccountingExtension extends AbstractWexampleSymfonyExtensio
         $config = $this->processConfiguration(new Configuration(), $configs);
         $container->setParameter('wexample_symfony_accounting.access.roles', $config['access']['roles']);
         $container->setParameter('wexample_symfony_accounting.access.grants', $config['access']['grants']);
-        $container->setParameter('wexample_symfony_accounting.pdf_factory.url', $config['pdf_factory']['url']);
-        $container->setParameter(
-            'wexample_symfony_accounting.pdf_factory.theme',
-            $config['pdf_factory']['stylesheet'] ? ['stylesheet' => $config['pdf_factory']['stylesheet']] : null
-        );
+        $container->setParameter('wexample_symfony_accounting.document.stylesheets', [
+            ...($config['document']['default_stylesheet'] ? [dirname(__DIR__).'/Resources/pdf/invoice.css'] : []),
+            ...$config['document']['stylesheets'],
+        ]);
     }
 }
