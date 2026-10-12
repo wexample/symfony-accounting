@@ -35,7 +35,3 @@ Complétée le 2026-10-12 (même jour) : tiers, brouillons (modification, devis 
 - ~~Test de concurrence de la numérotation~~ fait le 2026-10-12 (`InvoiceNumberingConcurrencyTest`).
 - ~~Avoir sur une facture~~ réglé le 2026-10-12 : la facture reste telle qu'émise ; les avoirs émis sont déduits du montant attendu (`Invoice::calcCreditedAmount()`), donc du reste à payer, des relances, du rapprochement, du QR, et le statut est recalculé à l'émission de l'avoir. Sur le PDF, l'avoir apparaît dans les totaux, avant le reste à payer. À revoir avec la nouvelle version de network.
 - Commande `regenerate` de reprise de l'historique : optionnelle.
-
-## À faire relire par un comptable
-
-PCMN et rôles de comptes BE, cases CA3 / CA12 / 2033 (la TVA sur immobilisations remplit la ligne 19 de la CA3 ; sur la CA12, elle reste avec le reste faute d'être sûr de la case), mentions légales FR et BE.
