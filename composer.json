@@ -32,6 +32,7 @@
     "wexample/symfony-remote-payment": ">=2.0.0",
     "symfony/security-core": "^7.4 || ^8.0",
     "wexample/symfony-remote-pdf-factory": ">=1.0.0",
+    "wexample/symfony-remote-document-reader": ">=1.0.0",
     "wexample/symfony-api": ">=12.0.0"
   },
   "require-dev": {

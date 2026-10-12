@@ -10,3 +10,9 @@ L'émission est faite : `CiiInvoiceBuilder` écrit le CII (EN 16931), et le PDF 
 
 - Lire une Factur-X reçue : extraire `factur-x.xml` du PDF (pièce jointe sous `/AF` et `/Names/EmbeddedFiles`), puis un `CiiInvoiceReader` qui fait ce que fait `UblInvoiceReader` (brouillon d'achat, fournisseur retrouvé ou créé, total contrôlé). Il faut choisir une bibliothèque PDF, ce qui ajoute une dépendance. pdf-factory a refusé `POST /read`.
 - La validation par schematron n'est pas dans les tests, parce qu'elle demande Saxon (XSLT 2). Elle est à refaire à la main quand le builder change.
+
+## Fait (2026-10-12)
+
+- `CiiInvoiceReader` lit le CII, `ElectronicInvoiceImporter` crée le brouillon d'achat, partagé avec `UblInvoiceReader`.
+- `FacturXInvoiceReader` passe par le service document-reader (`symfony-remote-document-reader`), avec un avertissement si le XML n'est pas déclaré.
+- Testé en aller-retour : nos propres Factur-X, et une réponse simulée du service. Il n'y a pas encore eu de test sur la facture d'un tiers ni contre le service démarré.

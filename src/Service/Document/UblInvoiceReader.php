@@ -2,43 +2,39 @@
 
 namespace Wexample\SymfonyAccounting\Service\Document;
 
-use DateTimeImmutable;
 use SimpleXMLElement;
-use Wexample\SymfonyAccounting\Class\UblImportResult;
-use Wexample\SymfonyAccounting\Entity\Invoice;
-use Wexample\SymfonyAccounting\Entity\InvoiceItem;
+use Wexample\SymfonyAccounting\Class\ElectronicInvoiceImportResult;
 use Wexample\SymfonyAccounting\Entity\Ledger;
-use Wexample\SymfonyAccounting\Entity\Party;
-use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
-use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
-use Wexample\SymfonyAccounting\Repository\PartyRepository;
-use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
-use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
-use Wexample\SymfonyGeo\Repository\CountryRepository;
-use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
 
 /**
- * Turns a received electronic invoice (UBL 2.1, Peppol BIS Billing 3.0) into a
- * purchase draft: supplier found by VAT number (or created, with its IBAN),
- * lines, discounts, payment reference. The draft is checked against the total
- * the supplier stated; a person records it (InvoiceEmissionService).
+ * Reads a received electronic invoice in UBL 2.1 (Peppol BIS Billing 3.0) and
+ * hands it to ElectronicInvoiceImporter, which makes it a purchase draft.
  */
 class UblInvoiceReader
 {
+    private const string PARTY = '//cac:AccountingSupplierParty/cac:Party';
+
     public function __construct(
-        private readonly InvoiceFactory $invoiceFactory,
-        private readonly PartyService $partyService,
-        private readonly PartyRepository $partyRepository,
-        private readonly CountryRepository $countryRepository,
+        private readonly ElectronicInvoiceImporter $importer,
     ) {
     }
 
     public function read(
         Ledger $ledger,
         string $xml
-    ): UblImportResult {
+    ): ElectronicInvoiceImportResult {
+        return $this->importer->import($ledger, $this->parse($xml, $ledger->getCurrencyCode()), 'peppol');
+    }
+
+    /**
+     * The document in the terms ElectronicInvoiceImporter takes.
+     */
+    public function parse(
+        string $xml,
+        string $defaultCurrency
+    ): array {
         $previous = libxml_use_internal_errors(true);
         $document = simplexml_load_string($xml);
         libxml_use_internal_errors($previous);
@@ -48,140 +44,87 @@ class UblInvoiceReader
         }
 
         $credit = 'CreditNote' === $document->getName();
-        $document->registerXPathNamespace('cbc', UblInvoiceBuilder::NS_CBC);
-        $document->registerXPathNamespace('cac', UblInvoiceBuilder::NS_CAC);
-        $currency = $this->text($document, '/*/cbc:DocumentCurrencyCode') ?? $ledger->getCurrencyCode();
-        $warnings = [];
-
-        if ($currency !== $ledger->getCurrencyCode()) {
-            $warnings[] = sprintf('The invoice is in %s, the ledger in %s.', $currency, $ledger->getCurrencyCode());
-        }
-
-        [$supplier, $created] = $this->findOrCreateSupplier($ledger, $document);
-
-        $invoice = $this->invoiceFactory->create(
-            $ledger,
-            $credit ? InvoiceType::CreditNote : InvoiceType::Bill,
-            InvoiceDirection::Purchase,
-            $supplier,
-            new DateTimeImmutable((string) $this->text($document, '/*/cbc:IssueDate')),
-            $this->text($document, '/*/cbc:BuyerReference') ?? $this->text($document, '//cac:OrderReference/cbc:ID'),
-        )
-            ->setNumber($this->text($document, '/*/cbc:ID'))
-            ->setNote($this->text($document, '/*/cbc:Note'))
-            ->setPaymentReference($this->text($document, '//cac:PaymentMeans/cbc:PaymentID'))
-            ->setOrigin('peppol');
-
-        if ($due = $this->text($document, '/*/cbc:DueDate')) {
-            $invoice->setDateDue(new DateTimeImmutable($due));
-        }
-
+        $this->registerNamespaces($document);
+        $currency = $this->text($document, '/*/cbc:DocumentCurrencyCode') ?? $defaultCurrency;
         $lineTag = $credit ? 'CreditNoteLine' : 'InvoiceLine';
-        $quantityTag = $credit ? 'CreditedQuantity' : 'InvoicedQuantity';
+        $iban = $this->text($document, '//cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID');
+        $reference = $this->text($document, '//cac:PaymentMeans/cbc:PaymentID');
 
-        foreach ($document->xpath('/*/cac:'.$lineTag) ?: [] as $line) {
-            $this->addLine($invoice, $line, $quantityTag, $currency);
-        }
-
-        $discount = 0;
-        foreach ($document->xpath('/*/cac:AllowanceCharge') ?: [] as $allowanceCharge) {
-            $amount = MoneyHelper::fromDecimal((string) $this->child($allowanceCharge, 'cbc', 'Amount'), $currency);
-            $discount += 'true' === (string) $this->child($allowanceCharge, 'cbc', 'ChargeIndicator') ? -$amount : $amount;
-        }
-
-        if (0 !== $discount) {
-            $invoice->setPriceDiscount($discount, PriceUnit::Money);
-        }
-
-        $stated = MoneyHelper::fromDecimal((string) $this->text($document, '//cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount'), $currency);
-
-        if ($stated !== $invoice->calcPriceFinal()) {
-            $warnings[] = sprintf('The supplier states a total of %d, the lines give %d.', $stated, $invoice->calcPriceFinal());
-        }
-
-        if ($attachment = $this->text($document, '//cac:AdditionalDocumentReference/cac:Attachment/cbc:EmbeddedDocumentBinaryObject')) {
-            $invoice->setMetadata($invoice->getMetadata() + ['embedded_document' => true]);
-        }
-
-        return new UblImportResult($invoice, $created, $warnings);
+        return [
+            'number' => $this->text($document, '/*/cbc:ID'),
+            'credit' => $credit,
+            'issueDate' => (string) $this->text($document, '/*/cbc:IssueDate'),
+            'dueDate' => $this->text($document, '/*/cbc:DueDate'),
+            'note' => $this->text($document, '/*/cbc:Note'),
+            'currency' => $currency,
+            'buyerReference' => $this->text($document, '/*/cbc:BuyerReference') ?? $this->text($document, '//cac:OrderReference/cbc:ID'),
+            'seller' => [
+                'name' => $this->text($document, self::PARTY.'/cac:PartyLegalEntity/cbc:RegistrationName')
+                    ?? $this->text($document, self::PARTY.'/cac:PartyName/cbc:Name'),
+                'vatNumber' => $this->text($document, self::PARTY.'/cac:PartyTaxScheme/cbc:CompanyID'),
+                'legalIdentifier' => ($id = $this->text($document, self::PARTY.'/cac:PartyLegalEntity/cbc:CompanyID')) ? ['id' => $id, 'scheme' => null] : null,
+                'addressLines' => array_values(array_filter([
+                    $this->text($document, self::PARTY.'/cac:PostalAddress/cbc:StreetName'),
+                    $this->text($document, self::PARTY.'/cac:PostalAddress/cbc:AdditionalStreetName'),
+                ])),
+                'city' => $this->text($document, self::PARTY.'/cac:PostalAddress/cbc:CityName'),
+                'postCode' => $this->text($document, self::PARTY.'/cac:PostalAddress/cbc:PostalZone'),
+                'country' => $this->text($document, self::PARTY.'/cac:PostalAddress/cac:Country/cbc:IdentificationCode'),
+            ],
+            'payment' => $iban || $reference ? ['reference' => $reference, 'iban' => $iban] : null,
+            'allowances' => array_map(fn (SimpleXMLElement $node) => ['amount' => $this->allowanceAmount($node, $currency)], $document->xpath('/*/cac:AllowanceCharge') ?: []),
+            'totals' => ['total' => $this->text($document, '//cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount')],
+            'lines' => array_map(
+                fn (SimpleXMLElement $line) => $this->line($line, $credit ? 'CreditedQuantity' : 'InvoicedQuantity', $currency),
+                $document->xpath('/*/cac:'.$lineTag) ?: []
+            ),
+            'embeddedDocument' => null !== $this->text($document, '//cac:AdditionalDocumentReference/cac:Attachment/cbc:EmbeddedDocumentBinaryObject'),
+        ];
     }
 
-    private function addLine(
-        Invoice $invoice,
+    private function line(
         SimpleXMLElement $line,
         string $quantityTag,
         string $currency
-    ): void {
-        $line->registerXPathNamespace('cbc', UblInvoiceBuilder::NS_CBC);
-        $line->registerXPathNamespace('cac', UblInvoiceBuilder::NS_CAC);
-        $quantity = (float) ($this->text($line, 'cbc:'.$quantityTag) ?? 1);
-        $unitPrice = MoneyHelper::fromDecimal((string) ($this->text($line, 'cac:Price/cbc:PriceAmount') ?? '0'), $currency);
+    ): array {
+        $this->registerNamespaces($line);
+        $price = MoneyHelper::fromDecimal((string) ($this->text($line, 'cac:Price/cbc:PriceAmount') ?? '0'), $currency);
         $baseQuantity = (float) ($this->text($line, 'cac:Price/cbc:BaseQuantity') ?? 1) ?: 1.0;
-        $percent = (float) ($this->text($line, 'cac:Item/cac:ClassifiedTaxCategory/cbc:Percent') ?? 0);
-        $category = $this->text($line, 'cac:Item/cac:ClassifiedTaxCategory/cbc:ID');
+        $discount = array_sum(array_map(
+            fn (SimpleXMLElement $node) => MoneyHelper::fromDecimal($this->allowanceAmount($node, $currency), $currency),
+            $line->xpath('cac:AllowanceCharge') ?: []
+        ));
 
-        $item = $this->invoiceFactory->addItem(
-            $invoice,
-            (string) ($this->text($line, 'cac:Item/cbc:Name') ?? 'Line'),
-            (int) round($unitPrice / $baseQuantity),
-            (int) round($quantity * InvoiceItem::QUANTITY_SCALE),
-            in_array($category, ['S', 'Z'], true) ? (int) round($percent * 100) : 0,
-        );
-        $item->setDescription($this->text($line, 'cac:Item/cbc:Description'));
-
-        $discount = 0;
-        foreach ($line->xpath('cac:AllowanceCharge') ?: [] as $allowanceCharge) {
-            $amount = MoneyHelper::fromDecimal((string) $this->child($allowanceCharge, 'cbc', 'Amount'), $currency);
-            $discount += 'true' === (string) $this->child($allowanceCharge, 'cbc', 'ChargeIndicator') ? -$amount : $amount;
-        }
-
-        if (0 !== $discount) {
-            $item->setPriceDiscount($discount, PriceUnit::Money);
-        }
+        return [
+            'name' => $this->text($line, 'cac:Item/cbc:Name'),
+            'description' => $this->text($line, 'cac:Item/cbc:Description'),
+            'quantity' => $this->text($line, 'cbc:'.$quantityTag),
+            'price' => MoneyHelper::toDecimal((int) round($price / $baseQuantity), $currency),
+            'category' => [
+                'id' => $this->text($line, 'cac:Item/cac:ClassifiedTaxCategory/cbc:ID'),
+                'rate' => $this->text($line, 'cac:Item/cac:ClassifiedTaxCategory/cbc:Percent'),
+            ],
+            'discount' => $discount ? ['amount' => MoneyHelper::toDecimal($discount, $currency), 'percent' => null] : null,
+        ];
     }
 
     /**
-     * @return array{0: Party, 1: bool}
+     * Signed: an allowance reduces, a charge adds.
      */
-    private function findOrCreateSupplier(
-        Ledger $ledger,
-        SimpleXMLElement $document
-    ): array {
-        $party = '//cac:AccountingSupplierParty/cac:Party';
-        $vatNumber = $this->text($document, $party.'/cac:PartyTaxScheme/cbc:CompanyID');
+    private function allowanceAmount(
+        SimpleXMLElement $node,
+        string $currency
+    ): string {
+        $children = $node->children(UblInvoiceBuilder::NS_CBC);
+        $amount = MoneyHelper::fromDecimal((string) $children->Amount, $currency);
 
-        if ($vatNumber) {
-            $existing = $this->partyRepository->findOneBy(['ledger' => $ledger, 'vatNumber' => strtoupper(preg_replace('/[\s.\-]/', '', $vatNumber))]);
+        return MoneyHelper::toDecimal('true' === (string) $children->ChargeIndicator ? -$amount : $amount, $currency);
+    }
 
-            if ($existing) {
-                $existing->setSupplier(true);
-                $this->partyService->assignCodes($existing);
-
-                return [$existing, false];
-            }
-        }
-
-        $name = $this->text($document, $party.'/cac:PartyLegalEntity/cbc:RegistrationName')
-            ?? $this->text($document, $party.'/cac:PartyName/cbc:Name')
-            ?? 'Supplier';
-        $country = $this->text($document, $party.'/cac:PostalAddress/cac:Country/cbc:IdentificationCode');
-
-        $supplier = $this->partyService->create(
-            $ledger,
-            $name,
-            customer: false,
-            supplier: true,
-            country: $country ? $this->countryRepository->findByIsoAlpha2Code(strtoupper($country)) : null,
-        );
-        $supplier
-            ->setVatNumber($vatNumber)
-            ->setLegalIdentifier($this->text($document, $party.'/cac:PartyLegalEntity/cbc:CompanyID'))
-            ->setPostalAddress(trim(($this->text($document, $party.'/cac:PostalAddress/cbc:StreetName') ?? '')."\n".($this->text($document, $party.'/cac:PostalAddress/cbc:AdditionalStreetName') ?? '')) ?: null)
-            ->setPostCode($this->text($document, $party.'/cac:PostalAddress/cbc:PostalZone'))
-            ->setCity($this->text($document, $party.'/cac:PostalAddress/cbc:CityName'))
-            ->setIban($this->text($document, '//cac:PaymentMeans/cac:PayeeFinancialAccount/cbc:ID'));
-
-        return [$supplier, true];
+    private function registerNamespaces(SimpleXMLElement $node): void
+    {
+        $node->registerXPathNamespace('cbc', UblInvoiceBuilder::NS_CBC);
+        $node->registerXPathNamespace('cac', UblInvoiceBuilder::NS_CAC);
     }
 
     private function text(
@@ -192,15 +135,5 @@ class UblInvoiceReader
         $value = null === $found ? null : trim((string) $found);
 
         return '' === $value ? null : $value;
-    }
-
-    private function child(
-        SimpleXMLElement $node,
-        string $prefix,
-        string $name
-    ): ?SimpleXMLElement {
-        $children = $node->children($prefix === 'cbc' ? UblInvoiceBuilder::NS_CBC : UblInvoiceBuilder::NS_CAC);
-
-        return isset($children->{$name}) ? $children->{$name} : null;
     }
 }
