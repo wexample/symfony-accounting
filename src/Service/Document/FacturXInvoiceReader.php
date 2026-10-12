@@ -24,10 +24,11 @@ class FacturXInvoiceReader
      */
     public function read(
         Ledger $ledger,
-        string $pdf
+        string $pdf,
+        string $fileName = 'invoice.pdf'
     ): ElectronicInvoiceImportResult {
-        $extraction = $this->documentReader->extract($pdf);
-        $xml = $extraction->getFacturXXml();
+        $reading = $this->documentReader->read($fileName, $pdf, pages: false);
+        $xml = $reading->getFacturXXml();
 
         if (null === $xml) {
             throw new AccountingException('This PDF carries no structured invoice.');
@@ -35,10 +36,10 @@ class FacturXInvoiceReader
 
         $result = $this->ciiReader->read($ledger, $xml, 'factur-x');
 
-        if (! $extraction->facturx['declared']) {
+        if (! $reading->isFacturXDeclared()) {
             return new ElectronicInvoiceImportResult($result->invoice, $result->partyCreated, [
                 ...$result->warnings,
-                sprintf('The PDF embeds %s without declaring it: not a valid Factur-X.', $extraction->facturx['fileName']),
+                'The PDF embeds a structured invoice without declaring it as Factur-X expects: not a valid Factur-X.',
             ]);
         }
 
