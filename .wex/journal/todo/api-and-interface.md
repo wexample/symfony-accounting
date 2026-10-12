@@ -16,6 +16,7 @@ Banque (comptes, transactions, allocations, rapprochement), factures (CRUD, émi
 ## Écrans : `symfony-accounting-ds` (package à créer) et `-demo`
 
 - Éditeur de lignes de facture façon tableur, collage multi-lignes.
+- Prix et TVA recalculés en direct dans les formulaires de lignes (ex-étape 3 de `symfony-money/…/done/extract-from-network-sweep.md` ; source network `develop-131-fos-user/src/Wex/BaseBundle/Resources/js/forms/priced.ts`), avec `numberFormatMoney` du design system et `RateHelper` côté serveur.
 - Tableau des relations mensuelles (le SVG de network) : **à repenser avec le propriétaire**.
 - Rapprochement bancaire, transactions, formulaire d'import de relevé (aujourd'hui seulement `BankImportCommand`).
 - Balance, bilan, compte de résultat, validation des écritures.
