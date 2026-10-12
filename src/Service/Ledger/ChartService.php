@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyAccounting\Service\Ledger;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Service\ResetInterface;
 use Wexample\SymfonyAccounting\Class\ChartAccountDefinition;
 use Wexample\SymfonyAccounting\Entity\Account;
 use Wexample\SymfonyAccounting\Entity\Ledger;
@@ -16,9 +17,9 @@ use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
  * The ledger's chart of accounts: loading datasets, finding accounts by number
  * or by role, creating them on first use.
  */
-class ChartService
+class ChartService implements ResetInterface
 {
-    /** @var array<string, Account> Accounts created in this request, not flushed yet. */
+    /** @var array<string, Account> Accounts created and not flushed yet, which the repository cannot find. */
     private array $pending = [];
 
     /** @var array<string, array<string, ChartAccountDefinition>> Chart definitions by jurisdiction, then number. */
@@ -67,8 +68,22 @@ class ChartService
         Ledger $ledger,
         string $number
     ): ?Account {
-        return $this->pending[$this->key($ledger, $number)]
-            ?? $this->accountRepository->findOneByNumber($ledger, $number);
+        $key = $this->key($ledger, $number);
+        $pending = $this->pending[$key] ?? null;
+
+        // Once flushed, or forgotten by a cleared manager, the database answers:
+        // a kept copy would tie the next entry to a detached account.
+        if ($pending && ! $this->entityManager->getUnitOfWork()->isScheduledForInsert($pending)) {
+            unset($this->pending[$key]);
+            $pending = null;
+        }
+
+        return $pending ?? $this->accountRepository->findOneByNumber($ledger, $number);
+    }
+
+    public function reset(): void
+    {
+        $this->pending = [];
     }
 
     /**

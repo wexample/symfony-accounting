@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use DateTimeImmutable;
 use Wexample\SymfonyAccounting\Class\EntryDraft;
+use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
 use Wexample\SymfonyAccounting\Enum\FiscalYearStatus;
@@ -13,6 +14,8 @@ use Wexample\SymfonyAccounting\Exception\ClosedFiscalYearException;
 use Wexample\SymfonyAccounting\Exception\NoFiscalYearException;
 use Wexample\SymfonyAccounting\Exception\UnbalancedEntryException;
 use Wexample\SymfonyAccounting\Repository\AccountRepository;
+use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
+use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 use Wexample\SymfonyAccounting\Service\Ledger\FiscalYearService;
 use Wexample\SymfonyAccounting\Service\Ledger\PostingService;
@@ -138,5 +141,23 @@ class PostingTest extends AbstractAccountingTestCase
 
         $this->assertSame(1, $this->posting()->validateUntil($ledger, new DateTimeImmutable('2026-01-31')));
         $this->assertSame(EntryStatus::Posted, $late->getStatus());
+    }
+
+    /**
+     * A worker clears its entity manager between messages: the accounts the
+     * chart created before must be read again, not served detached.
+     */
+    public function testAccountsCreatedBeforeAClearAreReadAgain(): void
+    {
+        $ledger = $this->createLedger();
+        $this->createLedger();
+        $bill = $this->emitSale($ledger, $this->createParty($ledger));
+
+        $this->em()->clear();
+        $bill = $this->em()->find(Invoice::class, $bill->getId());
+        $credit = $this->service(InvoiceFactory::class)->createCreditNote($bill, 2000);
+        $this->em()->flush();
+
+        $this->assertNotNull($this->entryOf($this->service(InvoiceEmissionService::class)->emit($credit)));
     }
 }
