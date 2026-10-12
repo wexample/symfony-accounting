@@ -52,6 +52,11 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         return [];
     }
 
+    public function isFacturXEmbedded(Ledger $ledger): bool
+    {
+        return false;
+    }
+
     public function isLegalIdentifierIncludedInVatNumber(): bool
     {
         return false;

@@ -58,6 +58,12 @@ interface JurisdictionInterface
     public function getBankLocalDetails(string $iban): array;
 
     /**
+     * Whether the PDF of an emitted invoice carries its structured version as
+     * Factur-X (CII embedded in a PDF/A-3), the hybrid format of the French reform.
+     */
+    public function isFacturXEmbedded(Ledger $ledger): bool;
+
+    /**
      * Whether the VAT number contains the company identifier (BE), so that
      * documents print only one of them.
      */

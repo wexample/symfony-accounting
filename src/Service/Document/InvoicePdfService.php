@@ -6,14 +6,17 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Event\InvoiceDocumentEvent;
+use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyRemotePdfFactory\Class\PdfAttachment;
+use Wexample\SymfonyRemotePdfFactory\Class\PdfOutput;
 use Wexample\SymfonyRemotePdfFactory\Class\PdfTheme;
 use Wexample\SymfonyRemotePdfFactory\Service\PdfFactoryClient;
 
 /**
  * An invoice as a PDF: its data, its semantic document, the charter (the default
  * one, then the application's stylesheets), its data embedded as `invoice.json`
- * so the PDF can be checked against the books, the application's last word
+ * so the PDF can be checked against the books, a Factur-X output where the
+ * jurisdiction asks for it (an emitted invoice only), the application's last word
  * through InvoiceDocumentEvent, and pdf-factory's rendering.
  */
 class InvoicePdfService
@@ -26,6 +29,9 @@ class InvoicePdfService
         private readonly PdfFactoryDocumentBuilder $documentBuilder,
         private readonly PdfFactoryClient $client,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly JurisdictionRegistry $jurisdictionRegistry,
+        private readonly ElectronicInvoiceDataBuilder $electronicDataBuilder,
+        private readonly CiiInvoiceBuilder $ciiBuilder,
         private readonly array $stylesheets,
         private readonly ?TranslatorInterface $translator = null,
     ) {
@@ -50,7 +56,20 @@ class InvoicePdfService
                 'pagination-between' => $this->trans('document.pagination.between', $locale),
             ]),
             [PdfAttachment::json('invoice.json', $data, $this->trans('document.attachment.data', $locale))],
+            $this->facturX($invoice),
         ));
+    }
+
+    /**
+     * `Alternative`: from the BASIC profile up, the XML is the same invoice as the page.
+     */
+    private function facturX(Invoice $invoice): ?PdfOutput
+    {
+        if (! $this->electronicDataBuilder->supports($invoice) || ! $this->jurisdictionRegistry->forLedger($invoice->getLedger())->isFacturXEmbedded($invoice->getLedger())) {
+            return null;
+        }
+
+        return PdfOutput::facturX($this->ciiBuilder->build($invoice), PdfOutput::FACTURX_EN16931, PdfAttachment::RELATIONSHIP_ALTERNATIVE);
     }
 
     /**
