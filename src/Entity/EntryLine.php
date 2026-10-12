@@ -51,7 +51,7 @@ class EntryLine extends AbstractEntity
     #[ORM\Column(type: Types::STRING, length: 30, nullable: true)]
     protected ?string $vatCode = null;
 
-    #[ORM\Column(type: Types::STRING, length: 10, nullable: true, enumType: VatRole::class)]
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: VatRole::class)]
     protected ?VatRole $vatRole = null;
 
     /** Due date of a receivable or payable, for aged balances. */

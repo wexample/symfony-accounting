@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyAccounting\Api\Controller;
 
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,6 +12,7 @@ use Wexample\SymfonyAccounting\Class\VatReturn;
 use Wexample\SymfonyAccounting\Class\VatReturnLine;
 use Wexample\SymfonyAccounting\Enum\LedgerPermission;
 use Wexample\SymfonyAccounting\Service\Vat\OssService;
+use Wexample\SymfonyAccounting\Service\Vat\VatDeductionRegularizationService;
 use Wexample\SymfonyAccounting\Service\Vat\VatPositionService;
 use Wexample\SymfonyAccounting\Service\Vat\VatReturnService;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\StringQueryOption;
@@ -33,6 +35,10 @@ class VatReturnController extends AbstractAccountingApiController
     final public const string ROUTE_OSS = 'oss';
 
     final public const string ROUTE_OSS_SETTLE = 'oss_settle';
+
+    final public const string ROUTE_DEDUCTION = 'deduction';
+
+    final public const string ROUTE_DEDUCTION_REGULARIZE = 'deduction_regularize';
 
     /**
      * Where the year's VAT stands, period by period, deposits paid and expected.
@@ -119,6 +125,45 @@ class VatReturnController extends AbstractAccountingApiController
         $entry = $this->withinTheRules(fn () => $ossService->settle($ledger, $from, $to));
 
         return self::apiResponseSuccess(data: ['entry' => (string) $entry->getId()]);
+    }
+
+    /**
+     * What the year's final deduction coefficient (`rate`, basis points) would set
+     * right: the VAT it applies to, what was deducted, the difference.
+     */
+    #[Route(path: 'deduction', name: self::ROUTE_DEDUCTION, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[StringQueryOption(key: self::QUERY_OPTION_LEDGER, required: true)]
+    #[YearQueryOption]
+    #[StringQueryOption(key: 'rate', required: true)]
+    public function deduction(
+        Request $request,
+        VatDeductionRegularizationService $regularizationService,
+    ): ApiResponse {
+        return self::apiResponseSuccess(data: $regularizationService->compute(
+            $this->resolveLedger($request),
+            (int) self::getQueryOptionValue($request, VariableHelper::YEAR, DateHelper::getCurrentYearInt()),
+            (int) self::getQueryOptionValue($request, 'rate', ''),
+        ));
+    }
+
+    #[Route(path: 'deduction-regularize', name: self::ROUTE_DEDUCTION_REGULARIZE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[StringQueryOption(key: self::QUERY_OPTION_LEDGER, required: true)]
+    #[YearQueryOption]
+    #[StringQueryOption(key: 'rate', required: true)]
+    public function deductionRegularize(
+        Request $request,
+        VatDeductionRegularizationService $regularizationService,
+        EntityManagerInterface $entityManager,
+    ): ApiResponse {
+        $ledger = $this->resolveLedger($request, LedgerPermission::EDIT);
+        $entry = $this->withinTheRules(fn () => $regularizationService->regularize(
+            $ledger,
+            (int) self::getQueryOptionValue($request, VariableHelper::YEAR, DateHelper::getCurrentYearInt()),
+            (int) self::getQueryOptionValue($request, 'rate', ''),
+        ));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: ['entry' => $entry ? (string) $entry->getId() : null]);
     }
 
     private function compute(

@@ -16,6 +16,7 @@ use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceAccountingService;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\AbstractJurisdiction;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
+use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 use Wexample\SymfonyAccounting\Service\Ledger\PostingService;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 
@@ -38,6 +39,7 @@ class AllocationAccountingService
         private readonly JournalEntryRepository $entryRepository,
         private readonly JurisdictionRegistry $jurisdictionRegistry,
         private readonly InvoiceAccountingService $invoiceAccountingService,
+        private readonly ChartService $chartService,
     ) {
     }
 
@@ -165,7 +167,9 @@ class AllocationAccountingService
                 continue;
             }
 
-            $share = RateHelper::mulDiv($vatLine->vat, $paid, $invoice->calcPriceFinal());
+            // A purchase moves what was booked pending, which partial deduction may have cut.
+            $pending = $sale ? $vatLine->vat : $this->bookedPendingDeductible($invoice, $code, $vatLine->vat);
+            $share = RateHelper::mulDiv($pending, $paid, $invoice->calcPriceFinal());
 
             if ($sale) {
                 $draft->add(AccountRole::VatCollectedPending, $side * $share, null, null, $code, VatRole::Tax);
@@ -211,6 +215,33 @@ class AllocationAccountingService
             $code,
             VatRole::Tax
         );
+    }
+
+    /**
+     * The deductible VAT of the code the purchase's entry booked as pending; the
+     * document's VAT when it is not booked yet.
+     */
+    private function bookedPendingDeductible(
+        Invoice $invoice,
+        ?string $code,
+        int $vat
+    ): int {
+        $entry = $this->invoiceAccountingService->findEntry($invoice);
+
+        if (null === $entry) {
+            return $vat;
+        }
+
+        $pendingAccount = $this->chartService->getRoleNumber($invoice->getLedger(), AccountRole::VatDeductiblePending);
+        $pending = 0;
+
+        foreach ($entry->getLines() as $line) {
+            if ($line->getVatCode() === $code && $line->getAccount()->getNumber() === $pendingAccount) {
+                $pending += abs($line->getBalance());
+            }
+        }
+
+        return $pending;
     }
 
     private function findChargedCode(

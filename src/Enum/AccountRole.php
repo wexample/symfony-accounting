@@ -39,6 +39,11 @@ enum AccountRole: string
     case VatPayable = 'vat_payable';
     case VatCredit = 'vat_credit';
     case VatDeposits = 'vat_deposits';
+
+    /** Where the year's final deduction coefficient posts what it gives back, or takes. */
+    case VatAdjustmentGain = 'vat_adjustment_gain';
+
+    case VatAdjustmentLoss = 'vat_adjustment_loss';
     case DoubtfulCustomers = 'doubtful_customers';
     case BadDebts = 'bad_debts';
     case LatePenaltiesIncome = 'late_penalties_income';

@@ -18,6 +18,7 @@ use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 use Wexample\SymfonyAccounting\Service\Ledger\PostingService;
+use Wexample\SymfonyAccounting\Service\Vat\VatDeductionPolicy;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 
 /**
@@ -42,6 +43,7 @@ class InvoiceAccountingService
         private readonly ChartService $chartService,
         private readonly JurisdictionRegistry $jurisdictionRegistry,
         private readonly JournalEntryRepository $entryRepository,
+        private readonly VatDeductionPolicy $deductionPolicy,
     ) {
     }
 
@@ -113,6 +115,13 @@ class InvoiceAccountingService
             if ($code->isCharged()) {
                 $tax = $breakdown->getVatLine($code->rate)?->vat ?? RateHelper::rateOf($base, $code->rate);
                 $total += $tax;
+
+                if (AccountRole::VatDeductible === $code->accountRole && $this->deductionPolicy->isPartial($ledger, (int) $invoice->getDateInvoice()->format('Y'))) {
+                    $this->addPartiallyDeductible($draft, $invoice, $bases, $code->code, $base, $tax, $side, $jurisdiction, true);
+
+                    continue;
+                }
+
                 // Deductible VAT on fixed assets is booked apart, in proportion of their base.
                 $assetTax = AccountRole::VatDeductible === $code->accountRole
                     ? $this->assetShare($bases, $code->code, $base, $tax, $jurisdiction)
@@ -125,7 +134,14 @@ class InvoiceAccountingService
                 $draft->add($this->taxRole($invoice, $code->accountRole), ($sale ? -1 : 1) * $side * ($tax - $assetTax), null, null, $code->code, VatRole::Tax);
             } elseif ($code->isSelfAssessed()) {
                 $tax = RateHelper::rateOf($base, $code->rate);
-                $draft->add($code->accountRole, $side * $tax, null, null, $code->code, VatRole::Tax);
+
+                // Self-assessed VAT is due in full, and deductible like any other.
+                if ($this->deductionPolicy->isPartial($ledger, (int) $invoice->getDateInvoice()->format('Y'))) {
+                    $this->addPartiallyDeductible($draft, $invoice, $bases, $code->code, $base, $tax, $side, $jurisdiction, false);
+                } else {
+                    $draft->add($code->accountRole, $side * $tax, null, null, $code->code, VatRole::Tax);
+                }
+
                 $draft->add($code->selfAssessedRole, -$side * $tax, null, null, $code->code, VatRole::Tax);
             }
         }
@@ -318,6 +334,63 @@ class InvoiceAccountingService
         }
 
         return 0 === $base ? 0 : RateHelper::mulDiv($tax, $assetBase, $base);
+    }
+
+    /**
+     * A purchase's VAT, charged or self-assessed, split along its bases: what the account's admission excludes
+     * is a plain cost, what the year's coefficient leaves undeducted a cost tagged
+     * for its regularization, the rest deductible — on fixed assets apart.
+     *
+     * @param list<array{account: string, code: ?string, amount: int}> $bases
+     */
+    private function addPartiallyDeductible(
+        EntryDraft $draft,
+        Invoice $invoice,
+        array $bases,
+        string $code,
+        int $base,
+        int $tax,
+        int $side,
+        JurisdictionInterface $jurisdiction,
+        bool $charged
+    ): void {
+        $ledger = $invoice->getLedger();
+        $coefficient = $this->deductionPolicy->getDeductionRate($ledger, (int) $invoice->getDateInvoice()->format('Y'));
+        $lines = array_values(array_filter($bases, fn (array $line) => $line['code'] === $code));
+        $left = $tax;
+        $deductible = 0;
+        $deductibleAssets = 0;
+
+        foreach ($lines as $index => $line) {
+            // The last line takes what rounding left, so the shares add up to the tax.
+            $share = $index === count($lines) - 1 || 0 === $base ? $left : RateHelper::mulDiv($tax, $line['amount'], $base);
+            $left -= $share;
+            $admitted = RateHelper::mulDiv($share, $this->deductionPolicy->getAdmissionRate($ledger, $line['account']), RateHelper::BASIS);
+            $deducted = RateHelper::mulDiv($admitted, $coefficient, RateHelper::BASIS);
+
+            if (0 !== $share - $admitted) {
+                $draft->add($line['account'], $side * ($share - $admitted));
+            }
+
+            if (0 !== $admitted - $deducted) {
+                $draft->add($line['account'], $side * ($admitted - $deducted), null, null, $code, VatRole::NonDeductible);
+            }
+
+            if ($jurisdiction->isFixedAssetAccount($line['account'])) {
+                $deductibleAssets += $deducted;
+            } else {
+                $deductible += $deducted;
+            }
+        }
+
+        if (0 !== $deductibleAssets) {
+            $draft->add(AccountRole::VatDeductibleAssets, $side * $deductibleAssets, null, null, $code, VatRole::Tax);
+        }
+
+        if (0 !== $deductible) {
+            // Charged VAT waits for the payment under VAT on payments; self-assessed VAT never does.
+            $draft->add($charged ? $this->taxRole($invoice, AccountRole::VatDeductible) : AccountRole::VatDeductible, $side * $deductible, null, null, $code, VatRole::Tax);
+        }
     }
 
     private function mainAccountOf(

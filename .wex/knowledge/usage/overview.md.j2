@@ -70,6 +70,21 @@ Distance sales to consumers in other EU countries are taxed at the customer's co
 - Reduced rates are not chosen: an OSS sale is charged the standard rate.
 - `OssService` keeps the VAT on its own account (`AccountRole::VatCollectedOss`) and leaves it out of the national return. It computes the quarter's return by country and rate, exports it as CSV for the portal, and settles it into VAT payable.
 
+## Partial VAT deduction
+
+A ledger that may not deduct all the VAT it pays says so in its settings:
+- `vat_deduction_rate`, or `vat_deduction_rates` by year, in basis points: the deduction coefficient (FR assujettissement × taxation, BE prorata);
+- `vat_admission_rates`: an admission by expense account prefix (receptions, passenger cars), the longest prefix winning.
+
+At booking, `InvoiceAccountingService` splits the VAT of a purchase, charged or self-assessed, along its bases:
+- what the admission excludes is a plain cost;
+- what the coefficient leaves undeducted is a cost tagged `VatRole::NonDeductible`;
+- the rest is deductible.
+
+Under VAT on payments, a payment moves only what was booked as pending.
+
+`VatDeductionRegularizationService` makes the year final: what was deducted at the provisional coefficient is set right with the final one, on the year's last day, against `VatAdjustmentGain` or `VatAdjustmentLoss`. The final coefficient becomes next year's provisional one. Multi-year regularizations of fixed assets are not handled.
+
 ## VAT position
 
 `VatPositionService::build($ledger, $year)` reads where the year's VAT stands, one column per return period — months, quarters, or half-years for an annual regime —: VAT collected, deductible (the part on fixed assets apart), net, deposits paid as booked, and the deposits the jurisdiction expects from last year's net VAT (`getVatDepositSchedule()`: the July and December deposits of the French simplified regime), then the balance left for the year. Deductible VAT on fixed assets (`isFixedAssetAccount()`: class 2 without 28 and 29) is booked on its own account (`AccountRole::VatDeductibleAssets`), which the forms read apart.
@@ -115,6 +130,7 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 | `POST api/entry-line/letter`, `unletter/{id}` | lettering |
 | `GET api/fiscal-year/list?ledger=`, `check/{id}`; `POST next?ledger=`, `close/{id}?force=`, `reopen/{id}` | fiscal years (closing asks `accounting.administer`) |
 | `GET api/vat-return/show?ledger=&from=&to=`; `POST settle`; `GET position?ledger=&year=` | the VAT of a period, the forms' boxes, its settlement; where the year's VAT stands |
+| `GET api/vat-return/deduction?ledger=&year=&rate=`; `POST deduction-regularize` | what the year's final deduction coefficient sets right; its regularization |
 | `GET api/vat-return/oss?ledger=&from=&to=`; `POST oss-settle` | the OSS return by country and rate, the year's distance sales against the threshold, its CSV; its settlement |
 | `GET api/accounting-report/statement?fiscalYear=&key=`, `general-ledger?fiscalYear=&account=`, `export?fiscalYear=&format=` | statements, general ledger, exports (the formats offered without `format`) |
 | `GET api/trial-balance/show?ledger=&year=` | the trial balance of a calendar year |
