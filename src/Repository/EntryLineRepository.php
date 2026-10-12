@@ -11,6 +11,7 @@ use Wexample\SymfonyAccounting\Entity\FiscalYear;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
+use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyHelpers\Repository\AbstractRepository;
 
 /**
@@ -37,6 +38,9 @@ class EntryLineRepository extends AbstractRepository
     /**
      * Debit and credit totals per account number, over a date range or a fiscal year.
      *
+     * @param bool|null $opening True for the opening entries only (the balances
+     *                           carried from the year before), false for every
+     *                           other entry, null for all.
      * @return array<string, array{debit: int, credit: int}> Sorted by account number.
      */
     public function sumByAccount(
@@ -44,11 +48,18 @@ class EntryLineRepository extends AbstractRepository
         ?DateTimeInterface $from = null,
         ?DateTimeInterface $to = null,
         ?FiscalYear $fiscalYear = null,
+        ?bool $opening = null,
     ): array {
         $builder = $this->queryBooked($ledger)
             ->select('a.number AS number, SUM(l.debit) AS debit, SUM(l.credit) AS credit')
             ->groupBy('a.number')
             ->orderBy('a.number', self::SORT_ASC);
+
+        if (null !== $opening) {
+            $builder->join('e.journal', 'j')
+                ->andWhere($opening ? 'j.type = :opening' : 'j.type != :opening')
+                ->setParameter('opening', JournalType::Opening->value);
+        }
 
         $this->filterPeriod($builder, $from, $to, $fiscalYear);
         $sums = [];

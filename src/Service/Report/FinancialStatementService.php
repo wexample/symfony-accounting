@@ -115,14 +115,15 @@ class FinancialStatementService
     }
 
     /**
-     * "sales+other-charges", "I-II+III": line keys added or subtracted, left to
-     * right. Formulas may use lines computed before them.
+     * "sales+other-charges", "I-II+III", "21+22/27+28": line keys added or
+     * subtracted, left to right; a slash belongs to a key (a rubric range), there is
+     * no division. Formulas may use lines computed before them.
      */
     public function evaluate(
         string $formula,
         array $lines
     ): int {
-        if (! preg_match_all('/([+-]?)\s*([A-Za-z0-9_.]+)/', $formula, $terms, PREG_SET_ORDER)) {
+        if (! preg_match_all('#([+-]?)\s*([A-Za-z0-9_./]+)#', $formula, $terms, PREG_SET_ORDER)) {
             throw new AccountingException(sprintf('Invalid report formula "%s".', $formula));
         }
 
