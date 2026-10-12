@@ -15,4 +15,6 @@ L'émission est faite : `CiiInvoiceBuilder` écrit le CII (EN 16931), et le PDF 
 
 - `CiiInvoiceReader` lit le CII, `ElectronicInvoiceImporter` crée le brouillon d'achat, partagé avec `UblInvoiceReader`.
 - `FacturXInvoiceReader` passe par le service document-reader (`symfony-remote-document-reader`), avec un avertissement si le XML n'est pas déclaré.
-- Testé en aller-retour : nos propres Factur-X, et une réponse simulée du service. Il n'y a pas encore eu de test sur la facture d'un tiers ni contre le service démarré.
+- Testé en aller-retour avec une réponse simulée du service.
+- Le 2026-10-12, testé aussi contre les services démarrés (`FacturXTest::testAFacturXRoundTripsThroughTheServices`, lancé seulement si `PDF_FACTORY_URL` et `DOCUMENT_READER_URL` sont définis). Notre Factur-X est rendu par pdf-factory, relu par document-reader, puis enregistré en achat avec le même total et sans avertissement.
+- Il n'y a pas encore eu de test sur la facture d'un tiers : la fixture de document-reader porte un CII vide.
