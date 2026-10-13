@@ -11,11 +11,13 @@ use Wexample\SymfonyApi\WexampleSymfonyApiBundle;
 use Wexample\SymfonyCheck\WexampleSymfonyCheckBundle;
 use Wexample\SymfonyGeo\WexampleSymfonyGeoBundle;
 use Wexample\SymfonyLoader\WexampleSymfonyLoaderBundle;
+use Wexample\SymfonyMedia\WexampleSymfonyMediaBundle;
 use Wexample\SymfonyMoney\WexampleSymfonyMoneyBundle;
 use Wexample\SymfonyPayment\WexampleSymfonyPaymentBundle;
 use Wexample\SymfonyRemotePayment\WexampleSymfonyRemotePaymentBundle;
 use Wexample\SymfonyRemoteDocumentReader\WexampleSymfonyRemoteDocumentReaderBundle;
 use Wexample\SymfonyRemotePdfFactory\WexampleSymfonyRemotePdfFactoryBundle;
+use Wexample\SymfonyRemoteVies\WexampleSymfonyRemoteViesBundle;
 use Wexample\SymfonyRemotePeppol\WexampleSymfonyRemotePeppolBundle;
 use Wexample\SymfonySecurity\WexampleSymfonySecurityBundle;
 use Wexample\SymfonyTesting\Tests\Fixtures\AbstractFixtureKernel;
@@ -35,9 +37,11 @@ class AppKernel extends AbstractFixtureKernel
             new WexampleSymfonyGeoBundle(),
             new WexampleSymfonyCheckBundle(),
             new WexampleSymfonyRemotePaymentBundle(),
+            new WexampleSymfonyMediaBundle(),
             new WexampleSymfonyPaymentBundle(),
             new WexampleSymfonyRemotePdfFactoryBundle(),
             new WexampleSymfonyRemoteDocumentReaderBundle(),
+            new WexampleSymfonyRemoteViesBundle(),
             new WexampleSymfonyRemotePeppolBundle(),
             new WexampleSymfonyAccountingBundle(),
             new WexampleSymfonySecurityBundle(),

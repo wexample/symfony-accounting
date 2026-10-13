@@ -80,6 +80,30 @@ class OssService
     }
 
     /**
+     * Whether the ledger's distance sales are already taxed in the customer's
+     * country on a day: registered, or the threshold passed last year or so far
+     * this year. What a checkout asks before any document exists; the sale that
+     * passes the threshold itself is only seen by applies(), on its document.
+     */
+    public function appliesToLedger(
+        Ledger $ledger,
+        DateTimeImmutable $date
+    ): bool {
+        if (! $ledger->isVatSubject()) {
+            return false;
+        }
+
+        if ($ledger->getSetting('oss_registered', false)) {
+            return true;
+        }
+
+        $year = (int) $date->format('Y');
+
+        return $this->getDistanceSales($ledger, $year - 1) > self::THRESHOLD
+            || $this->getDistanceSales($ledger, $year) > self::THRESHOLD;
+    }
+
+    /**
      * The distance sales of a calendar year that count toward the threshold, net
      * of credit notes, in cents.
      */

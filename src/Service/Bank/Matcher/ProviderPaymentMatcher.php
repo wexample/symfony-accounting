@@ -12,7 +12,8 @@ use Wexample\SymfonyPayment\Repository\PaymentRepository;
 
 /**
  * A provider line carrying the payment it settles (Stripe PaymentIntent):
- * when that payment paid a document, the line pays that document. Certain.
+ * when that payment paid a document, or a payable invoiced with it (a cart),
+ * the line pays that document. Certain.
  */
 class ProviderPaymentMatcher implements TransactionMatcherInterface
 {
@@ -42,11 +43,14 @@ class ProviderPaymentMatcher implements TransactionMatcherInterface
 
         $payment = $this->paymentRepository->findOneByProviderReference($reference);
 
-        if (! $payment || Invoice::PAYABLE_TYPE !== $payment->getPayableType() || ! Uuid::isValid((string) $payment->getPayableId())) {
+        if (! $payment) {
             return [];
         }
 
-        $invoice = $this->invoiceRepository->find(Uuid::fromString($payment->getPayableId()));
+        // A document paid itself; anything else paid was invoiced with its payment.
+        $invoice = Invoice::PAYABLE_TYPE === $payment->getPayableType()
+            ? (Uuid::isValid((string) $payment->getPayableId()) ? $this->invoiceRepository->find(Uuid::fromString($payment->getPayableId())) : null)
+            : $this->invoiceRepository->findBillForPayment($payment);
 
         if (! $invoice || $invoice->getLedger() !== $transaction->getLedger() || $invoice->calcRemainingAmount() <= 0) {
             return [];

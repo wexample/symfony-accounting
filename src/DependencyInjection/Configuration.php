@@ -13,6 +13,10 @@ class Configuration implements ConfigurationInterface
 
         $treeBuilder->getRootNode()
             ->children()
+                ->scalarNode('sales_ledger')
+                    ->defaultNull()
+                    ->info('The external reference of the ledger that sells: each paid payable (a cart…) is invoiced in it, and its country decides the VAT charged at checkout. Null: nothing is invoiced on payment.')
+                ->end()
                 ->arrayNode('document')
                     ->info('How invoices are dressed when rendered by pdf-factory (wexample_symfony_remote_pdf_factory.url).')
                     ->addDefaultsIfNotSet()

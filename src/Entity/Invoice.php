@@ -23,6 +23,7 @@ use Wexample\SymfonyMoney\Entity\Traits\HasPriceDiscountTrait;
 use Wexample\SymfonyMoney\Entity\Traits\PricedParentTrait;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
 use Wexample\SymfonyMoney\Interface\PricedParentInterface;
+use Wexample\SymfonyPayment\Entity\Payment;
 use Wexample\SymfonyPayment\Interface\PayableInterface;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
@@ -141,13 +142,18 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
     protected ?string $documentPath = null;
 
-    /** How it was created: "manual", "bank", "cart", "model", "import". */
+    /** How it was created: "manual", "bank", "model", "import", or the payable type it invoices ("cart"). */
     #[ORM\Column(type: Types::STRING, length: 20)]
     protected string $origin = 'manual';
 
     #[ORM\ManyToOne(targetEntity: self::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     protected ?self $model = null;
+
+    /** The payment this document was made from, when a paid payable was invoiced (PayableInvoicingService). */
+    #[ORM\ManyToOne(targetEntity: Payment::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    protected ?Payment $payment = null;
 
     /** @var Collection<int, InvoiceItem> */
     #[ORM\OneToMany(targetEntity: InvoiceItem::class, mappedBy: 'invoice', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -553,6 +559,18 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     public function setModel(?self $model): static
     {
         $this->model = $model;
+
+        return $this;
+    }
+
+    public function getPayment(): ?Payment
+    {
+        return $this->payment;
+    }
+
+    public function setPayment(?Payment $payment): static
+    {
+        $this->payment = $payment;
 
         return $this;
     }

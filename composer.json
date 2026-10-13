@@ -36,7 +36,9 @@
     "wexample/symfony-remote-peppol": ">=1.0.0",
     "wexample/symfony-api": ">=12.0.0",
     "wexample/php-pseudocode": ">=2.2.0",
-    "wexample/symfony-pseudocode": ">=3.0.0"
+    "wexample/symfony-pseudocode": ">=3.0.0",
+    "wexample/symfony-media": ">=1.0.0",
+    "wexample/symfony-remote-vies": ">=1.0.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^13",

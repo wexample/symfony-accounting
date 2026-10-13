@@ -37,10 +37,19 @@ services:
     arguments:
       $defaultLocale: en
 
+  # A payable of a package accounting never heard of, and VIES without the network.
+  Wexample\SymfonyAccounting\Tests\Fixtures\App\Payable\TestSaleResolver: ~
+
+  Wexample\SymfonyRemoteVies\Service\ViesClient:
+    arguments:
+      $httpClient: !service { class: Wexample\SymfonyAccounting\Tests\Fixtures\App\Vies\FakeVies }
+      $cache: null
+
   # Ledgers tied to groups, grants held on them: memberships, as an application has them.
   Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGroupResolver: ~
   Wexample\SymfonyAccounting\Tests\Fixtures\App\Access\FirmGrantVoter: ~
 
 wexample_symfony_accounting:
+  sales_ledger: shop
   access:
     grants: { view: client, edit: accountant, administer: partner }

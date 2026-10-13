@@ -67,6 +67,7 @@ class WexampleSymfonyAccountingExtension extends AbstractWexampleSymfonyExtensio
         );
 
         $config = $this->processConfiguration(new Configuration(), $configs);
+        $container->setParameter('wexample_symfony_accounting.sales_ledger', $config['sales_ledger']);
         $container->setParameter('wexample_symfony_accounting.access.roles', $config['access']['roles']);
         $container->setParameter('wexample_symfony_accounting.access.grants', $config['access']['grants']);
         $container->setParameter('wexample_symfony_accounting.document.stylesheets', [

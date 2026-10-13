@@ -7,7 +7,9 @@ use Symfony\Bridge\Doctrine\Types\UuidType;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
+use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyHelpers\Repository\AbstractRepository;
+use Wexample\SymfonyPayment\Entity\Payment;
 
 /**
  * @method Invoice|null find($id, $lockMode = null, $lockVersion = null)
@@ -57,6 +59,15 @@ class InvoiceRepository extends AbstractRepository
         string $number
     ): ?Invoice {
         return $this->findOneBy(['ledger' => $ledger, 'number' => $number]);
+    }
+
+    /**
+     * The bill a paid payable was invoiced with: none when it was not, or when
+     * the payable is a document itself.
+     */
+    public function findBillForPayment(Payment $payment): ?Invoice
+    {
+        return $this->findOneBy(['payment' => $payment, 'type' => InvoiceType::Bill]);
     }
 
     public function findOneByPaymentReference(

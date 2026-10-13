@@ -50,6 +50,27 @@ The PDF carries the document data as an embedded `invoice.json` (relationship `D
 $pdf = $invoicePdfService->render($invoice, 'fr');
 ```
 
+## Invoicing what was paid
+
+```yaml
+wexample_symfony_accounting:
+  sales_ledger: shop   # the externalReference of the ledger that sells
+```
+
+With a sales ledger, every payment of `symfony-payment` that succeeds is invoiced there by `PayableInvoicingService`, whatever was paid: a cart of `symfony-shop`, a subscription, a registration. Accounting never sees the payable's class. It reads its lines as money's `PricedLineInterface` (title, quantity, unit price, rate, discount, goods or services, revenue account) and its buyer as payment's `BuyerIdentifiedInterface`. The buyer becomes a customer `Party`, found again by VAT number or email. The bill is emitted at once, linked to its payment (`Invoice::getPayment()`), its origin the payable type. A refund issues a credit note on it: the whole bill when the whole payment is refunded, else the amount at the bill's main rate. A bill that cannot be emitted (no exchange rate, no open fiscal year) stays a draft, logged. A document paid through payment is its own bill and is never invoiced again.
+
+`ProviderPaymentMatcher` settles such a bill like a paid document: the provider's line carries the payment, the payment the bill.
+
+## VAT at checkout
+
+Accounting takes the place of money's `VatRateResolverInterface`, so a shop charges at checkout the VAT its invoice will carry. The rules are those of the sales ledger's country. A business from another EU country pays none (reverse charge), once its number is confirmed by VIES (`symfony-remote-vies`, through `VatNumberVerifier`). A consumer abroad pays their country's rate once the One-Stop Shop applies (`OssService::appliesToLedger()`). Everyone else pays the seller's rate. A VIES giving no verdict confirms nothing: the buyer is charged VAT and the number is not kept on the customer, so bill and payment agree. Without a sales ledger, or before the buyer's country is known, money's default answers: the product's own rate.
+
+The sale that passes the OSS threshold is only seen at emission, on its document. Its bill may then ask another amount than checkout charged; the gap is logged.
+
+## Payment proofs
+
+A proof attached to a manual payment (`PaymentService::attachProof()`, a transfer receipt, a scan) is read by `PaymentProofReader` through document-reader. Whether it shows the payment's amount and one of its references (payment, payable, provider) is written under the payment's metadata `proof_reading`. It is a help for whoever confirms the money, never a confirmation. Without a document-reader URL nothing is read.
+
 ## Bank
 
 ```php

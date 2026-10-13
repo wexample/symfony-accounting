@@ -12,10 +12,8 @@ use Wexample\SymfonyMoney\Entity\Traits\HasPriceVatTrait;
 use Wexample\SymfonyMoney\Entity\Traits\HasQuantityTrait;
 use Wexample\SymfonyMoney\Entity\Traits\PricedChildTrait;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
-use Wexample\SymfonyMoney\Interface\PricedChildInterface;
+use Wexample\SymfonyMoney\Interface\PricedLineInterface;
 use Wexample\SymfonyMoney\Interface\PricedParentInterface;
-use Wexample\SymfonyMoney\Interface\QuantifiedInterface;
-use Wexample\SymfonyMoney\Interface\VatRatedInterface;
 
 /**
  * A line of a document. The quantity is scaled by 100 (150 = 1.5), so days and
@@ -25,7 +23,7 @@ use Wexample\SymfonyMoney\Interface\VatRatedInterface;
 #[PseudocodeExport(inherited: true)]
 #[ORM\Entity]
 #[ORM\Table(name: 'accounting_invoice_item')]
-class InvoiceItem extends AbstractEntity implements PricedChildInterface, QuantifiedInterface, VatRatedInterface, DiscountedInterface
+class InvoiceItem extends AbstractEntity implements PricedLineInterface, DiscountedInterface
 {
     use PricedChildTrait;
     use HasQuantityTrait;

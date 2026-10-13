@@ -39,6 +39,25 @@ class PartyRepository extends AbstractRepository
         return $this->findOneBy(['ledger' => $ledger, 'externalReference' => $externalReference]);
     }
 
+    /**
+     * A customer known by its VAT number, else by its email: who a buyer already is in the books.
+     */
+    public function findOneCustomer(
+        Ledger $ledger,
+        ?string $vatNumber,
+        ?string $email
+    ): ?Party {
+        if ($vatNumber) {
+            $party = $this->findOneBy(['ledger' => $ledger, 'customer' => true, 'vatNumber' => $vatNumber]);
+
+            if ($party) {
+                return $party;
+            }
+        }
+
+        return $email ? $this->findOneBy(['ledger' => $ledger, 'customer' => true, 'email' => $email]) : null;
+    }
+
     public function findOneByIban(
         Ledger $ledger,
         string $iban

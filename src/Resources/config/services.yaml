@@ -44,3 +44,8 @@ services:
     Wexample\SymfonyAccounting\Service\Exchange\EntryImportService:
         arguments:
             $importers: !tagged_iterator wexample_symfony_accounting.entry_importer
+
+    Wexample\SymfonyAccounting\Service\Vat\AccountingVatRateResolver:
+        decorates: Wexample\SymfonyMoney\Interface\VatRateResolverInterface
+        arguments:
+            $inner: '@.inner'
