@@ -58,3 +58,10 @@ All in `/home/weeger/Desktop/WIP/WEB/WEXAMPLE/NETWORK/archeo/gitlab/issues/`: `0
 1. Is the fee still 3 % and still deducted from the member side? Is the calculator still wanted now that `createInputFromOutput` exists?
 2. Which of these UX points already exist in the planned invoice UI (see `extract-from-network*.md` in this journal)?
 3. Does #69's "submit for validation at creation" fit the validation workflow decided for the new package?
+
+## Classé (2026-10-13, agent:main)
+
+- Abandonnés, propres à la coopérative, qui n'a plus de membres qui facturent : 3 (saisie rapide des membres), 6 (gains → factures), 7 (calculateur et déduction de la commission).
+- Déjà faits : 5 (devis jamais en retard), 9 (charte du PDF, classée avec `invoice-pdf-brand-charter.md`).
+- Backend fait : chaque action de l'API répond avec le document entier, donc l'écran se rafraîchit sans requête de plus (4). La fiche porte ses documents liés dans les deux sens (`InvoiceDto::$related`), ce qui couvre « une facture liste ses suites » (4).
+- Le reste concerne l'écran et part à DS dans `api-and-interface.md` : pastilles de statut (1), association explicite (2), liste des documents liés (4), copie au clic (8).
