@@ -123,12 +123,12 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 | `GET api/ledger/list`, `show/{id}`; `POST update/{id}` | the ledgers the reader may open; their settings (`accounting.administer`) |
 | `GET api/invoice/list?ledger=&type=&status=&direction=&year=&search=&sort=` | documents, paginated; `show/{id}`, `pdf/{id}?locale=` |
 | `POST api/invoice/create`, `update/{id}`, `emit/{id}`, `credit-note/{id}`, `bill/{id}`, `duplicate/{id}`; `DELETE delete/{id}` | a draft, its fields, its emission, its cancellation by a credit note, the bill of a quotation, a copy, a draft deleted |
-| `POST api/invoice/relate/{id}` (`other`, `type` rebill\|financing, `way` to\|from); `DELETE unrelate/{id}/{relation}` | a link set by hand between two documents of a ledger; the others (quotation, credit, deposit, penalty) follow from their action. A document lists its links both ways in `related` |
+| `POST api/invoice/relate/{id}` (`other`, `type` rebill\|financing, `way` to\|from); `DELETE unrelate/{id}/{relation}` | a link set by hand between two documents of a ledger; the others (quotation, credit, deposit, penalty) follow from their action. A document lists its links both ways in its metadata, `related` |
 | `GET api/invoice/electronic/{id}?format=ubl\|cii` | an emitted document as a structured electronic invoice, UBL (Peppol) or CII (Factur-X) |
 | `GET api/invoice/peppol/{id}`; `POST peppol/{id}` | whether a document can go over Peppol and its transmissions; sending an emitted sale |
 | `POST api/invoice/receive?ledger=` (multipart `file`) | a received Factur-X PDF, CII or UBL made a purchase draft, with `partyCreated` and `warnings` |
-| `POST api/invoice-item/create`, `update/{id}`; `DELETE delete/{id}` | the lines of a draft, answered with the whole document |
-| `POST api/invoice-item/import` (`invoice`, `rows`, `columns`) | lines from a table: rows without their header, the column of each field (`title`, `unitPrice` required; `quantity`, `vatRate`, `description`); numbers as typed (`1 234,50 €`, `20 %`); one bad row adds nothing |
+| `GET api/invoice-item/list?invoice=`; `POST create`, `update/{id}`; `DELETE delete/{id}` | the lines of a draft, as entities (`priceRaw`, `priceVat`, `quantity`…), each answered with the line, what it comes to in its metadata (`priceNet`); the document's totals are read again from the document |
+| `POST api/invoice-item/import` (`entities`: lines as `create` takes them) | several lines at once — a table's rows, read into lines by the sender; one bad line adds nothing |
 | `POST api/invoice-item/read-table?ledger=` (multipart `file`) | the tables of a file (CSV, XLSX, ODS, DOCX, PDF…) as rows of texts, read by document-reader, for choosing the columns |
 | `GET api/party/list?ledger=&role=customer\|supplier&search=`, `show/{id}`; `POST create`, `update/{id}` | customers and suppliers |
 | `GET api/bank-account/list?ledger=` | bank accounts |
@@ -146,7 +146,7 @@ Each entity is served under its own name, as `js-api-entity` repositories call i
 
 An update changes the fields sent, and only those: a field sent as null is emptied, one left out kept.
 
-Amounts are integers in minor units, quantities scaled by 100, VAT rates in basis points. A document carries its party and items as relationships, and what answered it: `amountCredited`, `amountPaid`, `amountDue`.
+Amounts are integers in minor units, quantities scaled by 100, VAT rates in basis points. Entities travel under the names of their fields, as the exported schemas (`assets/data/entity`) declare them; what is computed travels in `metadata`. A document carries its party and items as relationships, and in its metadata its amounts (`amountNet`, `amountVat`, `amountTotal`) and what answered it: `amountCredited`, `amountPaid`, `amountDue`.
 
 ## Checks
 

@@ -11,8 +11,9 @@ use Wexample\SymfonyApi\Api\Dto\AbstractDto;
 use Wexample\SymfonyHelpers\Helper\VariableHelper;
 
 /**
- * A line added to a draft: a price in minor units, a quantity scaled by 100,
- * a VAT rate in basis points — the ledger's default rate when none is given.
+ * A line added to a draft, under the names of its entity: a unit price
+ * (`priceRaw`) in minor units, a quantity scaled by 100, a VAT rate
+ * (`priceVat`) in basis points — the ledger's default rate when none is given.
  */
 class CreateInvoiceItemDto extends AbstractDto
 {
@@ -25,15 +26,19 @@ class CreateInvoiceItemDto extends AbstractDto
     public string $title;
 
     #[RequiredDtoProperty]
-    public int $unitPrice;
+    public int $priceRaw;
 
     #[PositiveOrZero]
     public int $quantity = InvoiceItem::QUANTITY_SCALE;
 
     #[PositiveOrZero]
-    public ?int $vatRate = null;
+    public ?int $priceVat = null;
 
     public ?string $description = null;
+
+    public ?string $reference = null;
+
+    public ?string $unit = null;
 
     public bool $goods = false;
 

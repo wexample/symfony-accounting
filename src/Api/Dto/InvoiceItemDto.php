@@ -7,8 +7,10 @@ use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 /**
- * A line of a document. The quantity is scaled by 100 (150 = 1.5), the prices
- * are in minor units, the VAT rate in basis points (2000 = 20 %).
+ * A line of a document, under the names of its entity. The quantity is scaled
+ * by 100 (150 = 1.5), the unit price (`priceRaw`) is in minor units, the VAT
+ * rate (`priceVat`) in basis points (2000 = 20 %). What the line comes to is
+ * computed, and travels in its metadata (`priceNet`).
  */
 class InvoiceItemDto extends AbstractEntityDto
 {
@@ -24,16 +26,14 @@ class InvoiceItemDto extends AbstractEntityDto
 
     public ?string $unit;
 
-    public int $unitPrice;
+    public int $priceRaw;
 
-    public int $vatRate;
+    public int $priceVat;
 
     public bool $goods;
 
     /** Construction works between VAT-registered companies of one country: the client self-assesses the VAT. */
     public bool $domesticReverseCharge;
-
-    public int $total;
 
     /**
      * @param InvoiceItem $entity
@@ -48,11 +48,10 @@ class InvoiceItemDto extends AbstractEntityDto
         $dto->reference = $entity->getReference();
         $dto->quantity = (int) $entity->getQuantity();
         $dto->unit = $entity->getUnit();
-        $dto->unitPrice = (int) $entity->getPriceRaw();
-        $dto->vatRate = (int) $entity->getPriceVat();
+        $dto->priceRaw = (int) $entity->getPriceRaw();
+        $dto->priceVat = (int) $entity->getPriceVat();
         $dto->goods = $entity->isGoods();
         $dto->domesticReverseCharge = $entity->isDomesticReverseCharge();
-        $dto->total = $entity->calcPriceNet();
 
         return $dto;
     }

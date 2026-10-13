@@ -21,4 +21,19 @@ class DefaultInvoiceItemNormalizer extends AbstractEntityNormalizer
     ): array|string|int|float|bool|ArrayObject|NormalizableDataInterface|null {
         return InvoiceItemDto::fromEntity($entity);
     }
+
+    /**
+     * What the line comes to, computed: not a field of the line.
+     *
+     * @param InvoiceItem $entity
+     */
+    protected function normalizeMetadata(
+        AbstractEntity $entity,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|ArrayObject|null {
+        return [
+            'priceNet' => $entity->calcPriceNet(),
+        ];
+    }
 }

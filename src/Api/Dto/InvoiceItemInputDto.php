@@ -19,7 +19,7 @@ class InvoiceItemInputDto extends AbstractDto
 
     public ?string $reference = null;
 
-    public ?int $unitPrice = null;
+    public ?int $priceRaw = null;
 
     #[PositiveOrZero]
     public ?int $quantity = null;
@@ -27,7 +27,7 @@ class InvoiceItemInputDto extends AbstractDto
     public ?string $unit = null;
 
     #[PositiveOrZero]
-    public ?int $vatRate = null;
+    public ?int $priceVat = null;
 
     public ?bool $goods = null;
 

@@ -74,21 +74,23 @@ class ApiTest extends AbstractAccountingTestCase
         $this->assertSame('draft', $draft['entity']['status']);
         $this->assertSame('Client SA', $draft['relationships'][$draft['entity']['party']]['entity']['name']);
 
-        $filled = $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Design', 'unitPrice' => 50000, 'quantity' => 200])['data'];
-        $this->assertSame(100000, $filled['entity']['amountNet']);
+        $line = $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Design', 'priceRaw' => 50000, 'quantity' => 200])['data'];
+        $this->assertSame([50000, 100000], [$line['entity']['priceRaw'], $line['metadata']['priceNet']]);
+        $filled = $this->get('api/invoice/show/'.$id)['data'];
+        $this->assertSame(100000, $filled['metadata']['amountNet']);
         $this->assertCount(1, $filled['entity']['items']);
 
         $emitted = $this->post('api/invoice/emit/'.$id)['data']['entity'];
         $this->assertNotNull($emitted['number']);
-        $this->assertSame(120000, $emitted['amountDue']);
+        $this->assertSame(120000, $this->get('api/invoice/show/'.$id)['data']['metadata']['amountDue']);
 
-        $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Late', 'unitPrice' => 100], 400);
+        $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Late', 'priceRaw' => 100], 400);
 
-        $credit = $this->post('api/invoice/credit-note/'.$id, ['amount' => 20000])['data']['entity'];
-        $this->assertSame('credit_note', $credit['type']);
-        $this->assertSame([[$id, 'credit', 'from']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $credit['related']));
-        $this->assertSame([[$credit['id'], 'credit', 'to']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $this->get('api/invoice/show/'.$id)['data']['entity']['related']));
-        $this->assertSame(96000, $this->get('api/invoice/show/'.$id)['data']['entity']['amountDue']);
+        $credit = $this->post('api/invoice/credit-note/'.$id, ['amount' => 20000])['data'];
+        $this->assertSame('credit_note', $credit['entity']['type']);
+        $this->assertSame([[$id, 'credit', 'from']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $credit['metadata']['related']));
+        $this->assertSame([[$credit['entity']['id'], 'credit', 'to']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $this->get('api/invoice/show/'.$id)['data']['metadata']['related']));
+        $this->assertSame(96000, $this->get('api/invoice/show/'.$id)['data']['metadata']['amountDue']);
 
         $page = $this->get('api/invoice/list?ledger='.$this->acme->getId().'&year=2026&type=bill')['data'];
         $this->assertSame(1, $page['pagination']['total']);
@@ -161,7 +163,7 @@ class ApiTest extends AbstractAccountingTestCase
         // Written before the requests: each request resets the entity manager the test holds.
         $emitted = $this->emitSale($this->acme, $this->createParty($this->acme));
         $quotation = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'party' => (string) $this->createParty($this->acme)->getId(), 'type' => 'quotation', 'dateInvoice' => '2026-03-01'])['data']['entity'];
-        $this->post('api/invoice-item/create', ['invoice' => $quotation['id'], 'title' => 'Design', 'unitPrice' => 10000]);
+        $this->post('api/invoice-item/create', ['invoice' => $quotation['id'], 'title' => 'Design', 'priceRaw' => 10000]);
 
         $draft = $this->post('api/invoice/update/'.$quotation['id'], ['title' => 'Website v2', 'note' => 'Two weeks'])['data']['entity'];
         $this->assertSame('Website v2', $draft['title']);
@@ -305,17 +307,18 @@ class ApiTest extends AbstractAccountingTestCase
         $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'party' => (string) $party->getId(), 'dateInvoice' => '2026-03-01'])['data'];
         $id = $draft['entity']['id'];
         $this->assertNull($draft['entity']['paymentTermDays']);
-        $this->assertSame(30, $draft['entity']['paymentTermDaysDefault']);
+        $this->assertSame(30, $draft['metadata']['paymentTermDaysDefault']);
 
-        $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Design', 'unitPrice' => 50000]);
-        $filled = $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Works', 'unitPrice' => 10000, 'domesticReverseCharge' => true])['data'];
-        $works = $filled['relationships'][$filled['entity']['items'][1]]['entity'];
+        $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Design', 'priceRaw' => 50000]);
+        $works = $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Works', 'priceRaw' => 10000, 'domesticReverseCharge' => true])['data']['entity'];
         $this->assertTrue($works['domesticReverseCharge']);
 
-        $changed = $this->post('api/invoice-item/update/'.$works['id'], ['title' => 'Building works', 'quantity' => 300, 'domesticReverseCharge' => false])['data'];
-        $this->assertSame(80000, $changed['entity']['amountNet']);
-        $line = $changed['relationships'][$changed['entity']['items'][1]]['entity'];
+        $line = $this->post('api/invoice-item/update/'.$works['id'], ['title' => 'Building works', 'quantity' => 300, 'domesticReverseCharge' => false])['data']['entity'];
         $this->assertSame([1, 'Building works', false], [$line['position'], $line['title'], $line['domesticReverseCharge']]);
+        $this->assertSame(80000, $this->get('api/invoice/show/'.$id)['data']['metadata']['amountNet']);
+
+        $lines = $this->get('api/invoice-item/list?invoice='.$id.'&length=0')['data'];
+        $this->assertSame(['Design', 'Building works'], array_map(fn (array $item) => $item['entity']['title'], $lines['items']));
 
         $this->post('api/invoice-item/update/'.$works['id'], ['title' => null], 400);
         $this->assertSame(15, $this->post('api/invoice/update/'.$id, ['paymentTermDays' => 15])['data']['entity']['paymentTermDays']);
@@ -331,15 +334,15 @@ class ApiTest extends AbstractAccountingTestCase
         $purchase = $create('purchase', $this->acme);
         $sale = $create('sale', $this->acme);
 
-        $linked = $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'rebill', 'way' => 'from'])['data']['entity'];
+        $linked = $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'rebill', 'way' => 'from'])['data']['metadata'];
         $this->assertSame([[$purchase, 'rebill', 'from', true]], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way'], $related['manual']], $linked['related']));
-        $this->assertSame($sale, $this->get('api/invoice/show/'.$purchase)['data']['entity']['related'][0]['id']);
+        $this->assertSame($sale, $this->get('api/invoice/show/'.$purchase)['data']['metadata']['related'][0]['id']);
 
         $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'rebill'], 400);
         $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'credit', 'way' => 'from'], 400);
 
-        $this->assertSame([], $this->request('DELETE', 'api/invoice/unrelate/'.$sale.'/'.$linked['related'][0]['relationId'])['data']['entity']['related']);
-        $this->assertSame([], $this->get('api/invoice/show/'.$purchase)['data']['entity']['related']);
+        $this->assertSame([], $this->request('DELETE', 'api/invoice/unrelate/'.$sale.'/'.$linked['related'][0]['relationId'])['data']['metadata']['related']);
+        $this->assertSame([], $this->get('api/invoice/show/'.$purchase)['data']['metadata']['related']);
     }
 
     public function testLinesWithoutRateTakeTheDefaultOne(): void
@@ -349,12 +352,8 @@ class ApiTest extends AbstractAccountingTestCase
         $this->em()->flush();
         $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'dateInvoice' => '2026-03-01'])['data'];
 
-        $filled = $this->post('api/invoice-item/import', [
-            'invoice' => $draft['entity']['id'],
-            'rows' => [['Design', '100']],
-            'columns' => ['title' => 0, 'unitPrice' => 1],
-        ])['data'];
-        $this->assertSame(2000, $filled['relationships'][$filled['entity']['items'][0]]['entity']['vatRate']);
+        $line = $this->post('api/invoice-item/create', ['invoice' => $draft['entity']['id'], 'title' => 'Design', 'priceRaw' => 10000])['data'];
+        $this->assertSame(2000, $line['entity']['priceVat']);
     }
 
     public function testLinesComeFromATable(): void
@@ -362,19 +361,20 @@ class ApiTest extends AbstractAccountingTestCase
         $this->signIn('anna');
         $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'dateInvoice' => '2026-03-01'])['data'];
 
-        $filled = $this->post('api/invoice-item/import', [
-            'invoice' => $draft['entity']['id'],
-            'rows' => [['Design', '2', '500,00'], ['Printing', '1', '50']],
-            'columns' => ['title' => 0, 'quantity' => 1, 'unitPrice' => 2],
-        ])['data'];
-        $this->assertCount(2, $filled['entity']['items']);
-        $this->assertSame(105000, $filled['entity']['amountNet']);
+        $id = $draft['entity']['id'];
+        $lines = $this->post('api/invoice-item/import', ['entities' => [
+            ['invoice' => $id, 'title' => 'Design', 'quantity' => 200, 'priceRaw' => 50000],
+            ['invoice' => $id, 'title' => 'Printing', 'priceRaw' => 5000],
+        ]])['data'];
+        $this->assertSame(['Design', 'Printing'], array_map(fn (array $item) => $item['entity']['title'], $lines['items']));
+        $this->assertSame(105000, $this->get('api/invoice/show/'.$id)['data']['metadata']['amountNet']);
 
-        $this->post('api/invoice-item/import', [
-            'invoice' => $draft['entity']['id'],
-            'rows' => [['', '1', '50']],
-            'columns' => ['title' => 0, 'unitPrice' => 2],
-        ], 400);
+        // One bad line, and none is added.
+        $this->post('api/invoice-item/import', ['entities' => [
+            ['invoice' => $id, 'title' => 'Binding', 'priceRaw' => 1000],
+            ['invoice' => $id, 'title' => '', 'priceRaw' => 5000],
+        ]], 400);
+        $this->assertCount(2, $this->get('api/invoice/show/'.$id)['data']['entity']['items']);
 
         $sent = null;
         $cell = fn (string $text) => ['type' => 'tableCell', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => $text]]]]];
