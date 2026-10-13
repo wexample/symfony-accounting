@@ -296,6 +296,47 @@ class ApiTest extends AbstractAccountingTestCase
         $this->assertSame([$sent['reference']], array_column($status['transmissions'], 'reference'));
     }
 
+    public function testALineIsChangedInPlace(): void
+    {
+        $this->signIn('anna');
+        $party = $this->createParty($this->acme);
+        $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'party' => (string) $party->getId(), 'dateInvoice' => '2026-03-01'])['data'];
+        $id = $draft['entity']['id'];
+        $this->assertNull($draft['entity']['paymentTermDays']);
+        $this->assertSame(30, $draft['entity']['paymentTermDaysDefault']);
+
+        $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Design', 'unitPrice' => 50000]);
+        $filled = $this->post('api/invoice-item/create', ['invoice' => $id, 'title' => 'Works', 'unitPrice' => 10000, 'domesticReverseCharge' => true])['data'];
+        $works = $filled['relationships'][$filled['entity']['items'][1]]['entity'];
+        $this->assertTrue($works['domesticReverseCharge']);
+
+        $changed = $this->post('api/invoice-item/update/'.$works['id'], ['title' => 'Building works', 'quantity' => 300, 'domesticReverseCharge' => false])['data'];
+        $this->assertSame(80000, $changed['entity']['amountNet']);
+        $line = $changed['relationships'][$changed['entity']['items'][1]]['entity'];
+        $this->assertSame([1, 'Building works', false], [$line['position'], $line['title'], $line['domesticReverseCharge']]);
+
+        $this->post('api/invoice-item/update/'.$works['id'], ['title' => null], 400);
+        $this->assertSame(15, $this->post('api/invoice/update/'.$id, ['paymentTermDays' => 15])['data']['entity']['paymentTermDays']);
+
+        $this->post('api/invoice/emit/'.$id);
+        $this->post('api/invoice-item/update/'.$works['id'], ['title' => 'Late'], 400);
+    }
+
+    public function testLinesWithoutRateTakeTheDefaultOne(): void
+    {
+        $this->signIn('anna');
+        $this->acme->setSettings([]);
+        $this->em()->flush();
+        $draft = $this->post('api/invoice/create', ['ledger' => (string) $this->acme->getId(), 'dateInvoice' => '2026-03-01'])['data'];
+
+        $filled = $this->post('api/invoice-item/import', [
+            'invoice' => $draft['entity']['id'],
+            'rows' => [['Design', '100']],
+            'columns' => ['title' => 0, 'unitPrice' => 1],
+        ])['data'];
+        $this->assertSame(2000, $filled['relationships'][$filled['entity']['items'][0]]['entity']['vatRate']);
+    }
+
     public function testLinesComeFromATable(): void
     {
         $this->signIn('anna');

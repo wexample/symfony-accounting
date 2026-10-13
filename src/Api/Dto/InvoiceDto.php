@@ -58,6 +58,12 @@ class InvoiceDto extends AbstractEntityDto
 
     public ?string $paymentReference;
 
+    /** The term set on the document; null when it follows the party's or the ledger's. */
+    public ?int $paymentTermDays;
+
+    /** The term it follows when it sets none. */
+    public int $paymentTermDaysDefault;
+
     /** @var list<InvoiceItem> */
     public array $items;
 
@@ -89,6 +95,8 @@ class InvoiceDto extends AbstractEntityDto
         $dto->amountPaid = $entity->calcPaidAmount();
         $dto->amountDue = $entity->calcRemainingAmount();
         $dto->paymentReference = $entity->getPaymentReference();
+        $dto->paymentTermDays = $entity->getOwnPaymentTermDays();
+        $dto->paymentTermDaysDefault = $entity->getDefaultPaymentTermDays();
         $dto->items = $entity->getItems()->toArray();
 
         return $dto;

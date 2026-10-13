@@ -28,6 +28,11 @@ class InvoiceItemDto extends AbstractEntityDto
 
     public int $vatRate;
 
+    public bool $goods;
+
+    /** Construction works between VAT-registered companies of one country: the client self-assesses the VAT. */
+    public bool $domesticReverseCharge;
+
     public int $total;
 
     /**
@@ -45,6 +50,8 @@ class InvoiceItemDto extends AbstractEntityDto
         $dto->unit = $entity->getUnit();
         $dto->unitPrice = (int) $entity->getPriceRaw();
         $dto->vatRate = (int) $entity->getPriceVat();
+        $dto->goods = $entity->isGoods();
+        $dto->domesticReverseCharge = $entity->isDomesticReverseCharge();
         $dto->total = $entity->calcPriceNet();
 
         return $dto;

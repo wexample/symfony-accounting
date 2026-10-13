@@ -16,6 +16,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
+use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 
@@ -28,6 +29,7 @@ class InvoiceFactory
         private readonly EntityManagerInterface $entityManager,
         private readonly ChartService $chartService,
         private readonly InvoiceRelationRepository $relationRepository,
+        private readonly JurisdictionRegistry $jurisdictionRegistry,
     ) {
     }
 
@@ -64,7 +66,7 @@ class InvoiceFactory
      * @param int $unitPrice Before VAT, minor units.
      * @param int|string $quantity An int scaled by 100 (150 = 1.5), or a duration
      *                             string ("1h30", "2j") converted to days.
-     * @param int|null $vatRate Basis points; the ledger's normal rate by default.
+     * @param int|null $vatRate Basis points; the ledger's default rate (see defaultVatRate()) when null.
      */
     public function addItem(
         Invoice $invoice,
@@ -84,7 +86,7 @@ class InvoiceFactory
             ->setGoods($goods)
             ->setAccountNumber($accountNumber)
             ->setPriceRaw($unitPrice)
-            ->setPriceVat($vatRate ?? (int) $invoice->getLedger()->getSetting('default_vat_rate', 0));
+            ->setPriceVat($vatRate ?? $this->defaultVatRate($invoice->getLedger()));
 
         if (is_string($quantity)) {
             $item->setDuration($quantity)->setUnit('day');
@@ -96,6 +98,19 @@ class InvoiceFactory
         $this->entityManager->persist($item);
 
         return $item;
+    }
+
+    /**
+     * The rate of a line that names none: the ledger setting `default_vat_rate`,
+     * else its jurisdiction's normal rate.
+     */
+    public function defaultVatRate(Ledger $ledger): int
+    {
+        $setting = $ledger->getSetting('default_vat_rate');
+
+        return null !== $setting
+            ? (int) $setting
+            : ($this->jurisdictionRegistry->forLedger($ledger)->getVatRates()[0] ?? 0);
     }
 
     /**

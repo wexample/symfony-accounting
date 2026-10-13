@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Wexample\SymfonyAccounting\Api\Dto\CreateInvoiceItemDto;
 use Wexample\SymfonyAccounting\Api\Dto\ImportInvoiceItemsDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceDto;
+use Wexample\SymfonyAccounting\Api\Dto\InvoiceItemInputDto;
 use Wexample\SymfonyAccounting\Api\Normalizer\Entity\Invoice\DefaultInvoiceNormalizer;
 use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\LedgerPermission;
@@ -107,6 +108,49 @@ class InvoiceItemController extends AbstractAccountingApiController
             $createInvoiceItemDto->vatRate,
             $createInvoiceItemDto->goods,
         )->setDescription($createInvoiceItemDto->description)->setDomesticReverseCharge($createInvoiceItemDto->domesticReverseCharge));
+
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($invoice));
+    }
+
+    /**
+     * A line changed in place, keeping its position; only the fields sent change.
+     */
+    #[Route(path: 'update/{id}', name: self::ROUTE_UPDATE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ValidateRequestContent(dto: InvoiceItemInputDto::class, attributeName: 'invoiceItemInputDto')]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function update(
+        string $id,
+        Request $request,
+        InvoiceItemInputDto $invoiceItemInputDto,
+        InvoiceFactory $factory,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $item = $entityManager->find(InvoiceItem::class, $id) ?? throw new NotFoundHttpException();
+        $invoice = $this->reachable($item->getInvoice(), LedgerPermission::EDIT);
+
+        if (! $invoice->isEditable()) {
+            throw new BadRequestHttpException('An emitted document cannot change: issue a credit note.');
+        }
+
+        $required = fn (mixed $value, string $field): mixed => $value ?? throw new BadRequestHttpException(sprintf('The field "%s" cannot be null.', $field));
+
+        foreach (self::sentFields($request) as $field) {
+            match ($field) {
+                'title' => $item->setTitle($required($invoiceItemInputDto->title, $field)),
+                'description' => $item->setDescription($invoiceItemInputDto->description),
+                'reference' => $item->setReference($invoiceItemInputDto->reference),
+                'unitPrice' => $item->setPriceRaw($required($invoiceItemInputDto->unitPrice, $field)),
+                'quantity' => $item->setQuantity($required($invoiceItemInputDto->quantity, $field)),
+                'unit' => $item->setUnit($invoiceItemInputDto->unit),
+                'vatRate' => $item->setPriceVat($invoiceItemInputDto->vatRate ?? $factory->defaultVatRate($invoice->getLedger())),
+                'goods' => $item->setGoods($required($invoiceItemInputDto->goods, $field)),
+                'domesticReverseCharge' => $item->setDomesticReverseCharge($required($invoiceItemInputDto->domesticReverseCharge, $field)),
+                default => null,
+            };
+        }
 
         $entityManager->flush();
 

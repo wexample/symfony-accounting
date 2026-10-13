@@ -451,8 +451,23 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
 
     public function getPaymentTermDays(): int
     {
-        return $this->paymentTermDays
-            ?? $this->party?->getPaymentTermDays()
+        return $this->paymentTermDays ?? $this->getDefaultPaymentTermDays();
+    }
+
+    /**
+     * The term set on the document itself; null when it follows the party's or the ledger's.
+     */
+    public function getOwnPaymentTermDays(): ?int
+    {
+        return $this->paymentTermDays;
+    }
+
+    /**
+     * The term the document follows when it sets none: the party's, else the ledger's.
+     */
+    public function getDefaultPaymentTermDays(): int
+    {
+        return $this->party?->getPaymentTermDays()
             ?? $this->ledger->getPaymentTermDays();
     }
 
