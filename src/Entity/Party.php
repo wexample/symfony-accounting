@@ -7,10 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A third party of the ledger: customer, supplier, or both.

@@ -15,6 +15,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 use Wexample\SymfonyMoney\Class\ExchangeRate;
@@ -25,7 +26,6 @@ use Wexample\SymfonyMoney\Interface\DiscountedInterface;
 use Wexample\SymfonyMoney\Interface\PricedParentInterface;
 use Wexample\SymfonyPayment\Entity\Payment;
 use Wexample\SymfonyPayment\Interface\PayableInterface;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A commercial document of the ledger: a bill, credit note, quotation, penalty,

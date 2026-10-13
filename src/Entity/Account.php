@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\AccountNature;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\AccountRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * An account of the ledger's chart. The number is a string of digits ("411",

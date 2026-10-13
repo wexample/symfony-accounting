@@ -5,9 +5,9 @@ namespace Wexample\SymfonyAccounting\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\ImportPatternRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A rule recognizing recurring bank lines by their label ("PRLV FREE MOBILE",

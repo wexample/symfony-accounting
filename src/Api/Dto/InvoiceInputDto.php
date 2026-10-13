@@ -4,8 +4,8 @@ namespace Wexample\SymfonyAccounting\Api\Dto;
 
 use Symfony\Component\Validator\Constraints\Currency;
 use Symfony\Component\Validator\Constraints\Date;
-use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
+use Symfony\Component\Validator\Constraints\Regex;
 use Wexample\SymfonyApi\Api\Dto\AbstractDto;
 
 /**

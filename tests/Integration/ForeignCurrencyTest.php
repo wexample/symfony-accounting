@@ -110,7 +110,7 @@ class ForeignCurrencyTest extends AbstractAccountingTestCase
         $this->sellInDollars($ledger, $this->createParty($ledger, 'Client SA'), '0.92', '2026-11-02');
         $this->service(FiscalYearService::class)->createNext($ledger);
 
-        $provider = new class implements ExchangeRateProviderInterface {
+        $provider = new class () implements ExchangeRateProviderInterface {
             public function getRate(string $from, string $to, DateTimeImmutable $date): ?ExchangeRate
             {
                 return new ExchangeRate($from, $to, '0.95', $date, 'test');

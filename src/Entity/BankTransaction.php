@@ -9,9 +9,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * A line of a bank statement: signed amount in minor units, + for money in.

@@ -10,9 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 /**
  * One balanced accounting entry (FEC "écriture"): lines whose debits equal credits.

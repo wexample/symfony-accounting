@@ -5,8 +5,8 @@ namespace Wexample\SymfonyAccounting\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
-use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
+use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 /**
  * The last number given in one series of one year: gap-free numbering.

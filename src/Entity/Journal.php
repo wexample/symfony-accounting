@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\JournalType;
+use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\JournalRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
-use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 
 #[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: JournalRepository::class)]

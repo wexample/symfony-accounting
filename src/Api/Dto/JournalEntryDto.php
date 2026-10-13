@@ -42,7 +42,7 @@ class JournalEntryDto extends AbstractEntityDto
         $dto->label = $entity->getLabel();
         $dto->pieceReference = $entity->getPieceReference();
         $dto->status = $entity->getStatus()->value;
-$dto->lines = $entity->getLines()->toArray();
+        $dto->lines = $entity->getLines()->toArray();
 
         return $dto;
     }
