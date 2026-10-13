@@ -12,9 +12,9 @@ $customer = $partyService->create($ledger, 'Client SA');           // gets its a
 
 Three permissions, asked on a ledger or on anything it holds (an invoice, a party, an entry…, `BelongsToLedgerInterface`): `accounting.view`, `accounting.edit`, `accounting.administer` (`LedgerPermission`).
 
-```twig
+{% raw %}```twig
 {% if is_granted('accounting.edit', invoice) %}…{% endif %}
-```
+```{% endraw %}
 
 `LedgerVoter` grants a permission to whoever holds the role configured for it, else the grant configured for it on the group the application ties the ledger to:
 
