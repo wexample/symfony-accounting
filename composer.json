@@ -3,7 +3,7 @@
   "description": "Accounting for Symfony: ledgers, double-entry bookkeeping, invoices, bank reconciliation, VAT, closing and reports, with country rules in jurisdiction packages",
   "type": "library",
   "license": "MIT",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyAccounting\\": "src/"
