@@ -13,12 +13,13 @@ use Symfony\Component\Routing\Attribute\Route;
 use Wexample\SymfonyAccounting\Api\Dto\CreateCreditNoteDto;
 use Wexample\SymfonyAccounting\Api\Dto\CreateInvoiceDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceDto;
+use Wexample\SymfonyAccounting\Api\Dto\InvoiceTransmissionDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceInputDto;
 use Wexample\SymfonyAccounting\Api\Dto\RelateInvoiceDto;
 use Wexample\SymfonyAccounting\Api\Normalizer\Entity\Invoice\DefaultInvoiceNormalizer;
+use Wexample\SymfonyAccounting\Api\Normalizer\Entity\InvoiceTransmission\DefaultInvoiceTransmissionNormalizer;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\InvoiceRelation;
-use Wexample\SymfonyAccounting\Entity\InvoiceTransmission;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
@@ -214,39 +215,43 @@ class InvoiceController extends AbstractAccountingApiController
     }
 
     /**
-     * Where the document stands on Peppol: whether it can be sent, and every
-     * transmission so far, the latest first.
+     * Where the document stands on Peppol: every transmission so far, the
+     * latest first, and whether it can be sent (`reachable`, beside them).
      */
     #[Route(path: 'peppol/{id}', name: self::ROUTE_PEPPOL, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ApiResponseData(InvoiceTransmissionDto::class, collection: true)]
     public function peppol(
         string $id,
         InvoiceRepository $repository,
         PeppolInvoiceService $peppolService,
         InvoiceTransmissionRepository $transmissionRepository,
+        DefaultInvoiceTransmissionNormalizer $transmissionNormalizer,
     ): ApiResponse {
         $invoice = $this->reachable($repository->find($id));
 
-        return self::apiResponseSuccess(data: [
-            'reachable' => $peppolService->isReachable($invoice),
-            'transmissions' => array_map($this->transmission(...), $transmissionRepository->findForInvoice($invoice)),
-        ]);
+        return self::apiResponseCollection(
+            $transmissionNormalizer->normalizeCollection($transmissionRepository->findForInvoice($invoice)),
+            ['reachable' => $peppolService->isReachable($invoice)]
+        );
     }
 
     /**
      * An emitted sale sent to its client over Peppol, as UBL.
      */
     #[Route(path: 'peppol/{id}', name: self::ROUTE_PEPPOL_SEND, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ApiResponseData(InvoiceTransmissionDto::class)]
     public function peppolSend(
         string $id,
         InvoiceRepository $repository,
         PeppolInvoiceService $peppolService,
         EntityManagerInterface $entityManager,
+        DefaultInvoiceTransmissionNormalizer $transmissionNormalizer,
     ): ApiResponse {
         $invoice = $this->reachable($repository->find($id), LedgerPermission::EDIT);
         $transmission = $this->withinTheRules(fn () => $peppolService->send($invoice));
         $entityManager->flush();
 
-        return self::apiResponseSuccess(data: ['transmission' => $this->transmission($transmission)]);
+        return self::apiResponseSuccess(data: $transmissionNormalizer->normalize($transmission));
     }
 
     #[Route(path: 'create', name: self::ROUTE_CREATE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
@@ -470,19 +475,6 @@ class InvoiceController extends AbstractAccountingApiController
         $entityManager->flush();
 
         return self::apiResponseSuccess();
-    }
-
-    private function transmission(InvoiceTransmission $transmission): array
-    {
-        return [
-            'provider' => $transmission->getProvider(),
-            'reference' => $transmission->getReference(),
-            'receiver' => $transmission->getReceiver(),
-            'status' => $transmission->getStatus()->value,
-            'message' => $transmission->getMessage(),
-            'dateSent' => $transmission->getDateSent()->format(DATE_ATOM),
-            'dateUpdated' => $transmission->getDateUpdated()->format(DATE_ATOM),
-        ];
     }
 
     private function partyOf(

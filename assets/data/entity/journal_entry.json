@@ -1,0 +1,442 @@
+{
+    "name": "journal_entry",
+    "type": "class",
+    "description": "One balanced accounting entry (FEC \"écriture\"): lines whose debits equal credits.\nIt is numbered when posted, without gaps within its fiscal year. `sourceType`\nand `sourceId` say what produced it (an invoice, an allocation, a closing), so\nthat a document is never booked twice.",
+    "properties": [
+        {
+            "name": "ledger",
+            "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+        },
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "journal",
+            "type": "Journal"
+        },
+        {
+            "name": "fiscalYear",
+            "type": "FiscalYear"
+        },
+        {
+            "name": "number",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "date",
+            "type": "DateTimeImmutable"
+        },
+        {
+            "name": "label",
+            "type": "string"
+        },
+        {
+            "name": "pieceReference",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "pieceDate",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "sourceType",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "sourceId",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "status",
+            "type": "EntryStatus",
+            "default": null
+        },
+        {
+            "name": "dateValidated",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "dateCreated",
+            "type": "DateTimeImmutable"
+        },
+        {
+            "name": "lines",
+            "type": "Collection",
+            "description": "EntryLine>"
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "getLedger",
+            "return": {
+                "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLedger",
+            "parameters": [
+                {
+                    "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger",
+                    "name": "ledger"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "getJournal",
+            "return": {
+                "type": "Journal"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setJournal",
+            "parameters": [
+                {
+                    "type": "Journal",
+                    "name": "journal"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getFiscalYear",
+            "return": {
+                "type": "FiscalYear"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setFiscalYear",
+            "parameters": [
+                {
+                    "type": "FiscalYear",
+                    "name": "fiscalYear"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getNumber",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setNumber",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "number"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDate",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDate",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "date"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLabel",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPieceReference",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPieceReference",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "pieceReference"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPieceDate",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPieceDate",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "pieceDate"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getSourceType",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getSourceId",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setSource",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "sourceType"
+                },
+                {
+                    "type": "string",
+                    "name": "sourceId"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getStatus",
+            "return": {
+                "type": "EntryStatus"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setStatus",
+            "parameters": [
+                {
+                    "type": "EntryStatus",
+                    "name": "status"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateValidated",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateValidated",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "dateValidated"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateCreated",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLines",
+            "description": "",
+            "return": {
+                "type": "Collection",
+                "description": "EntryLine>"
+            }
+        },
+        {
+            "type": "method",
+            "name": "addLine",
+            "parameters": [
+                {
+                    "type": "EntryLine",
+                    "name": "line"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "removeLine",
+            "parameters": [
+                {
+                    "type": "EntryLine",
+                    "name": "line"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTotalDebit",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTotalCredit",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isBalanced",
+            "return": {
+                "type": "bool"
+            }
+        }
+    ]
+}

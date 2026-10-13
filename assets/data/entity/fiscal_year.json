@@ -1,0 +1,261 @@
+{
+    "name": "fiscal_year",
+    "type": "class",
+    "description": "An accounting period with its own start and end: calendar years, offset years\n(July → June), long or short first years all fit.",
+    "properties": [
+        {
+            "name": "ledger",
+            "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+        },
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "dateStart",
+            "type": "DateTimeImmutable"
+        },
+        {
+            "name": "dateEnd",
+            "type": "DateTimeImmutable"
+        },
+        {
+            "name": "status",
+            "type": "FiscalYearStatus",
+            "default": null
+        },
+        {
+            "name": "dateClosed",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "result",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "getLedger",
+            "return": {
+                "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLedger",
+            "parameters": [
+                {
+                    "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger",
+                    "name": "ledger"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__toString",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateStart",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateStart",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "dateStart"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateEnd",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateEnd",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "dateEnd"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "contains",
+            "parameters": [
+                {
+                    "type": "DateTimeInterface",
+                    "name": "date"
+                }
+            ],
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getStatus",
+            "return": {
+                "type": "FiscalYearStatus"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setStatus",
+            "parameters": [
+                {
+                    "type": "FiscalYearStatus",
+                    "name": "status"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isClosed",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateClosed",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateClosed",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "dateClosed"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getResult",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setResult",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "result"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        }
+    ]
+}

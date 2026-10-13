@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -23,6 +24,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * (Stripe txn_…, CAMT AcctSvcrRef); imports deduplicate on it, or on
  * `fingerprint` (date, amount, label) otherwise.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: BankTransactionRepository::class)]
 #[ORM\Table(name: 'accounting_bank_transaction')]
 #[ORM\UniqueConstraint(columns: ['bank_account_id', 'external_id'])]

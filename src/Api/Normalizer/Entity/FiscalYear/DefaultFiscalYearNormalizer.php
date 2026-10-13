@@ -21,4 +21,19 @@ class DefaultFiscalYearNormalizer extends AbstractEntityNormalizer
     ): array|string|int|float|bool|ArrayObject|NormalizableDataInterface|null {
         return FiscalYearDto::fromEntity($entity);
     }
+
+    /**
+     * What the year is called, worked out of its dates.
+     *
+     * @param FiscalYear $entity
+     */
+    protected function normalizeMetadata(
+        AbstractEntity $entity,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|ArrayObject|null {
+        return [
+            'label' => $entity->getLabel(),
+        ];
+    }
 }

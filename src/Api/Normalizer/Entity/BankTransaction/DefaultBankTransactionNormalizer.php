@@ -21,4 +21,20 @@ class DefaultBankTransactionNormalizer extends AbstractEntityNormalizer
     ): array|string|int|float|bool|ArrayObject|NormalizableDataInterface|null {
         return BankTransactionDto::fromEntity($entity);
     }
+
+    /**
+     * How much of the line no document or account explains yet, and whether it is one side of a transfer between two accounts of the ledger.
+     *
+     * @param BankTransaction $entity
+     */
+    protected function normalizeMetadata(
+        AbstractEntity $entity,
+        ?string $format = null,
+        array $context = []
+    ): array|string|int|float|bool|ArrayObject|null {
+        return [
+            'unallocatedAmount' => $entity->getUnallocatedAmount(),
+            'transfer' => $entity->isTransfer(),
+        ];
+    }
 }

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\EntryStatus;
 use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
@@ -20,6 +21,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * and `sourceId` say what produced it (an invoice, an allocation, a closing), so
  * that a document is never booked twice.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: JournalEntryRepository::class)]
 #[ORM\Table(name: 'accounting_journal_entry')]
 #[ORM\Index(columns: ['source_type', 'source_id'])]

@@ -6,10 +6,12 @@ use Wexample\SymfonyAccounting\Entity\FiscalYear;
 use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
+/**
+ * A fiscal year of the ledger; its label (« 2026 », « 2025-2026 ») travels in
+ * its metadata.
+ */
 class FiscalYearDto extends AbstractEntityDto
 {
-    public string $label;
-
     public string $dateStart;
 
     public string $dateEnd;
@@ -28,7 +30,6 @@ class FiscalYearDto extends AbstractEntityDto
     {
         $dto = parent::fromEntity($entity);
 
-        $dto->label = $entity->getLabel();
         $dto->dateStart = $entity->getDateStart()->format('Y-m-d');
         $dto->dateEnd = $entity->getDateEnd()->format('Y-m-d');
         $dto->status = $entity->getStatus()->value;

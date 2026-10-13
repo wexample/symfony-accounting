@@ -195,7 +195,7 @@ class ApiTest extends AbstractAccountingTestCase
         $out = $this->createTransaction($main, -5000, label: 'To savings');
         $in = $this->createTransaction($savings, 5000, label: 'From main');
         $this->post('api/bank-transaction/link-transfer', ['transaction' => (string) $out->getId(), 'peer' => (string) $in->getId()]);
-        $this->assertTrue($this->get('api/bank-transaction/list?ledger='.$this->acme->getId().'&year=2026&search=savings')['data']['items'][0]['entity']['transfer']);
+        $this->assertTrue($this->get('api/bank-transaction/list?ledger='.$this->acme->getId().'&year=2026&search=savings')['data']['items'][0]['metadata']['transfer']);
         $this->post('api/bank-transaction/unlink-transfer/'.$out->getId());
 
         $this->assertIsArray($this->get('api/bank-transaction/proposals/'.$in->getId())['data']);
@@ -215,15 +215,24 @@ class ApiTest extends AbstractAccountingTestCase
             'date' => '2026-03-20',
             'label' => 'Bank fees',
             'lines' => [['account' => '627', 'debit' => 500], ['account' => '5121', 'credit' => 500]],
-        ])['data']['entity'];
-        $this->assertSame(500, $entry['lines'][0]['debit']);
+        ])['data'];
+        $this->assertSame(500, $entry['relationships'][$entry['entity']['lines'][0]]['entity']['debit']);
+        $this->assertSame('OD', $entry['relationships'][$entry['entity']['journal']]['entity']['code']);
+        $entry = $entry['entity'];
         $this->post('api/journal-entry/create', ['ledger' => (string) $this->acme->getId(), 'journal' => 'OD', 'date' => '2026-03-20', 'label' => 'Unbalanced', 'lines' => [['account' => '627', 'debit' => 500], ['account' => '5121', 'credit' => 400]]], 400);
         $this->post('api/journal-entry/reverse/'.$entry['id'].'?date=2026-03-21');
 
-        $customers = array_values(array_filter(
-            array_merge(...array_column(array_column($this->get('api/journal-entry/list?ledger='.$this->acme->getId().'&year=2026&length=50')['data']['items'], 'entity'), 'lines')),
-            fn (array $entryLine) => '411' === $entryLine['account']
-        ));
+        // The lines of each entry and their accounts, found beside it.
+        $customers = [];
+        foreach ($this->get('api/journal-entry/list?ledger='.$this->acme->getId().'&year=2026&length=50')['data']['items'] as $item) {
+            foreach ($item['entity']['lines'] as $lineId) {
+                $entryLine = $item['relationships'][$lineId]['entity'];
+
+                if ('411' === $item['relationships'][$entryLine['account']]['entity']['number']) {
+                    $customers[] = $entryLine;
+                }
+            }
+        }
         $this->assertCount(2, $customers);
         $letter = $this->post('api/entry-line/letter', ['lines' => array_column($customers, 'id')])['data']['letter'];
         $this->assertNotEmpty($letter);
@@ -291,13 +300,13 @@ class ApiTest extends AbstractAccountingTestCase
         $this->post('api/invoice/peppol/'.$sale->getId(), status: 400);
 
         static::getContainer()->get(FakeAccessPoint::class)->register(PeppolParticipant::fromString('0208:0417497106'));
-        $sent = $this->post('api/invoice/peppol/'.$sale->getId())['data']['transmission'];
+        $sent = $this->post('api/invoice/peppol/'.$sale->getId())['data']['entity'];
         $this->assertSame('queued', $sent['status']);
         $this->assertSame('0208:0417497106', $sent['receiver']);
 
         $status = $this->get('api/invoice/peppol/'.$sale->getId())['data'];
         $this->assertTrue($status['reachable']);
-        $this->assertSame([$sent['reference']], array_column($status['transmissions'], 'reference'));
+        $this->assertSame([$sent['reference']], array_column(array_column($status['items'], 'entity'), 'reference'));
     }
 
     public function testALineIsChangedInPlace(): void

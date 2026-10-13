@@ -1,0 +1,369 @@
+{
+    "name": "allocation",
+    "type": "class",
+    "description": "What part of a bank line pays what: an invoice, or directly an account\n(bank fees, an owner's withdrawal, a tax paid without an invoice).\nThe amount carries the sign of the bank line. A pending allocation is a\nmatcher's proposal; an excluded one records a refusal, so the pair is never\nproposed again.",
+    "properties": [
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "transaction",
+            "type": "BankTransaction"
+        },
+        {
+            "name": "invoice",
+            "type": "Invoice",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "accountNumber",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "party",
+            "type": "Party",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "vatRate",
+            "type": "int",
+            "default": 0
+        },
+        {
+            "name": "amount",
+            "type": "string"
+        },
+        {
+            "name": "invoiceAmount",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "status",
+            "type": "AllocationStatus",
+            "default": null
+        },
+        {
+            "name": "origin",
+            "type": "string",
+            "default": "manual"
+        },
+        {
+            "name": "label",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "entry",
+            "type": "JournalEntry",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "dateCreated",
+            "type": "DateTimeImmutable"
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "getTransaction",
+            "return": {
+                "type": "BankTransaction"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setTransaction",
+            "parameters": [
+                {
+                    "type": "BankTransaction",
+                    "name": "transaction"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getInvoice",
+            "return": {
+                "type": "Invoice"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setInvoice",
+            "parameters": [
+                {
+                    "type": "Invoice",
+                    "name": "invoice"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAccountNumber",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAccountNumber",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "accountNumber"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getParty",
+            "return": {
+                "type": "Party"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setParty",
+            "parameters": [
+                {
+                    "type": "Party",
+                    "name": "party"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getVatRate",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setVatRate",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "vatRate"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAmount",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAmount",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "amount"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getInvoiceAmount",
+            "description": "What the payment settles of its document, in the document's currency: the\namount itself when the document is in the ledger's currency.",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setInvoiceAmount",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "invoiceAmount"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getStatus",
+            "return": {
+                "type": "AllocationStatus"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setStatus",
+            "parameters": [
+                {
+                    "type": "AllocationStatus",
+                    "name": "status"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getOrigin",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setOrigin",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "origin"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLabel",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntry",
+            "return": {
+                "type": "JournalEntry"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setEntry",
+            "parameters": [
+                {
+                    "type": "JournalEntry",
+                    "name": "entry"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateCreated",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        }
+    ]
+}

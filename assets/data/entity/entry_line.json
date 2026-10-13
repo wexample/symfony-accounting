@@ -1,0 +1,474 @@
+{
+    "name": "entry_line",
+    "type": "class",
+    "description": "One line of an entry: an amount on the debit or the credit side of an account,\nnever both. With a party, the line belongs to that party's auxiliary account.\n`vatCode` and `vatRole` tag the lines VAT returns are computed from.",
+    "properties": [
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "entry",
+            "type": "JournalEntry"
+        },
+        {
+            "name": "account",
+            "type": "Account"
+        },
+        {
+            "name": "party",
+            "type": "Party",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "label",
+            "type": "string"
+        },
+        {
+            "name": "debit",
+            "type": "string",
+            "default": "0"
+        },
+        {
+            "name": "credit",
+            "type": "string",
+            "default": "0"
+        },
+        {
+            "name": "letter",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "dateLettered",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "vatCode",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "vatRole",
+            "type": "VatRole",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "dateDue",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "currencyAmount",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "currencyCode",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "position",
+            "type": "int",
+            "default": 0
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "debit",
+            "parameters": [
+                {
+                    "type": "Account",
+                    "name": "account"
+                },
+                {
+                    "type": "int",
+                    "name": "amount"
+                },
+                {
+                    "type": "string",
+                    "name": "label"
+                },
+                {
+                    "type": "Party",
+                    "name": "party",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "credit",
+            "parameters": [
+                {
+                    "type": "Account",
+                    "name": "account"
+                },
+                {
+                    "type": "int",
+                    "name": "amount"
+                },
+                {
+                    "type": "string",
+                    "name": "label"
+                },
+                {
+                    "type": "Party",
+                    "name": "party",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntry",
+            "return": {
+                "type": "JournalEntry"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setEntry",
+            "parameters": [
+                {
+                    "type": "JournalEntry",
+                    "name": "entry"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAccount",
+            "return": {
+                "type": "Account"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAccount",
+            "parameters": [
+                {
+                    "type": "Account",
+                    "name": "account"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getParty",
+            "return": {
+                "type": "Party"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setParty",
+            "parameters": [
+                {
+                    "type": "Party",
+                    "name": "party"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLabel",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDebit",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCredit",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getBalance",
+            "description": "Debit minus credit.",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAmount",
+            "description": "Positive: debit, negative: credit. Zero is refused: a line moves money.",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "amount"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLetter",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLetter",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "letter"
+                },
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "date",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateLettered",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getVatCode",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getVatRole",
+            "return": {
+                "type": "VatRole"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setVat",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "vatCode"
+                },
+                {
+                    "type": "VatRole",
+                    "name": "vatRole"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateDue",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateDue",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "dateDue"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCurrencyAmount",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCurrencyCode",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setCurrency",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "amount"
+                },
+                {
+                    "type": "string",
+                    "name": "currencyCode"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPosition",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPosition",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "position"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAuxiliaryCode",
+            "description": "The auxiliary account code the line belongs to, if any: the party's\ncustomer code on a customer account, its supplier code otherwise.",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "customersPrefix",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        }
+    ]
+}

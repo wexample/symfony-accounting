@@ -1,0 +1,329 @@
+{
+    "name": "account",
+    "type": "class",
+    "description": "An account of the ledger's chart. The number is a string of digits (\"411\",\n\"6061\", \"512100\"), compared by prefix: its first digit is its class.",
+    "properties": [
+        {
+            "name": "ledger",
+            "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+        },
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "number",
+            "type": "string"
+        },
+        {
+            "name": "label",
+            "type": "string"
+        },
+        {
+            "name": "nature",
+            "type": "AccountNature",
+            "default": null
+        },
+        {
+            "name": "source",
+            "type": "string",
+            "default": "custom"
+        },
+        {
+            "name": "lettrable",
+            "type": "bool",
+            "default": false
+        },
+        {
+            "name": "counterpartNumber",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "defaultVatCode",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "active",
+            "type": "bool",
+            "default": true
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "getLedger",
+            "return": {
+                "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLedger",
+            "parameters": [
+                {
+                    "type": "Wexample\\SymfonyAccounting\\Entity\\Ledger",
+                    "name": "ledger"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__toString",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getNumber",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setNumber",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "number"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getClass",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "startsWith",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "prefix"
+                }
+            ],
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLabel",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getNature",
+            "return": {
+                "type": "AccountNature"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setNature",
+            "parameters": [
+                {
+                    "type": "AccountNature",
+                    "name": "nature"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getSource",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setSource",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "source"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isLettrable",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLettrable",
+            "parameters": [
+                {
+                    "type": "bool",
+                    "name": "lettrable"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCounterpartNumber",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setCounterpartNumber",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "counterpartNumber"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDefaultVatCode",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDefaultVatCode",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "defaultVatCode"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isActive",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setActive",
+            "parameters": [
+                {
+                    "type": "bool",
+                    "name": "active"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        }
+    ]
+}

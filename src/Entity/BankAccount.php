@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Repository\BankAccountRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -15,6 +16,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * balance a payment provider keeps (`provider` names it, e.g. "stripe", so its
  * movements can be imported through symfony-remote-payment).
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: BankAccountRepository::class)]
 #[ORM\Table(name: 'accounting_bank_account')]
 class BankAccount extends AbstractEntity implements BelongsToLedgerInterface

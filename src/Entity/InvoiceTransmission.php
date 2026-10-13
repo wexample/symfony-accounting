@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Repository\InvoiceTransmissionRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 use Wexample\SymfonyRemotePeppol\Enum\TransmissionStatus;
@@ -13,6 +14,7 @@ use Wexample\SymfonyRemotePeppol\Enum\TransmissionStatus;
  * A document sent over Peppol: through which access point, under which reference,
  * and where it stands. A failed attempt stays; sending again adds another.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: InvoiceTransmissionRepository::class)]
 #[ORM\Table(name: 'accounting_invoice_transmission')]
 #[ORM\UniqueConstraint(columns: ['provider', 'reference'])]

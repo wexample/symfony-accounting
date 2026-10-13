@@ -1,0 +1,99 @@
+items:
+  - name: Journal
+    type: class
+    properties:
+      - name: ledger
+        type: Wexample\SymfonyAccounting\Entity\Ledger
+      - name: id
+        type: Symfony\Component\Uid\Uuid
+      - name: code
+        type: string
+      - name: label
+        type: string
+      - name: type
+        type: JournalType
+    methods:
+      - type: method
+        name: getLedger
+        return:
+          type: Wexample\SymfonyAccounting\Entity\Ledger
+      - type: method
+        name: setLedger
+        parameters:
+          - type: Wexample\SymfonyAccounting\Entity\Ledger
+            name: ledger
+        return:
+          type: static
+      - type: method
+        name: __construct
+      - type: method
+        name: buildEntityPath
+        parameters:
+          - type: string
+            name: className
+        return:
+          type: string
+      - type: method
+        name: getEntityKeyName
+        return:
+          type: string
+      - type: method
+        name: getEntityShortName
+        return:
+          type: string
+      - type: method
+        name: getId
+        return:
+          type: Symfony\Component\Uid\Uuid
+      - type: method
+        name: setId
+        parameters:
+          - type: Symfony\Component\Uid\Uuid
+            name: id
+        return:
+          type: void
+      - type: method
+        name: getTableizedName
+        return:
+          type: string
+      - type: method
+        name: getCamelName
+        return:
+          type: string
+      - type: method
+        name: __toString
+        return:
+          type: string
+      - type: method
+        name: getCode
+        return:
+          type: string
+      - type: method
+        name: setCode
+        parameters:
+          - type: string
+            name: code
+        return:
+          type: static
+      - type: method
+        name: getLabel
+        return:
+          type: string
+      - type: method
+        name: setLabel
+        parameters:
+          - type: string
+            name: label
+        return:
+          type: static
+      - type: method
+        name: getType
+        return:
+          type: JournalType
+      - type: method
+        name: setType
+        parameters:
+          - type: JournalType
+            name: type
+        return:
+          type: static

@@ -3,16 +3,18 @@
 namespace Wexample\SymfonyAccounting\Api\Dto;
 
 use Wexample\SymfonyAccounting\Entity\EntryLine;
+use Wexample\SymfonyAccounting\Entity\Journal;
 use Wexample\SymfonyAccounting\Entity\JournalEntry;
 use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 /**
- * An entry of a journal with its lines, debit and credit in minor units.
+ * An entry of a journal, under the names of its entity: its journal and its
+ * lines travel as relationships.
  */
 class JournalEntryDto extends AbstractEntityDto
 {
-    public string $journal;
+    public Journal $journal;
 
     public ?int $number;
 
@@ -24,7 +26,7 @@ class JournalEntryDto extends AbstractEntityDto
 
     public string $status;
 
-    /** @var list<array{id: string, account: string, label: string, debit: int, credit: int, letter: ?string}> Lettering addresses a line by its id. */
+    /** @var list<EntryLine> */
     public array $lines;
 
     /**
@@ -34,20 +36,13 @@ class JournalEntryDto extends AbstractEntityDto
     {
         $dto = parent::fromEntity($entity);
 
-        $dto->journal = $entity->getJournal()->getCode();
+        $dto->journal = $entity->getJournal();
         $dto->number = $entity->getNumber();
         $dto->date = $entity->getDate()->format('Y-m-d');
         $dto->label = $entity->getLabel();
         $dto->pieceReference = $entity->getPieceReference();
         $dto->status = $entity->getStatus()->value;
-        $dto->lines = array_map(fn (EntryLine $line) => [
-            'id' => (string) $line->getId(),
-            'account' => $line->getAccount()->getNumber(),
-            'label' => $line->getLabel(),
-            'debit' => $line->getDebit(),
-            'credit' => $line->getCredit(),
-            'letter' => $line->getLetter(),
-        ], $entity->getLines()->toArray());
+$dto->lines = $entity->getLines()->toArray();
 
         return $dto;
     }

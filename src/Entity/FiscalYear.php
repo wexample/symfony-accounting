@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\FiscalYearStatus;
 use Wexample\SymfonyAccounting\Repository\FiscalYearRepository;
@@ -16,6 +17,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * An accounting period with its own start and end: calendar years, offset years
  * (July → June), long or short first years all fit.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: FiscalYearRepository::class)]
 #[ORM\Table(name: 'accounting_fiscal_year')]
 class FiscalYear extends AbstractEntity implements BelongsToLedgerInterface

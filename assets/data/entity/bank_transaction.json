@@ -1,0 +1,553 @@
+{
+    "name": "bank_transaction",
+    "type": "class",
+    "description": "A line of a bank statement: signed amount in minor units, + for money in.\nIt is settled by allocations (to invoices or straight to accounts), or by a\ntransfer to another account of the ledger (`transferPeer`, the line of opposite\namount on the other account).\n`externalId` is the bank's or provider's own id when the format has one\n(Stripe txn_…, CAMT AcctSvcrRef); imports deduplicate on it, or on\n`fingerprint` (date, amount, label) otherwise.",
+    "properties": [
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "bankAccount",
+            "type": "BankAccount"
+        },
+        {
+            "name": "date",
+            "type": "DateTimeImmutable"
+        },
+        {
+            "name": "valueDate",
+            "type": "DateTimeImmutable",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "label",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": "string"
+        },
+        {
+            "name": "externalId",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "fingerprint",
+            "type": "string"
+        },
+        {
+            "name": "counterpartyName",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "counterpartyIban",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "reference",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "paymentReference",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "transferPeer",
+            "type": "self",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "allocations",
+            "type": "Collection",
+            "description": "Allocation>"
+        },
+        {
+            "name": "importBatch",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "metadata",
+            "type": "array",
+            "default": []
+        },
+        {
+            "name": "dateCreated",
+            "type": "DateTimeImmutable"
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "__toString",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "buildFingerprint",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "date"
+                },
+                {
+                    "type": "int",
+                    "name": "amount"
+                },
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "refreshFingerprint",
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getBankAccount",
+            "return": {
+                "type": "BankAccount"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setBankAccount",
+            "parameters": [
+                {
+                    "type": "BankAccount",
+                    "name": "bankAccount"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLedger",
+            "return": {
+                "type": "Ledger"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDate",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDate",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "date"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getValueDate",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setValueDate",
+            "parameters": [
+                {
+                    "type": "DateTimeImmutable",
+                    "name": "valueDate"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getLabel",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setLabel",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "label"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAmount",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAmount",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "amount"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isCredit",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getExternalId",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setExternalId",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "externalId"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getFingerprint",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCounterpartyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setCounterpartyName",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "counterpartyName"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCounterpartyIban",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setCounterpartyIban",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "counterpartyIban"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getReference",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setReference",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "reference"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPaymentReference",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPaymentReference",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "paymentReference"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTransferPeer",
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setTransferPeer",
+            "description": "",
+            "parameters": [
+                {
+                    "type": "self",
+                    "name": "transferPeer"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isTransfer",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAllocations",
+            "description": "",
+            "return": {
+                "type": "Collection",
+                "description": "Allocation>"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getActiveAllocations",
+            "description": "",
+            "return": {
+                "type": "array",
+                "description": "Pending and validated ones."
+            }
+        },
+        {
+            "type": "method",
+            "name": "addAllocation",
+            "parameters": [
+                {
+                    "type": "Allocation",
+                    "name": "allocation"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAllocatedAmount",
+            "description": "Signed amount covered by active allocations.",
+            "parameters": [
+                {
+                    "type": "AllocationStatus",
+                    "name": "status",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getUnallocatedAmount",
+            "description": "Signed amount still to explain. Zero once allocated or transferred.",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isSettled",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getImportBatch",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setImportBatch",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "importBatch"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getMetadata",
+            "return": {
+                "type": "array"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setMetadata",
+            "parameters": [
+                {
+                    "type": "array",
+                    "name": "metadata"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDateCreated",
+            "return": {
+                "type": "DateTimeImmutable"
+            }
+        }
+    ]
+}

@@ -8,7 +8,8 @@ use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 /**
- * A line of a bank statement, and how much of it no document or account explains yet.
+ * A line of a bank statement, under the names of its entity. How much of it
+ * no document or account explains yet travels in its metadata.
  */
 class BankTransactionDto extends AbstractEntityDto
 {
@@ -22,10 +23,6 @@ class BankTransactionDto extends AbstractEntityDto
 
     /** Signed: money in is positive. */
     public int $amount;
-
-    public int $unallocatedAmount;
-
-    public bool $transfer;
 
     public ?string $counterpartyName;
 
@@ -47,8 +44,6 @@ class BankTransactionDto extends AbstractEntityDto
         $dto->valueDate = $entity->getValueDate()?->format('Y-m-d');
         $dto->label = $entity->getLabel();
         $dto->amount = $entity->getAmount();
-        $dto->unallocatedAmount = $entity->getUnallocatedAmount();
-        $dto->transfer = $entity->isTransfer();
         $dto->counterpartyName = $entity->getCounterpartyName();
         $dto->counterpartyIban = $entity->getCounterpartyIban();
         $dto->reference = $entity->getReference();

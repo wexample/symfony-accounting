@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Enum\VatRole;
 use Wexample\SymfonyAccounting\Repository\EntryLineRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -15,6 +16,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  *
  * `vatCode` and `vatRole` tag the lines VAT returns are computed from.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: EntryLineRepository::class)]
 #[ORM\Table(name: 'accounting_entry_line')]
 #[ORM\Index(columns: ['letter'])]

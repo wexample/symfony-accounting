@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Repository\AllocationRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -17,6 +18,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  * matcher's proposal; an excluded one records a refusal, so the pair is never
  * proposed again.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: AllocationRepository::class)]
 #[ORM\Table(name: 'accounting_allocation')]
 class Allocation extends AbstractEntity

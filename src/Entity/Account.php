@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\AccountNature;
 use Wexample\SymfonyAccounting\Repository\AccountRepository;
@@ -14,6 +15,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * An account of the ledger's chart. The number is a string of digits ("411",
  * "6061", "512100"), compared by prefix: its first digit is its class.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
 #[ORM\Table(name: 'accounting_account')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'number'])]

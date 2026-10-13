@@ -1,0 +1,150 @@
+items:
+  - name: InvoiceTransmission
+    type: class
+    description: "A document sent over Peppol: through which access point, under which reference,\nand where it stands. A failed attempt stays; sending again adds another."
+    properties:
+      - name: id
+        type: Symfony\Component\Uid\Uuid
+      - name: invoice
+        type: Invoice
+      - name: provider
+        type: string
+      - name: reference
+        type: string
+      - name: receiver
+        type: string
+      - name: status
+        type: TransmissionStatus
+      - name: message
+        type: string
+        nullable: true
+        default: null
+      - name: dateSent
+        type: DateTimeImmutable
+      - name: dateUpdated
+        type: DateTimeImmutable
+    methods:
+      - type: method
+        name: __construct
+      - type: method
+        name: buildEntityPath
+        parameters:
+          - type: string
+            name: className
+        return:
+          type: string
+      - type: method
+        name: getEntityKeyName
+        return:
+          type: string
+      - type: method
+        name: getEntityShortName
+        return:
+          type: string
+      - type: method
+        name: getId
+        return:
+          type: Symfony\Component\Uid\Uuid
+      - type: method
+        name: setId
+        parameters:
+          - type: Symfony\Component\Uid\Uuid
+            name: id
+        return:
+          type: void
+      - type: method
+        name: getTableizedName
+        return:
+          type: string
+      - type: method
+        name: getCamelName
+        return:
+          type: string
+      - type: method
+        name: getInvoice
+        return:
+          type: Invoice
+      - type: method
+        name: setInvoice
+        parameters:
+          - type: Invoice
+            name: invoice
+        return:
+          type: static
+      - type: method
+        name: getProvider
+        return:
+          type: string
+      - type: method
+        name: setProvider
+        parameters:
+          - type: string
+            name: provider
+        return:
+          type: static
+      - type: method
+        name: getReference
+        return:
+          type: string
+      - type: method
+        name: setReference
+        parameters:
+          - type: string
+            name: reference
+        return:
+          type: static
+      - type: method
+        name: getReceiver
+        return:
+          type: string
+      - type: method
+        name: setReceiver
+        parameters:
+          - type: string
+            name: receiver
+        return:
+          type: static
+      - type: method
+        name: getStatus
+        return:
+          type: TransmissionStatus
+      - type: method
+        name: setStatus
+        parameters:
+          - type: TransmissionStatus
+            name: status
+        return:
+          type: static
+      - type: method
+        name: getMessage
+        return:
+          type: string
+      - type: method
+        name: setMessage
+        parameters:
+          - type: string
+            name: message
+        return:
+          type: static
+      - type: method
+        name: getDateSent
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateSent
+        parameters:
+          - type: DateTimeImmutable
+            name: dateSent
+        return:
+          type: static
+      - type: method
+        name: getDateUpdated
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateUpdated
+        parameters:
+          - type: DateTimeImmutable
+            name: dateUpdated
+        return:
+          type: static
