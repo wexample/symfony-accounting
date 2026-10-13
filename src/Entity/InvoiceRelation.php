@@ -21,7 +21,7 @@ class InvoiceRelation extends AbstractEntity
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     protected Invoice $source;
 
-    #[ORM\ManyToOne(targetEntity: Invoice::class)]
+    #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'incomingRelations')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     protected Invoice $target;
 
@@ -52,6 +52,7 @@ class InvoiceRelation extends AbstractEntity
     public function setTarget(Invoice $target): static
     {
         $this->target = $target;
+        $target->addIncomingRelation($this);
 
         return $this;
     }

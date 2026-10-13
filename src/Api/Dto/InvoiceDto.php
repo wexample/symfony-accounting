@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Api\Dto;
 
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\InvoiceItem;
+use Wexample\SymfonyAccounting\Entity\InvoiceRelation;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -68,6 +69,15 @@ class InvoiceDto extends AbstractEntityDto
     public array $items;
 
     /**
+     * The documents linked to this one, both ways: its quotation, bill, credit
+     * notes, deposits, penalties… `relation` is an InvoiceRelationType, `way`
+     * says whether this document is its source (`to`) or its target (`from`).
+     *
+     * @var list<array{id: string, number: ?string, type: string, status: string, relation: string, way: string, amount: ?int}>
+     */
+    public array $related;
+
+    /**
      * @param Invoice $entity
      */
     public static function fromEntity(AbstractEntity $entity): self
@@ -98,7 +108,27 @@ class InvoiceDto extends AbstractEntityDto
         $dto->paymentTermDays = $entity->getOwnPaymentTermDays();
         $dto->paymentTermDaysDefault = $entity->getDefaultPaymentTermDays();
         $dto->items = $entity->getItems()->toArray();
+        $dto->related = [
+            ...$entity->getOutgoingRelations()->map(fn (InvoiceRelation $relation) => self::related($relation, $relation->getTarget(), 'to'))->getValues(),
+            ...$entity->getIncomingRelations()->map(fn (InvoiceRelation $relation) => self::related($relation, $relation->getSource(), 'from'))->getValues(),
+        ];
 
         return $dto;
+    }
+
+    private static function related(
+        InvoiceRelation $relation,
+        Invoice $other,
+        string $way
+    ): array {
+        return [
+            'id' => (string) $other->getId(),
+            'number' => $other->getNumber(),
+            'type' => $other->getType()->value,
+            'status' => $other->getStatus()->value,
+            'relation' => $relation->getType()->value,
+            'way' => $way,
+            'amount' => $relation->getAmount(),
+        ];
     }
 }

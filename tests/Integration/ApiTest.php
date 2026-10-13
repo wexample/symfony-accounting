@@ -86,6 +86,8 @@ class ApiTest extends AbstractAccountingTestCase
 
         $credit = $this->post('api/invoice/credit-note/'.$id, ['amount' => 20000])['data']['entity'];
         $this->assertSame('credit_note', $credit['type']);
+        $this->assertSame([[$id, 'credit', 'from']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $credit['related']));
+        $this->assertSame([[$credit['id'], 'credit', 'to']], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way']], $this->get('api/invoice/show/'.$id)['data']['entity']['related']));
         $this->assertSame(96000, $this->get('api/invoice/show/'.$id)['data']['entity']['amountDue']);
 
         $page = $this->get('api/invoice/list?ledger='.$this->acme->getId().'&year=2026&type=bill')['data'];

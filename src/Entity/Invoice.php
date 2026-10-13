@@ -160,6 +160,10 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     #[ORM\OneToMany(targetEntity: InvoiceRelation::class, mappedBy: 'source')]
     protected Collection $outgoingRelations;
 
+    /** @var Collection<int, InvoiceRelation> Links to this document: from its quotation, its deposits… */
+    #[ORM\OneToMany(targetEntity: InvoiceRelation::class, mappedBy: 'target')]
+    protected Collection $incomingRelations;
+
     #[ORM\Column(type: Types::JSON)]
     protected array $metadata = [];
 
@@ -169,6 +173,7 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
         $this->items = new ArrayCollection();
         $this->allocations = new ArrayCollection();
         $this->outgoingRelations = new ArrayCollection();
+        $this->incomingRelations = new ArrayCollection();
         $this->dateCreated = new DateTimeImmutable();
         $this->dateInvoice = $this->dateCreated->setTime(0, 0);
         $this->priceTotal = 0;
@@ -647,6 +652,23 @@ class Invoice extends AbstractEntity implements PricedParentInterface, Discounte
     {
         if (! $this->outgoingRelations->contains($relation)) {
             $this->outgoingRelations->add($relation);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, InvoiceRelation>
+     */
+    public function getIncomingRelations(): Collection
+    {
+        return $this->incomingRelations;
+    }
+
+    public function addIncomingRelation(InvoiceRelation $relation): static
+    {
+        if (! $this->incomingRelations->contains($relation)) {
+            $this->incomingRelations->add($relation);
         }
 
         return $this;
