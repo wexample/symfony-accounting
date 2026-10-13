@@ -376,6 +376,49 @@ class InvoiceFactory
         $target->updatePriceTotal();
     }
 
+    /**
+     * A link set by hand between two documents of one ledger, of a manual type
+     * only (see InvoiceRelationType::isManual()). A re-billing goes from a
+     * purchase to a sale.
+     */
+    public function relate(
+        Invoice $source,
+        Invoice $target,
+        InvoiceRelationType $type
+    ): InvoiceRelation {
+        if (! $type->isManual()) {
+            throw new AccountingException(sprintf('A "%s" link follows from its action, not by hand.', $type->value));
+        }
+
+        if ($source === $target || $source->getLedger() !== $target->getLedger()) {
+            throw new AccountingException('Only two documents of one ledger can be linked.');
+        }
+
+        if (InvoiceRelationType::Rebill === $type
+            && (InvoiceDirection::Purchase !== $source->getDirection() || InvoiceDirection::Sale !== $target->getDirection())) {
+            throw new AccountingException('A re-billing goes from a purchase to a sale.');
+        }
+
+        foreach ($source->getOutgoingRelations() as $relation) {
+            if ($relation->getTarget() === $target && $relation->getType() === $type) {
+                return $relation;
+            }
+        }
+
+        return $this->link($source, $target, $type);
+    }
+
+    public function unrelate(InvoiceRelation $relation): void
+    {
+        if (! $relation->getType()->isManual()) {
+            throw new AccountingException(sprintf('A "%s" link follows from its action: undo the action instead.', $relation->getType()->value));
+        }
+
+        $relation->getSource()->getOutgoingRelations()->removeElement($relation);
+        $relation->getTarget()->getIncomingRelations()->removeElement($relation);
+        $this->entityManager->remove($relation);
+    }
+
     public function link(
         Invoice $source,
         Invoice $target,

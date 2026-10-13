@@ -71,9 +71,10 @@ class InvoiceDto extends AbstractEntityDto
     /**
      * The documents linked to this one, both ways: its quotation, bill, credit
      * notes, deposits, penalties… `relation` is an InvoiceRelationType, `way`
-     * says whether this document is its source (`to`) or its target (`from`).
+     * says whether this document is its source (`to`) or its target (`from`),
+     * `manual` whether it may be unlinked by hand (`relationId`).
      *
-     * @var list<array{id: string, number: ?string, type: string, status: string, relation: string, way: string, amount: ?int}>
+     * @var list<array{relationId: string, manual: bool, id: string, number: ?string, type: string, status: string, relation: string, way: string, amount: ?int}>
      */
     public array $related;
 
@@ -122,6 +123,8 @@ class InvoiceDto extends AbstractEntityDto
         string $way
     ): array {
         return [
+            'relationId' => (string) $relation->getId(),
+            'manual' => $relation->getType()->isManual(),
             'id' => (string) $other->getId(),
             'number' => $other->getNumber(),
             'type' => $other->getType()->value,

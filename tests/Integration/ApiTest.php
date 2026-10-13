@@ -324,6 +324,24 @@ class ApiTest extends AbstractAccountingTestCase
         $this->post('api/invoice-item/update/'.$works['id'], ['title' => 'Late'], 400);
     }
 
+    public function testDocumentsAreLinkedByHand(): void
+    {
+        $this->signIn('anna');
+        $create = fn (string $direction, mixed $ledger) => $this->post('api/invoice/create', ['ledger' => (string) $ledger->getId(), 'direction' => $direction, 'dateInvoice' => '2026-03-01'])['data']['entity']['id'];
+        $purchase = $create('purchase', $this->acme);
+        $sale = $create('sale', $this->acme);
+
+        $linked = $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'rebill', 'way' => 'from'])['data']['entity'];
+        $this->assertSame([[$purchase, 'rebill', 'from', true]], array_map(fn (array $related) => [$related['id'], $related['relation'], $related['way'], $related['manual']], $linked['related']));
+        $this->assertSame($sale, $this->get('api/invoice/show/'.$purchase)['data']['entity']['related'][0]['id']);
+
+        $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'rebill'], 400);
+        $this->post('api/invoice/relate/'.$sale, ['other' => $purchase, 'type' => 'credit', 'way' => 'from'], 400);
+
+        $this->assertSame([], $this->request('DELETE', 'api/invoice/unrelate/'.$sale.'/'.$linked['related'][0]['relationId'])['data']['entity']['related']);
+        $this->assertSame([], $this->get('api/invoice/show/'.$purchase)['data']['entity']['related']);
+    }
+
     public function testLinesWithoutRateTakeTheDefaultOne(): void
     {
         $this->signIn('anna');

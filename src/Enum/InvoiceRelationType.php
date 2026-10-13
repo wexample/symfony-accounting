@@ -16,4 +16,14 @@ enum InvoiceRelationType: string
     case Deposit = 'deposit';
     /** Financing documents, never booked (#126). */
     case Financing = 'financing';
+
+    /**
+     * Whether people may link or unlink two documents this way by hand. The
+     * others follow from an action (bill a quotation, credit, deposit,
+     * penalty) and count in what is due: only that action sets them.
+     */
+    public function isManual(): bool
+    {
+        return in_array($this, [self::Rebill, self::Financing], true);
+    }
 }

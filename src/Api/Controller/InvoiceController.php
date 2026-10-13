@@ -8,17 +8,21 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Wexample\SymfonyAccounting\Api\Dto\CreateCreditNoteDto;
 use Wexample\SymfonyAccounting\Api\Dto\CreateInvoiceDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceDto;
 use Wexample\SymfonyAccounting\Api\Dto\InvoiceInputDto;
+use Wexample\SymfonyAccounting\Api\Dto\RelateInvoiceDto;
 use Wexample\SymfonyAccounting\Api\Normalizer\Entity\Invoice\DefaultInvoiceNormalizer;
 use Wexample\SymfonyAccounting\Entity\Invoice;
+use Wexample\SymfonyAccounting\Entity\InvoiceRelation;
 use Wexample\SymfonyAccounting\Entity\InvoiceTransmission;
 use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
+use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\LedgerPermission;
 use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
@@ -74,6 +78,10 @@ class InvoiceController extends AbstractAccountingApiController
     final public const string ROUTE_BILL = 'bill';
 
     final public const string ROUTE_DUPLICATE = 'duplicate';
+
+    final public const string ROUTE_RELATE = 'relate';
+
+    final public const string ROUTE_UNRELATE = 'unrelate';
 
     final public const string QUERY_OPTION_TYPE = 'type';
 
@@ -343,6 +351,61 @@ class InvoiceController extends AbstractAccountingApiController
         $entityManager->flush();
 
         return self::apiResponseSuccess(data: $normalizer->normalize($copy));
+    }
+
+    /**
+     * Links the document to another of its ledger by hand, once chosen: a
+     * purchase to the sale re-billing it, financing documents together. Emitted
+     * documents may be linked too: a link changes neither of them.
+     */
+    #[Route(path: 'relate/{id}', name: self::ROUTE_RELATE, methods: [Request::METHOD_POST], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ValidateRequestContent(dto: RelateInvoiceDto::class, attributeName: 'relateInvoiceDto')]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function relate(
+        string $id,
+        RelateInvoiceDto $relateInvoiceDto,
+        InvoiceRepository $repository,
+        InvoiceFactory $factory,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $invoice = $this->reachable($repository->find($id), LedgerPermission::EDIT);
+        $other = $this->reachable($repository->find($relateInvoiceDto->other), LedgerPermission::EDIT);
+        $type = InvoiceRelationType::tryFrom($relateInvoiceDto->type) ?? throw new BadRequestHttpException('Unknown link type.');
+
+        $this->withinTheRules(fn () => 'from' === $relateInvoiceDto->way
+            ? $factory->relate($other, $invoice, $type)
+            : $factory->relate($invoice, $other, $type));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($invoice));
+    }
+
+    /**
+     * Removes a link set by hand (`relationId` of `related`), answering with the
+     * document at hand.
+     */
+    #[Route(path: 'unrelate/{id}/{relation}', name: self::ROUTE_UNRELATE, methods: [Request::METHOD_DELETE], options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[ApiResponseData(InvoiceDto::class)]
+    public function unrelate(
+        string $id,
+        string $relation,
+        InvoiceRepository $repository,
+        InvoiceFactory $factory,
+        EntityManagerInterface $entityManager,
+        DefaultInvoiceNormalizer $normalizer,
+    ): ApiResponse {
+        $invoice = $this->reachable($repository->find($id), LedgerPermission::EDIT);
+        $link = $entityManager->find(InvoiceRelation::class, $relation);
+
+        if (! $link || ($link->getSource() !== $invoice && $link->getTarget() !== $invoice)) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->withinTheRules(fn () => $factory->unrelate($link));
+        $entityManager->flush();
+
+        return self::apiResponseSuccess(data: $normalizer->normalize($invoice));
     }
 
     /**
