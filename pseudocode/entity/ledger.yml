@@ -1,0 +1,445 @@
+items:
+  - name: Ledger
+    type: class
+    description: "The books of one legal entity: a company, a sole trader, an association.\nAn accounting firm keeps one ledger per client; an app keeping its own books\nhas a single one. Its country selects the jurisdiction (chart of accounts, VAT,\nlegal mentions); its identity is printed on the invoices it emits.\n`externalReference` links it to the host's organization."
+    properties:
+      - name: name
+        type: string
+      - name: legalIdentifier
+        type: string
+        nullable: true
+        default: null
+      - name: vatNumber
+        type: string
+        nullable: true
+        default: null
+      - name: email
+        type: string
+        nullable: true
+        default: null
+      - name: phone
+        type: string
+        nullable: true
+        default: null
+      - name: postalAddress
+        type: string
+        nullable: true
+        default: null
+      - name: postCode
+        type: string
+        nullable: true
+        default: null
+      - name: city
+        type: string
+        nullable: true
+        default: null
+      - name: country
+        type: Wexample\SymfonyGeo\Entity\Country
+        nullable: true
+        default: null
+      - name: latitude
+        type: float
+        nullable: true
+        default: null
+      - name: longitude
+        type: float
+        nullable: true
+        default: null
+      - name: id
+        type: Symfony\Component\Uid\Uuid
+      - name: legalForm
+        type: string
+        nullable: true
+        default: null
+      - name: legalMentions
+        type: string
+        nullable: true
+        default: null
+      - name: currencyCode
+        type: string
+        default: EUR
+      - name: website
+        type: string
+        nullable: true
+        default: null
+      - name: vatSubject
+        type: bool
+        default: true
+      - name: vatPeriodicity
+        type: VatPeriodicity
+        default: null
+      - name: vatOnPayments
+        type: bool
+        default: false
+      - name: vatRegime
+        type: string
+        nullable: true
+        default: null
+      - name: invoicePrefix
+        type: string
+        nullable: true
+        default: null
+      - name: paymentTermDays
+        type: int
+        default: 30
+      - name: defaultBankAccount
+        type: BankAccount
+        nullable: true
+        default: null
+      - name: externalReference
+        type: string
+        nullable: true
+        default: null
+      - name: accountRoles
+        type: array
+        default: {  }
+      - name: settings
+        type: array
+        default: {  }
+      - name: dateCreated
+        type: DateTimeImmutable
+    methods:
+      - type: method
+        name: getName
+        return:
+          type: string
+      - type: method
+        name: setName
+        parameters:
+          - type: string
+            name: name
+        return:
+          type: static
+      - type: method
+        name: getLegalIdentifier
+        return:
+          type: string
+      - type: method
+        name: setLegalIdentifier
+        parameters:
+          - type: string
+            name: legalIdentifier
+        return:
+          type: static
+      - type: method
+        name: getVatNumber
+        return:
+          type: string
+      - type: method
+        name: setVatNumber
+        parameters:
+          - type: string
+            name: vatNumber
+        return:
+          type: static
+      - type: method
+        name: hasVatNumber
+        return:
+          type: bool
+      - type: method
+        name: getEmail
+        return:
+          type: string
+      - type: method
+        name: setEmail
+        parameters:
+          - type: string
+            name: email
+        return:
+          type: static
+      - type: method
+        name: getPhone
+        return:
+          type: string
+      - type: method
+        name: setPhone
+        parameters:
+          - type: string
+            name: phone
+        return:
+          type: static
+      - type: method
+        name: getPostalAddress
+        return:
+          type: string
+      - type: method
+        name: setPostalAddress
+        parameters:
+          - type: string
+            name: postalAddress
+        return:
+          type: static
+      - type: method
+        name: getPostCode
+        return:
+          type: string
+      - type: method
+        name: setPostCode
+        parameters:
+          - type: string
+            name: postCode
+        return:
+          type: static
+      - type: method
+        name: getCity
+        return:
+          type: string
+      - type: method
+        name: setCity
+        parameters:
+          - type: string
+            name: city
+        return:
+          type: static
+      - type: method
+        name: getCountry
+        return:
+          type: Wexample\SymfonyGeo\Entity\Country
+      - type: method
+        name: setCountry
+        parameters:
+          - type: Wexample\SymfonyGeo\Entity\Country
+            name: country
+        return:
+          type: static
+      - type: method
+        name: copyAddressFrom
+        parameters:
+          - type: Wexample\SymfonyGeo\Interface\PostalAddressInterface
+            name: address
+        return:
+          type: static
+      - type: method
+        name: hasPostalAddress
+        return:
+          type: bool
+      - type: method
+        name: toStringInline
+        return:
+          type: string
+      - type: method
+        name: getGeoPoint
+        return:
+          type: Wexample\SymfonyGeo\Class\GeoPoint
+      - type: method
+        name: setGeoPoint
+        parameters:
+          - type: Wexample\SymfonyGeo\Class\GeoPoint
+            name: point
+        return:
+          type: static
+      - type: method
+        name: isGeoLocated
+        return:
+          type: bool
+      - type: method
+        name: buildEntityPath
+        parameters:
+          - type: string
+            name: className
+        return:
+          type: string
+      - type: method
+        name: getEntityKeyName
+        return:
+          type: string
+      - type: method
+        name: getEntityShortName
+        return:
+          type: string
+      - type: method
+        name: getId
+        return:
+          type: Symfony\Component\Uid\Uuid
+      - type: method
+        name: setId
+        parameters:
+          - type: Symfony\Component\Uid\Uuid
+            name: id
+        return:
+          type: void
+      - type: method
+        name: getTableizedName
+        return:
+          type: string
+      - type: method
+        name: getCamelName
+        return:
+          type: string
+      - type: method
+        name: __construct
+      - type: method
+        name: __toString
+        return:
+          type: string
+      - type: method
+        name: getLegalForm
+        return:
+          type: string
+      - type: method
+        name: setLegalForm
+        parameters:
+          - type: string
+            name: legalForm
+        return:
+          type: static
+      - type: method
+        name: getLegalMentions
+        return:
+          type: string
+      - type: method
+        name: setLegalMentions
+        parameters:
+          - type: string
+            name: legalMentions
+        return:
+          type: static
+      - type: method
+        name: getCurrencyCode
+        return:
+          type: string
+      - type: method
+        name: setCurrencyCode
+        parameters:
+          - type: string
+            name: currencyCode
+        return:
+          type: static
+      - type: method
+        name: getWebsite
+        return:
+          type: string
+      - type: method
+        name: setWebsite
+        parameters:
+          - type: string
+            name: website
+        return:
+          type: static
+      - type: method
+        name: isVatSubject
+        return:
+          type: bool
+      - type: method
+        name: setVatSubject
+        parameters:
+          - type: bool
+            name: vatSubject
+        return:
+          type: static
+      - type: method
+        name: getVatPeriodicity
+        return:
+          type: VatPeriodicity
+      - type: method
+        name: setVatPeriodicity
+        parameters:
+          - type: VatPeriodicity
+            name: vatPeriodicity
+        return:
+          type: static
+      - type: method
+        name: isVatOnPayments
+        return:
+          type: bool
+      - type: method
+        name: setVatOnPayments
+        parameters:
+          - type: bool
+            name: vatOnPayments
+        return:
+          type: static
+      - type: method
+        name: getVatRegime
+        return:
+          type: string
+      - type: method
+        name: setVatRegime
+        parameters:
+          - type: string
+            name: vatRegime
+        return:
+          type: static
+      - type: method
+        name: getInvoicePrefix
+        return:
+          type: string
+      - type: method
+        name: setInvoicePrefix
+        parameters:
+          - type: string
+            name: invoicePrefix
+        return:
+          type: static
+      - type: method
+        name: getPaymentTermDays
+        return:
+          type: int
+      - type: method
+        name: setPaymentTermDays
+        parameters:
+          - type: int
+            name: paymentTermDays
+        return:
+          type: static
+      - type: method
+        name: getDefaultBankAccount
+        return:
+          type: BankAccount
+      - type: method
+        name: setDefaultBankAccount
+        parameters:
+          - type: BankAccount
+            name: defaultBankAccount
+        return:
+          type: static
+      - type: method
+        name: getExternalReference
+        return:
+          type: string
+      - type: method
+        name: setExternalReference
+        parameters:
+          - type: string
+            name: externalReference
+        return:
+          type: static
+      - type: method
+        name: getAccountRoles
+        description: ''
+        return:
+          type: array
+          description: 'string> Role value → account number.'
+      - type: method
+        name: setAccountRoles
+        parameters:
+          - type: array
+            name: accountRoles
+        return:
+          type: static
+      - type: method
+        name: getSettings
+        return:
+          type: array
+      - type: method
+        name: getSetting
+        parameters:
+          - type: string
+            name: key
+          - type: mixed
+            name: default
+            optional: true
+            default: null
+        return:
+          type: mixed
+      - type: method
+        name: setSettings
+        parameters:
+          - type: array
+            name: settings
+        return:
+          type: static
+      - type: method
+        name: getDateCreated
+        return:
+          type: DateTimeImmutable

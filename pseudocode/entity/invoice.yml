@@ -1,0 +1,733 @@
+items:
+  - name: Invoice
+    type: class
+    description: "A commercial document of the ledger: a bill, credit note, quotation, penalty,\nreceipt or pro forma, emitted to a customer (sale) or received from a supplier\n(purchase).\nAmounts are always positive, credit notes included: the document type decides\nthe accounting side. Sales are numbered at emission only, without gaps\n(InvoiceEmissionService); purchases keep the supplier's number.\nOnce emitted, the document is frozen: the party and the issuer are copied into\nsnapshots, as the law wants the document to stay as it was sent."
+    properties:
+      - name: ledger
+        type: Wexample\SymfonyAccounting\Entity\Ledger
+      - name: priceRaw
+        type: int
+        nullable: true
+        default: null
+      - name: priceTotal
+        type: int
+        nullable: true
+        default: null
+      - name: priceOverridden
+        type: int
+        nullable: true
+        default: null
+      - name: priceDiscount
+        type: int
+        nullable: true
+        default: null
+      - name: priceDiscountUnit
+        type: Wexample\SymfonyMoney\Enum\PriceUnit
+        nullable: true
+        default: null
+      - name: currencyCode
+        type: string
+        default: EUR
+      - name: id
+        type: Symfony\Component\Uid\Uuid
+      - name: type
+        type: InvoiceType
+        default: null
+      - name: direction
+        type: InvoiceDirection
+        default: null
+      - name: status
+        type: InvoiceStatus
+        default: null
+      - name: number
+        type: string
+        nullable: true
+        default: null
+      - name: title
+        type: string
+        nullable: true
+        default: null
+      - name: note
+        type: string
+        nullable: true
+        default: null
+      - name: comment
+        type: string
+        nullable: true
+        default: null
+      - name: party
+        type: Party
+        nullable: true
+        default: null
+      - name: partySnapshot
+        type: array
+        nullable: true
+        default: null
+      - name: issuerSnapshot
+        type: array
+        nullable: true
+        default: null
+      - name: dateCreated
+        type: DateTimeImmutable
+      - name: dateInvoice
+        type: DateTimeImmutable
+      - name: dateEmitted
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: dateDue
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: datePaid
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: periodStart
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: periodEnd
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: dateValidUntil
+        type: DateTimeImmutable
+        nullable: true
+        default: null
+      - name: paymentTermDays
+        type: int
+        nullable: true
+        default: null
+      - name: priceLoss
+        type: int
+        default: 0
+      - name: accountNumber
+        type: string
+        nullable: true
+        default: null
+      - name: paymentReference
+        type: string
+        nullable: true
+        default: null
+      - name: exchangeRate
+        type: string
+        nullable: true
+        default: null
+      - name: documentPath
+        type: string
+        nullable: true
+        default: null
+      - name: origin
+        type: string
+        default: manual
+      - name: model
+        type: self
+        nullable: true
+        default: null
+      - name: items
+        type: Collection
+        description: InvoiceItem>
+      - name: allocations
+        type: Collection
+        description: Allocation>
+      - name: outgoingRelations
+        type: Collection
+        description: 'InvoiceRelation> Links from this document: to its bill, its credit notes…'
+      - name: incomingRelations
+        type: Collection
+        description: 'InvoiceRelation> Links to this document: from its quotation, its deposits…'
+      - name: metadata
+        type: array
+        default: {  }
+    methods:
+      - type: method
+        name: getLedger
+        return:
+          type: Wexample\SymfonyAccounting\Entity\Ledger
+      - type: method
+        name: setLedger
+        parameters:
+          - type: Wexample\SymfonyAccounting\Entity\Ledger
+            name: ledger
+        return:
+          type: static
+      - type: method
+        name: calcPriceBreakdown
+        return:
+          type: Wexample\SymfonyMoney\Class\PriceBreakdown
+      - type: method
+        name: calcVatLines
+        return:
+          type: array
+      - type: method
+        name: getPriceRaw
+        return:
+          type: int
+      - type: method
+        name: setPriceRaw
+        parameters:
+          - type: int
+            name: priceRaw
+        return:
+          type: static
+      - type: method
+        name: getPriceTotal
+        return:
+          type: int
+      - type: method
+        name: getPriceOverridden
+        return:
+          type: int
+      - type: method
+        name: setPriceOverridden
+        parameters:
+          - type: int
+            name: priceOverridden
+        return:
+          type: static
+      - type: method
+        name: hasPriceOverridden
+        return:
+          type: bool
+      - type: method
+        name: calcPriceSubTotal
+        return:
+          type: int
+      - type: method
+        name: calcPriceNet
+        return:
+          type: int
+      - type: method
+        name: calcPriceVat
+        return:
+          type: int
+      - type: method
+        name: calcPriceTotal
+        return:
+          type: int
+      - type: method
+        name: calcPriceFinal
+        return:
+          type: int
+      - type: method
+        name: updatePriceTotal
+        return:
+          type: static
+      - type: method
+        name: getPriceDiscount
+        return:
+          type: int
+      - type: method
+        name: getPriceDiscountUnit
+        return:
+          type: Wexample\SymfonyMoney\Enum\PriceUnit
+      - type: method
+        name: setPriceDiscount
+        parameters:
+          - type: int
+            name: priceDiscount
+          - type: Wexample\SymfonyMoney\Enum\PriceUnit
+            name: unit
+            optional: true
+            default: !php/enum Wexample\SymfonyMoney\Enum\PriceUnit::Money
+        return:
+          type: static
+      - type: method
+        name: hasPriceDiscount
+        return:
+          type: bool
+      - type: method
+        name: getCurrencyCode
+        return:
+          type: string
+      - type: method
+        name: setCurrencyCode
+        parameters:
+          - type: string
+            name: currencyCode
+        return:
+          type: static
+      - type: method
+        name: buildEntityPath
+        parameters:
+          - type: string
+            name: className
+        return:
+          type: string
+      - type: method
+        name: getEntityKeyName
+        return:
+          type: string
+      - type: method
+        name: getEntityShortName
+        return:
+          type: string
+      - type: method
+        name: getId
+        return:
+          type: Symfony\Component\Uid\Uuid
+      - type: method
+        name: setId
+        parameters:
+          - type: Symfony\Component\Uid\Uuid
+            name: id
+        return:
+          type: void
+      - type: method
+        name: getTableizedName
+        return:
+          type: string
+      - type: method
+        name: getCamelName
+        return:
+          type: string
+      - type: method
+        name: __construct
+      - type: method
+        name: __toString
+        return:
+          type: string
+      - type: method
+        name: getPayableType
+        return:
+          type: string
+      - type: method
+        name: getPayableId
+        return:
+          type: string
+      - type: method
+        name: getPayableAmount
+        return:
+          type: int
+      - type: method
+        name: getPayableCurrencyCode
+        return:
+          type: string
+      - type: method
+        name: getPayableDescription
+        return:
+          type: string
+      - type: method
+        name: getPricedChildren
+        return:
+          type: iterable
+      - type: method
+        name: getType
+        return:
+          type: InvoiceType
+      - type: method
+        name: setType
+        parameters:
+          - type: InvoiceType
+            name: type
+        return:
+          type: static
+      - type: method
+        name: getDirection
+        return:
+          type: InvoiceDirection
+      - type: method
+        name: setDirection
+        parameters:
+          - type: InvoiceDirection
+            name: direction
+        return:
+          type: static
+      - type: method
+        name: isSale
+        return:
+          type: bool
+      - type: method
+        name: isCreditNote
+        return:
+          type: bool
+      - type: method
+        name: getPaymentSign
+        description: "+1 when this document brings money in, −1 when it takes money out:\na sale bill is paid by a positive bank line, a sale credit note by a negative one."
+        return:
+          type: int
+      - type: method
+        name: getStatus
+        return:
+          type: InvoiceStatus
+      - type: method
+        name: setStatus
+        description: ''
+        parameters:
+          - type: InvoiceStatus
+            name: status
+        return:
+          type: static
+      - type: method
+        name: isEditable
+        return:
+          type: bool
+      - type: method
+        name: getNumber
+        return:
+          type: string
+      - type: method
+        name: setNumber
+        parameters:
+          - type: string
+            name: number
+        return:
+          type: static
+      - type: method
+        name: getTitle
+        return:
+          type: string
+      - type: method
+        name: setTitle
+        parameters:
+          - type: string
+            name: title
+        return:
+          type: static
+      - type: method
+        name: getNote
+        return:
+          type: string
+      - type: method
+        name: setNote
+        parameters:
+          - type: string
+            name: note
+        return:
+          type: static
+      - type: method
+        name: getComment
+        return:
+          type: string
+      - type: method
+        name: setComment
+        parameters:
+          - type: string
+            name: comment
+        return:
+          type: static
+      - type: method
+        name: getParty
+        return:
+          type: Party
+      - type: method
+        name: setParty
+        parameters:
+          - type: Party
+            name: party
+        return:
+          type: static
+      - type: method
+        name: getPartySnapshot
+        return:
+          type: array
+      - type: method
+        name: setPartySnapshot
+        parameters:
+          - type: array
+            name: partySnapshot
+        return:
+          type: static
+      - type: method
+        name: getIssuerSnapshot
+        return:
+          type: array
+      - type: method
+        name: setIssuerSnapshot
+        parameters:
+          - type: array
+            name: issuerSnapshot
+        return:
+          type: static
+      - type: method
+        name: getDateCreated
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: getDateInvoice
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateInvoice
+        parameters:
+          - type: DateTimeImmutable
+            name: dateInvoice
+        return:
+          type: static
+      - type: method
+        name: getDateEmitted
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateEmitted
+        parameters:
+          - type: DateTimeImmutable
+            name: dateEmitted
+        return:
+          type: static
+      - type: method
+        name: getDateDue
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateDue
+        parameters:
+          - type: DateTimeImmutable
+            name: dateDue
+        return:
+          type: static
+      - type: method
+        name: calcDateDue
+        description: 'The due date, or the invoice date plus the payment term.'
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: getDatePaid
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDatePaid
+        parameters:
+          - type: DateTimeImmutable
+            name: datePaid
+        return:
+          type: static
+      - type: method
+        name: getPeriodStart
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: getPeriodEnd
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setPeriod
+        parameters:
+          - type: DateTimeImmutable
+            name: start
+          - type: DateTimeImmutable
+            name: end
+        return:
+          type: static
+      - type: method
+        name: getDateValidUntil
+        return:
+          type: DateTimeImmutable
+      - type: method
+        name: setDateValidUntil
+        parameters:
+          - type: DateTimeImmutable
+            name: dateValidUntil
+        return:
+          type: static
+      - type: method
+        name: getPaymentTermDays
+        return:
+          type: int
+      - type: method
+        name: getOwnPaymentTermDays
+        description: "The term set on the document itself; null when it follows the party's or the ledger's."
+        return:
+          type: int
+      - type: method
+        name: getDefaultPaymentTermDays
+        description: "The term the document follows when it sets none: the party's, else the ledger's."
+        return:
+          type: int
+      - type: method
+        name: setPaymentTermDays
+        parameters:
+          - type: int
+            name: paymentTermDays
+        return:
+          type: static
+      - type: method
+        name: getPriceLoss
+        return:
+          type: int
+      - type: method
+        name: setPriceLoss
+        parameters:
+          - type: int
+            name: priceLoss
+        return:
+          type: static
+      - type: method
+        name: getAccountNumber
+        return:
+          type: string
+      - type: method
+        name: setAccountNumber
+        parameters:
+          - type: string
+            name: accountNumber
+        return:
+          type: static
+      - type: method
+        name: getPaymentReference
+        return:
+          type: string
+      - type: method
+        name: setPaymentReference
+        parameters:
+          - type: string
+            name: paymentReference
+        return:
+          type: static
+      - type: method
+        name: getDocumentPath
+        return:
+          type: string
+      - type: method
+        name: setDocumentPath
+        parameters:
+          - type: string
+            name: documentPath
+        return:
+          type: static
+      - type: method
+        name: getOrigin
+        return:
+          type: string
+      - type: method
+        name: setOrigin
+        parameters:
+          - type: string
+            name: origin
+        return:
+          type: static
+      - type: method
+        name: getModel
+        return:
+          type: self
+      - type: method
+        name: setModel
+        parameters:
+          - type: self
+            name: model
+        return:
+          type: static
+      - type: method
+        name: getItems
+        description: ''
+        return:
+          type: Collection
+          description: InvoiceItem>
+      - type: method
+        name: addItem
+        parameters:
+          - type: InvoiceItem
+            name: item
+        return:
+          type: static
+      - type: method
+        name: removeItem
+        parameters:
+          - type: InvoiceItem
+            name: item
+        return:
+          type: static
+      - type: method
+        name: getVatKinds
+        description: ''
+        return:
+          type: array
+          description: 'The tax situations of its items, each once.'
+      - type: method
+        name: getAllocations
+        description: ''
+        return:
+          type: Collection
+          description: Allocation>
+      - type: method
+        name: addAllocation
+        parameters:
+          - type: Allocation
+            name: allocation
+        return:
+          type: static
+      - type: method
+        name: calcAmountExpected
+        description: "What should actually be paid: the final price minus what was written off\nand what emitted credit notes took back."
+        return:
+          type: int
+      - type: method
+        name: calcCreditedAmount
+        description: "What emitted credit notes cancel of this document, VAT included. The\ndocument itself stays as issued: a credit note answers it, never edits it."
+        return:
+          type: int
+      - type: method
+        name: getOutgoingRelations
+        description: ''
+        return:
+          type: Collection
+          description: InvoiceRelation>
+      - type: method
+        name: addOutgoingRelation
+        parameters:
+          - type: InvoiceRelation
+            name: relation
+        return:
+          type: static
+      - type: method
+        name: getIncomingRelations
+        description: ''
+        return:
+          type: Collection
+          description: InvoiceRelation>
+      - type: method
+        name: addIncomingRelation
+        parameters:
+          - type: InvoiceRelation
+            name: relation
+        return:
+          type: static
+      - type: method
+        name: calcPaidAmount
+        description: 'Amount paid so far, positive, through active allocations (or only validated ones).'
+        parameters:
+          - type: bool
+            name: validatedOnly
+            default: false
+        return:
+          type: int
+      - type: method
+        name: calcRemainingAmount
+        return:
+          type: int
+      - type: method
+        name: isFullyPaid
+        return:
+          type: bool
+      - type: method
+        name: isForeignCurrency
+        return:
+          type: bool
+      - type: method
+        name: getExchangeRate
+        return:
+          type: string
+      - type: method
+        name: setExchangeRate
+        parameters:
+          - type: string
+            name: exchangeRate
+        return:
+          type: static
+      - type: method
+        name: getLedgerExchangeRate
+        description: "The document's currency into the ledger's at the rate fixed at emission;\nidentity for a document in the ledger's currency."
+        return:
+          type: ExchangeRate
+      - type: method
+        name: getMetadata
+        return:
+          type: array
+      - type: method
+        name: setMetadata
+        parameters:
+          - type: array
+            name: metadata
+        return:
+          type: static

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
@@ -37,6 +38,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * Once emitted, the document is frozen: the party and the issuer are copied into
  * snapshots, as the law wants the document to stay as it was sent.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 #[ORM\Table(name: 'accounting_invoice')]
 #[ORM\Index(columns: ['ledger_id', 'status'])]

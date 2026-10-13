@@ -1,0 +1,667 @@
+{
+    "name": "invoice_item",
+    "type": "class",
+    "description": "A line of a document. The quantity is scaled by 100 (150 = 1.5), so days and\nhours can be billed; `duration` keeps what was typed (\"1h30\") when the\nquantity was given as a duration. VAT is per item.",
+    "properties": [
+        {
+            "name": "priceRaw",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "priceTotal",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "priceOverridden",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "quantity",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "priceVat",
+            "type": "int",
+            "default": 0
+        },
+        {
+            "name": "priceDiscount",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "priceDiscountUnit",
+            "type": "Wexample\\SymfonyMoney\\Enum\\PriceUnit",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "invoice",
+            "type": "Invoice",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "position",
+            "type": "int",
+            "default": 0
+        },
+        {
+            "name": "title",
+            "type": "string",
+            "default": ""
+        },
+        {
+            "name": "description",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "reference",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "duration",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "unit",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "goods",
+            "type": "bool",
+            "default": false
+        },
+        {
+            "name": "domesticReverseCharge",
+            "type": "bool",
+            "default": false
+        },
+        {
+            "name": "vatCode",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "vatKind",
+            "type": "VatKind",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "accountNumber",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "calcPriceBreakdown",
+            "return": {
+                "type": "Wexample\\SymfonyMoney\\Class\\PriceBreakdown"
+            }
+        },
+        {
+            "type": "method",
+            "name": "updatePriceTotal",
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceRaw",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPriceRaw",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "priceRaw"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceTotal",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceOverridden",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPriceOverridden",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "priceOverridden"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "hasPriceOverridden",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "calcPriceSubTotal",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "calcPriceNet",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "calcPriceVat",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "calcPriceTotal",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "calcPriceFinal",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "updateOwnPriceTotal",
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getQuantity",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setQuantity",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "quantity"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "increaseQuantity",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "count",
+                    "optional": true,
+                    "default": 1
+                }
+            ],
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "decreaseQuantity",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "count",
+                    "optional": true,
+                    "default": 1
+                }
+            ],
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceVat",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPriceVat",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "priceVat"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "hasPriceVat",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceDiscount",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceDiscountUnit",
+            "return": {
+                "type": "Wexample\\SymfonyMoney\\Enum\\PriceUnit"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPriceDiscount",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "priceDiscount"
+                },
+                {
+                    "type": "Wexample\\SymfonyMoney\\Enum\\PriceUnit",
+                    "name": "unit",
+                    "optional": true,
+                    "default": null
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "hasPriceDiscount",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct"
+        },
+        {
+            "type": "method",
+            "name": "getQuantityScale",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPriceParent",
+            "return": {
+                "type": "PricedParentInterface"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getInvoice",
+            "return": {
+                "type": "Invoice"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setInvoice",
+            "parameters": [
+                {
+                    "type": "Invoice",
+                    "name": "invoice"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPosition",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPosition",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "position"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTitle",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setTitle",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "title"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDescription",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDescription",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "description"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getReference",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setReference",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "reference"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getDuration",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDuration",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "duration"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getUnit",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setUnit",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "unit"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isGoods",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setGoods",
+            "parameters": [
+                {
+                    "type": "bool",
+                    "name": "goods"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isDomesticReverseCharge",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDomesticReverseCharge",
+            "parameters": [
+                {
+                    "type": "bool",
+                    "name": "domesticReverseCharge"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getVatCode",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getVatKind",
+            "return": {
+                "type": "VatKind"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setVat",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "vatCode"
+                },
+                {
+                    "type": "VatKind",
+                    "name": "vatKind"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getAccountNumber",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setAccountNumber",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "accountNumber"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "duplicate",
+            "description": "A copy for another document: same content, no invoice yet.",
+            "return": {
+                "type": "self"
+            }
+        }
+    ]
+}

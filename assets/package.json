@@ -1,0 +1,8 @@
+{
+  "name": "@wexample/symfony-accounting",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@wexample/js-api": "*",
+    "@wexample/js-api-entity": "*"
+  }
+}

@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 use Wexample\SymfonyMoney\Entity\Traits\HasPriceDiscountTrait;
@@ -21,6 +22,7 @@ use Wexample\SymfonyMoney\Interface\VatRatedInterface;
  * hours can be billed; `duration` keeps what was typed ("1h30") when the
  * quantity was given as a duration. VAT is per item.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity]
 #[ORM\Table(name: 'accounting_invoice_item')]
 class InvoiceItem extends AbstractEntity implements PricedChildInterface, QuantifiedInterface, VatRatedInterface, DiscountedInterface

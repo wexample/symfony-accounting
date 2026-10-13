@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
 use Wexample\SymfonyAccounting\Enum\VatPeriodicity;
 use Wexample\SymfonyAccounting\Repository\LedgerRepository;
@@ -19,6 +20,7 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  * legal mentions); its identity is printed on the invoices it emits.
  * `externalReference` links it to the host's organization.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: LedgerRepository::class)]
 #[ORM\Table(name: 'accounting_ledger')]
 class Ledger extends AbstractEntity implements PostalAddressInterface

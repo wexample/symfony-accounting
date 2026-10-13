@@ -1,0 +1,383 @@
+items:
+  - name: Party
+    type: class
+    description: "A third party of the ledger: customer, supplier, or both.\nIts auxiliary account codes (`C…` for the customer side, `F…`/`S…` for the\nsupplier side) are what accountants letter and what the FEC exports as\nCompAuxNum. `externalReference` links it to the host's organization or user."
+    properties:
+      - name: ledger
+        type: Wexample\SymfonyAccounting\Entity\Ledger
+      - name: name
+        type: string
+      - name: legalIdentifier
+        type: string
+        nullable: true
+        default: null
+      - name: vatNumber
+        type: string
+        nullable: true
+        default: null
+      - name: email
+        type: string
+        nullable: true
+        default: null
+      - name: phone
+        type: string
+        nullable: true
+        default: null
+      - name: postalAddress
+        type: string
+        nullable: true
+        default: null
+      - name: postCode
+        type: string
+        nullable: true
+        default: null
+      - name: city
+        type: string
+        nullable: true
+        default: null
+      - name: country
+        type: Wexample\SymfonyGeo\Entity\Country
+        nullable: true
+        default: null
+      - name: latitude
+        type: float
+        nullable: true
+        default: null
+      - name: longitude
+        type: float
+        nullable: true
+        default: null
+      - name: id
+        type: Symfony\Component\Uid\Uuid
+      - name: customer
+        type: bool
+        default: false
+      - name: supplier
+        type: bool
+        default: false
+      - name: individual
+        type: bool
+        default: false
+      - name: customerCode
+        type: string
+        nullable: true
+        default: null
+      - name: supplierCode
+        type: string
+        nullable: true
+        default: null
+      - name: defaultAccountNumber
+        type: string
+        nullable: true
+        default: null
+      - name: paymentTermDays
+        type: int
+        nullable: true
+        default: null
+      - name: iban
+        type: string
+        nullable: true
+        default: null
+      - name: externalReference
+        type: string
+        nullable: true
+        default: null
+      - name: notes
+        type: string
+        nullable: true
+        default: null
+    methods:
+      - type: method
+        name: getLedger
+        return:
+          type: Wexample\SymfonyAccounting\Entity\Ledger
+      - type: method
+        name: setLedger
+        parameters:
+          - type: Wexample\SymfonyAccounting\Entity\Ledger
+            name: ledger
+        return:
+          type: static
+      - type: method
+        name: getName
+        return:
+          type: string
+      - type: method
+        name: setName
+        parameters:
+          - type: string
+            name: name
+        return:
+          type: static
+      - type: method
+        name: getLegalIdentifier
+        return:
+          type: string
+      - type: method
+        name: setLegalIdentifier
+        parameters:
+          - type: string
+            name: legalIdentifier
+        return:
+          type: static
+      - type: method
+        name: getVatNumber
+        return:
+          type: string
+      - type: method
+        name: setVatNumber
+        parameters:
+          - type: string
+            name: vatNumber
+        return:
+          type: static
+      - type: method
+        name: hasVatNumber
+        return:
+          type: bool
+      - type: method
+        name: getEmail
+        return:
+          type: string
+      - type: method
+        name: setEmail
+        parameters:
+          - type: string
+            name: email
+        return:
+          type: static
+      - type: method
+        name: getPhone
+        return:
+          type: string
+      - type: method
+        name: setPhone
+        parameters:
+          - type: string
+            name: phone
+        return:
+          type: static
+      - type: method
+        name: getPostalAddress
+        return:
+          type: string
+      - type: method
+        name: setPostalAddress
+        parameters:
+          - type: string
+            name: postalAddress
+        return:
+          type: static
+      - type: method
+        name: getPostCode
+        return:
+          type: string
+      - type: method
+        name: setPostCode
+        parameters:
+          - type: string
+            name: postCode
+        return:
+          type: static
+      - type: method
+        name: getCity
+        return:
+          type: string
+      - type: method
+        name: setCity
+        parameters:
+          - type: string
+            name: city
+        return:
+          type: static
+      - type: method
+        name: getCountry
+        return:
+          type: Wexample\SymfonyGeo\Entity\Country
+      - type: method
+        name: setCountry
+        parameters:
+          - type: Wexample\SymfonyGeo\Entity\Country
+            name: country
+        return:
+          type: static
+      - type: method
+        name: copyAddressFrom
+        parameters:
+          - type: Wexample\SymfonyGeo\Interface\PostalAddressInterface
+            name: address
+        return:
+          type: static
+      - type: method
+        name: hasPostalAddress
+        return:
+          type: bool
+      - type: method
+        name: toStringInline
+        return:
+          type: string
+      - type: method
+        name: getGeoPoint
+        return:
+          type: Wexample\SymfonyGeo\Class\GeoPoint
+      - type: method
+        name: setGeoPoint
+        parameters:
+          - type: Wexample\SymfonyGeo\Class\GeoPoint
+            name: point
+        return:
+          type: static
+      - type: method
+        name: isGeoLocated
+        return:
+          type: bool
+      - type: method
+        name: __construct
+      - type: method
+        name: buildEntityPath
+        parameters:
+          - type: string
+            name: className
+        return:
+          type: string
+      - type: method
+        name: getEntityKeyName
+        return:
+          type: string
+      - type: method
+        name: getEntityShortName
+        return:
+          type: string
+      - type: method
+        name: getId
+        return:
+          type: Symfony\Component\Uid\Uuid
+      - type: method
+        name: setId
+        parameters:
+          - type: Symfony\Component\Uid\Uuid
+            name: id
+        return:
+          type: void
+      - type: method
+        name: getTableizedName
+        return:
+          type: string
+      - type: method
+        name: getCamelName
+        return:
+          type: string
+      - type: method
+        name: __toString
+        return:
+          type: string
+      - type: method
+        name: isCustomer
+        return:
+          type: bool
+      - type: method
+        name: setCustomer
+        parameters:
+          - type: bool
+            name: customer
+        return:
+          type: static
+      - type: method
+        name: isSupplier
+        return:
+          type: bool
+      - type: method
+        name: setSupplier
+        parameters:
+          - type: bool
+            name: supplier
+        return:
+          type: static
+      - type: method
+        name: isIndividual
+        return:
+          type: bool
+      - type: method
+        name: setIndividual
+        parameters:
+          - type: bool
+            name: individual
+        return:
+          type: static
+      - type: method
+        name: getCustomerCode
+        return:
+          type: string
+      - type: method
+        name: setCustomerCode
+        parameters:
+          - type: string
+            name: customerCode
+        return:
+          type: static
+      - type: method
+        name: getSupplierCode
+        return:
+          type: string
+      - type: method
+        name: setSupplierCode
+        parameters:
+          - type: string
+            name: supplierCode
+        return:
+          type: static
+      - type: method
+        name: getDefaultAccountNumber
+        return:
+          type: string
+      - type: method
+        name: setDefaultAccountNumber
+        parameters:
+          - type: string
+            name: defaultAccountNumber
+        return:
+          type: static
+      - type: method
+        name: getPaymentTermDays
+        return:
+          type: int
+      - type: method
+        name: setPaymentTermDays
+        parameters:
+          - type: int
+            name: paymentTermDays
+        return:
+          type: static
+      - type: method
+        name: getIban
+        return:
+          type: string
+      - type: method
+        name: setIban
+        parameters:
+          - type: string
+            name: iban
+        return:
+          type: static
+      - type: method
+        name: getExternalReference
+        return:
+          type: string
+      - type: method
+        name: setExternalReference
+        parameters:
+          - type: string
+            name: externalReference
+        return:
+          type: static
+      - type: method
+        name: getNotes
+        return:
+          type: string
+      - type: method
+        name: setNotes
+        parameters:
+          - type: string
+            name: notes
+        return:
+          type: static

@@ -4,6 +4,7 @@ namespace Wexample\SymfonyAccounting\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
@@ -18,6 +19,7 @@ use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
  * supplier side) are what accountants letter and what the FEC exports as
  * CompAuxNum. `externalReference` links it to the host's organization or user.
  */
+#[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: PartyRepository::class)]
 #[ORM\Table(name: 'accounting_party')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'customer_code'])]
