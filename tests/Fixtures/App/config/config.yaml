@@ -53,3 +53,14 @@ wexample_symfony_accounting:
   sales_ledger: shop
   access:
     grants: { view: client, edit: accountant, administer: partner }
+
+doctrine:
+  orm:
+    mappings:
+      Fixtures:
+        type: attribute
+        is_bundle: false
+        dir: '%kernel.project_dir%/Entity'
+        prefix: 'Wexample\SymfonyAccounting\Tests\Fixtures\App\Entity'
+    resolve_target_entities:
+      Wexample\SymfonyHelpers\Entity\Interfaces\UserEntityInterface: Wexample\SymfonyAccounting\Tests\Fixtures\App\Entity\TestAccount
