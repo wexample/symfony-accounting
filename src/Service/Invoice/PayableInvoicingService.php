@@ -19,13 +19,13 @@ use Wexample\SymfonyMoney\Helper\RateHelper;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
 use Wexample\SymfonyMoney\Interface\PricedLineInterface;
 use Wexample\SymfonyMoney\Interface\PricedParentInterface;
+use Wexample\SymfonyOrganization\Service\OrganizationService;
+use Wexample\SymfonyOrganization\Service\VatNumberVerifier;
 use Wexample\SymfonyPayment\Entity\Payment;
 use Wexample\SymfonyPayment\Entity\PaymentRefund;
 use Wexample\SymfonyPayment\Interface\BuyerIdentifiedInterface;
 use Wexample\SymfonyPayment\Interface\PayableInterface;
 use Wexample\SymfonyPayment\Service\PayableRegistry;
-use Wexample\SymfonyOrganization\Service\OrganizationService;
-use Wexample\SymfonyOrganization\Service\VatNumberVerifier;
 
 /**
  * Invoices what was paid, whatever it is: a cart, a subscription, a registration.

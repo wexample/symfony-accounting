@@ -18,8 +18,8 @@ use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\LedgerService;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
 use Wexample\SymfonyGeo\Entity\Address;
-use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyGeo\Entity\Country;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 
 abstract class AbstractAccountingTestCase extends KernelTestCase
 {

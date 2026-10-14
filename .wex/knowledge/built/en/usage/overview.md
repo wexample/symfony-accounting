@@ -1,12 +1,25 @@
 ## A ledger
 
 ```php
-$ledger = $ledgerService->create('Acme SRL', 'BE', fiscalYearStart: new DateTimeImmutable('2026-01-01'));
-$ledger->setLegalIdentifier('0123.456.749')->setVatNumber('BE0123456749')->setInvoicePrefix('ACM');
+$ledger = $ledgerService->create('Acme SRL', $belgium, fiscalYearStart: new DateTimeImmutable('2026-01-01'));
+$ledger->setInvoicePrefix('ACM')->getOrganization()->setLegalIdentifier('0123.456.749')->setVatNumber('BE0123456749');
 $customer = $partyService->create($ledger, 'Client SA');           // gets its auxiliary code, CCLIENTSA
 ```
 
 `create()` loads the jurisdiction's chart and journals. Accounts missing from the chart are created on first use, labelled after their closest parent. The ledger's settings (`setSettings()`) tune the rest: `default_vat_rate`, `invoice_number_pattern`, `hours_per_day`, `late_penalty_rate`, `auto_post_invoices`… — each documented where it is read.
+
+## Ledgers and parties are organizations
+
+Who keeps the books and whom they trade with are organizations of the directory (`wexample/symfony-organization`): `Ledger` and `Party` point to an `Organization`, which holds the legal identity — name, legal identifier, VAT number, legal form, contacts, address, and its country, which selects the ledger's jurisdiction. Both read that identity as their own (`getName()`, `getVatNumber()`, `getCountry()`…, `LegalIdentityInterface`) and change it on the organization: `$party->getOrganization()->setAddress($address)`, seen by every ledger the organization is a party to. Its address is a row of symfony-geo's `address` table it points at, so a move is written once, there. What belongs to one ledger stays on the party: its auxiliary codes, default account, payment terms, IBAN, notes.
+
+```php
+$tpa = $organizationService->findOrCreate('The Photo Academy SA', $belgium, vatNumber: 'BE0417497106');
+$inWexample = $partyService->findOrCreate($wexample, $tpa);       // one party per ledger and organization
+$inWeegerBe = $partyService->findOrCreate($weegerBe, $tpa);
+$books = $ledgerService->create($tpa);                            // its own books, on the same organization
+```
+
+`create()` accepts an organization or a name (then a new organization, in the given country). Parties made from a payment (`PayableInvoicingService`) or a received e-invoice (`ElectronicInvoiceImporter`) find the organization already in the directory by VAT number or legal identifier before adding one. Documents keep the identity they froze when emitted (`issuerSnapshot`, `partySnapshot`); each identity is labelled as its own country names its identifiers (`LegalIdentifierSchemeInterface`). The API keeps reading and writing a party's or a ledger's identity as fields of their own, and gives the id of their `organization`.
 
 ## Who may reach a ledger
 
@@ -38,7 +51,7 @@ $invoiceFactory->addItem($invoice, 'Development', 50000, '2j');   // 2 days at 5
 $emissionService->emit($invoice);                                  // numbered, frozen, booked
 ```
 
-Emission is the only way a document becomes official: VAT resolved per item (domestic, intra-EU, export, reverse charge from the EU or from outside it, franchise, and the domestic reverse charge of construction works, asked per item with `setDomesticReverseCharge()`), gap-free number for sales, issuer and party identities (name, identifiers, bank) frozen into snapshots — addresses are read from the entities, their country being a relation, `InvoiceEmittedEvent`, then the entry in the ledger. Quotations convert to bills (`createBillFromQuotation`, deducting deposit bills), bills get credit notes and penalties (`LatePenaltyCalculator`), models renew monthly.
+Emission is the only way a document becomes official: VAT resolved per item (domestic, intra-EU, export, reverse charge from the EU or from outside it, franchise, and the domestic reverse charge of construction works, asked per item with `setDomesticReverseCharge()`), gap-free number for sales, issuer and party identities (name, identifiers, bank, country, and their address as an `AddressSnapshot`) frozen into snapshots, so a later move leaves the document as it was sent, `InvoiceEmittedEvent`, then the entry in the ledger. Quotations convert to bills (`createBillFromQuotation`, deducting deposit bills), bills get credit notes and penalties (`LatePenaltyCalculator`), models renew monthly.
 
 `ElectronicInvoiceDataBuilder` reads an emitted document in the terms of EN 16931; two builders write it. `CiiInvoiceBuilder` writes UN/CEFACT CII, the XML of Factur-X, checked against the Factur-X 1.09 EN 16931 XSD and schematron. `UblInvoiceBuilder` writes the structured electronic invoice (UBL 2.1, Peppol BIS Billing 3.0 / EN 16931): mandatory for B2B invoices in Belgium since 2026, one of the formats of the French reform. Received invoices go the other way. `UblInvoiceReader` and `CiiInvoiceReader` read the XML into the same terms, and `ElectronicInvoiceImporter` makes a purchase draft from them: supplier found by VAT number or created with its IBAN, checked against the supplier's stated total, origin kept. `FacturXInvoiceReader` takes a received Factur-X PDF: the document-reader service (`symfony-remote-document-reader`) takes its XML out in a sandbox, and a Factur-X whose metadata does not announce its XML comes with a warning. Peppol goes through `symfony-remote-peppol` and the access point the application installs. `PeppolInvoiceService` sends an emitted sale as UBL, from the ledger's address to the client's (enterprise number, SIRET, else VAT number), once the directory says the client accepts it, and keeps each transmission (`InvoiceTransmission`: provider, reference, status). `PeppolSubscriber` writes what the access point reports: a sent document delivered or failed, a received invoice made a purchase draft in the ledger it is addressed to, its warnings in `import_warnings`. A received document no ledger answers to is left with the access point. Validate the output on the Peppol testbed before going live.
 
