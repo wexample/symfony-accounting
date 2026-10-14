@@ -13,6 +13,7 @@ use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
 use Wexample\SymfonyAccounting\Service\Ledger\SalesLedgerProvider;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyGeo\Repository\CountryRepository;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
@@ -44,6 +45,7 @@ class PayableInvoicingService
         private readonly PartyRepository $partyRepository,
         private readonly PartyService $partyService,
         private readonly CountryRepository $countryRepository,
+        private readonly AddressRepository $addressRepository,
         private readonly InvoiceFactory $invoiceFactory,
         private readonly InvoiceEmissionService $emissionService,
         private readonly VatNumberVerifier $vatNumberVerifier,
@@ -224,10 +226,18 @@ class PayableInvoicingService
             $organization = $this->organizationService->create($company ?? $buyer?->getBuyerName() ?? $email ?? 'Customer', $country ?? $ledger->getCountry(), vatNumber: $vatNumber)
                 ->setIndividual(null === $company)
                 ->setEmail($email)
-                ->setPhone($buyer?->getBuyerPhone())
-                ->setPostalAddress($address?->getPostalAddress())
-                ->setPostCode($address?->getPostCode())
-                ->setCity($address?->getCity());
+                ->setPhone($buyer?->getBuyerPhone());
+
+            if ($address && ! $address->isEmpty()) {
+                // Written as the buyer typed it, on a row of its own the
+                // organization points at (saved with it, cascade).
+                $organization->setAddress($this->addressRepository->createNewAddress(
+                    $address->getPostalAddress(),
+                    $address->getPostCode(),
+                    $address->getCity(),
+                    $country,
+                ));
+            }
         }
 
         return $this->partyService->findOrCreate($ledger, $organization, customer: true);

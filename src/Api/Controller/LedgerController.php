@@ -18,6 +18,7 @@ use Wexample\SymfonyApi\Api\Attribute\ApiResponseData;
 use Wexample\SymfonyApi\Api\Attribute\ValidateRequestContent;
 use Wexample\SymfonyApi\Api\Class\ApiResponse;
 use Wexample\SymfonyGeo\Entity\Country;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 
 /**
@@ -54,6 +55,7 @@ class LedgerController extends AbstractAccountingApiController
         Request $request,
         LedgerInputDto $ledgerInputDto,
         BankAccountRepository $bankAccountRepository,
+        AddressRepository $addressRepository,
         EntityManagerInterface $entityManager,
         DefaultLedgerNormalizer $normalizer,
     ): ApiResponse {
@@ -73,9 +75,9 @@ class LedgerController extends AbstractAccountingApiController
                 'phone' => $organization->setPhone($input->phone),
                 'website' => $organization->setWebsite($input->website),
                 'legalMentions' => $ledger->setLegalMentions($input->legalMentions),
-                'postalAddress' => $organization->setPostalAddress($input->postalAddress),
-                'postCode' => $organization->setPostCode($input->postCode),
-                'city' => $organization->setCity($input->city),
+                'postalAddress' => self::addressOf($organization, $addressRepository)->setPostalAddress($input->postalAddress),
+                'postCode' => self::addressOf($organization, $addressRepository)->setPostCode($input->postCode),
+                'city' => self::addressOf($organization, $addressRepository)->setCity($input->city),
                 'country' => $organization->setCountry($input->country
                     ? ($entityManager->find(Country::class, $input->country) ?? throw new BadRequestHttpException('Unknown country.'))
                     : throw new BadRequestHttpException('Books are kept in a country.')),

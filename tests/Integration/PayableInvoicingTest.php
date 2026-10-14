@@ -13,7 +13,6 @@ use Wexample\SymfonyAccounting\Service\Invoice\PayableInvoicingService;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Payable\TestSale;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Payable\TestSaleLine;
 use Wexample\SymfonyAccounting\Tests\Fixtures\App\Payable\TestSaleResolver;
-use Wexample\SymfonyGeo\Entity\AbstractAddress;
 use Wexample\SymfonyGeo\Entity\AddressSnapshot;
 use Wexample\SymfonyMedia\Service\MediaStorage;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
@@ -43,10 +42,9 @@ class PayableInvoicingTest extends AbstractAccountingTestCase
         return $sale;
     }
 
-    private function address(string $countryCode): AddressSnapshot
+    private function buyerAddress(string $countryCode): AddressSnapshot
     {
-        return AddressSnapshot::fromAddress((new class () extends AbstractAddress {
-        })->setPostalAddress('1 Main street')->setPostCode('1000')->setCity('City')->setCountry($this->country($countryCode)));
+        return AddressSnapshot::fromAddress($this->address('1 Main street', '1000', 'City', $countryCode));
     }
 
     private function pay(TestSale $sale): Payment
@@ -67,7 +65,7 @@ class PayableInvoicingTest extends AbstractAccountingTestCase
     public function testAPaidSaleIsBilledToItsBuyer(): void
     {
         $sale = $this->sale();
-        $sale->buyerAddress = $this->address('BE');
+        $sale->buyerAddress = $this->buyerAddress('BE');
         $sale->addLine(new TestSaleLine('Chair', 10000, 2, accountNumber: '707100'))->setPriceDiscount(1000, PriceUnit::Percent);
         $sale->addLine(new TestSaleLine('Shipping', 1500));
 
@@ -114,7 +112,7 @@ class PayableInvoicingTest extends AbstractAccountingTestCase
         $sale = $this->sale();
         $sale->buyerCompanyName = 'Dutch BV';
         $sale->buyerVatNumber = 'NL123456789B01';
-        $sale->buyerAddress = $this->address('NL');
+        $sale->buyerAddress = $this->buyerAddress('NL');
         $sale->addLine(new TestSaleLine('Consulting', 50000, vat: 0));
 
         $payment = $this->pay($sale);
@@ -131,7 +129,7 @@ class PayableInvoicingTest extends AbstractAccountingTestCase
         $sale = $this->sale();
         $sale->buyerCompanyName = 'German GmbH';
         $sale->buyerVatNumber = 'DE999999999';
-        $sale->buyerAddress = $this->address('DE');
+        $sale->buyerAddress = $this->buyerAddress('DE');
         $sale->addLine(new TestSaleLine('Consulting', 10000));
 
         $bill = $this->billOf($this->pay($sale));

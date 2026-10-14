@@ -13,6 +13,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyGeo\Repository\CountryRepository;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
@@ -36,6 +37,7 @@ class ElectronicInvoiceImporter
         private readonly PartyService $partyService,
         private readonly PartyRepository $partyRepository,
         private readonly CountryRepository $countryRepository,
+        private readonly AddressRepository $addressRepository,
         private readonly OrganizationService $organizationService,
     ) {
     }
@@ -138,10 +140,16 @@ class ElectronicInvoiceImporter
         }
 
         if (! $organization) {
-            $organization = $this->organizationService->create($seller['name'] ?: 'Supplier', $country ?? $ledger->getCountry(), $legalIdentifier, $vatNumber)
-                ->setPostalAddress(implode("\n", $seller['addressLines']) ?: null)
-                ->setPostCode($seller['postCode'])
-                ->setCity($seller['city']);
+            $organization = $this->organizationService->create($seller['name'] ?: 'Supplier', $country ?? $ledger->getCountry(), $legalIdentifier, $vatNumber);
+
+            // The address printed on the document, as a row the supplier
+            // points at (saved with it, cascade).
+            $organization->setAddress($this->addressRepository->createNewAddress(
+                implode("\n", $seller['addressLines']) ?: null,
+                $seller['postCode'],
+                $seller['city'],
+                $country,
+            ));
         }
 
         $supplier = $this->partyService->create($ledger, $organization, customer: false, supplier: true);

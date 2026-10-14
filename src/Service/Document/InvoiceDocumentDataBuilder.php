@@ -13,8 +13,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceRelationType;
 use Wexample\SymfonyAccounting\Interface\JurisdictionInterface;
 use Wexample\SymfonyAccounting\Repository\InvoiceRelationRepository;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
-use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
-use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
+use Wexample\SymfonyGeo\Entity\AddressSnapshot;
 use Wexample\SymfonyMoney\Service\MoneyFormatter;
 use Wexample\SymfonyOrganization\Interface\LegalIdentifierSchemeInterface;
 use Wexample\SymfonyOrganization\Service\Identifier\LegalIdentifierSchemeRegistry;
@@ -115,8 +114,8 @@ class InvoiceDocumentDataBuilder
                 'paid' => $date($invoice->getDatePaid()),
             ],
             // Each identity is named as its own country names it.
-            'issuer' => $this->identityBlock($issuer, $invoice->getLedger(), $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
-            'client' => $this->identityBlock($client, $invoice->getParty(), $invoice->getParty() ? $this->schemeRegistry->forIdentity($invoice->getParty()) : $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
+            'issuer' => $this->identityBlock($issuer, $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
+            'client' => $this->identityBlock($client, $invoice->getParty() ? $this->schemeRegistry->forIdentity($invoice->getParty()) : $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
             'items' => $items,
             'credits' => $credits,
             'credited' => $credited,
@@ -217,16 +216,17 @@ class InvoiceDocumentDataBuilder
 
     private function identityBlock(
         array $identity,
-        ?PostalAddressInterface $address,
         LegalIdentifierSchemeInterface $scheme,
         ?string $locale
     ): array {
         $showIdentifier = ! ($scheme->isLegalIdentifierIncludedInVatNumber() && ! empty($identity['vatNumber']));
+        // The address the document was issued with, frozen in its snapshot.
+        $address = AddressSnapshot::fromArray($identity['address'] ?? []);
 
         return [
             'name' => $identity['name'] ?? null,
             'legalForm' => $identity['legalForm'] ?? null,
-            'addressLines' => $address ? PostalAddressHelper::toLines($address) : [],
+            'addressLines' => $address->toLines(locale: $locale),
             'legalIdentifier' => $showIdentifier ? ($identity['legalIdentifier'] ?? null) : null,
             'legalIdentifierLabel' => $this->trans($scheme->getLegalIdentifierLabel(), [], $locale, 'organization'),
             'vatNumber' => $identity['vatNumber'] ?? null,
@@ -263,6 +263,8 @@ class InvoiceDocumentDataBuilder
             'email' => $ledger->getEmail(),
             'phone' => $ledger->getPhone(),
             'website' => $ledger->getWebsite(),
+            'countryCode' => $ledger->getCountry()?->getIsoAlpha2Code(),
+            'address' => $ledger->getAddress() ? AddressSnapshot::fromAddress($ledger->getAddress())->toArray() : null,
             'legalMentions' => $ledger->getLegalMentions(),
             'bank' => $bank ? ['holder' => $bank->getHolder() ?? $ledger->getName(), 'iban' => $bank->getIban(), 'bic' => $bank->getBic(), 'localDetails' => $bank->getLocalDetails()] : null,
         ];
@@ -277,6 +279,8 @@ class InvoiceDocumentDataBuilder
             'legalIdentifier' => $party->getLegalIdentifier(),
             'vatNumber' => $party->getVatNumber(),
             'email' => $party->getEmail(),
+            'countryCode' => $party->getCountry()?->getIsoAlpha2Code(),
+            'address' => $party->getAddress() ? AddressSnapshot::fromAddress($party->getAddress())->toArray() : null,
         ] : [];
     }
 

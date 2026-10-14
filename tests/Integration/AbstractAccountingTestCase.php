@@ -17,6 +17,8 @@ use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\LedgerService;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
+use Wexample\SymfonyGeo\Entity\Address;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyGeo\Entity\Country;
 
 abstract class AbstractAccountingTestCase extends KernelTestCase
@@ -47,6 +49,23 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
         }
 
         return $country;
+    }
+
+    /**
+     * An address row, as the identity of an organization points at one.
+     */
+    protected function address(
+        ?string $postalAddress = null,
+        ?string $postCode = null,
+        ?string $city = null,
+        ?string $countryCode = null
+    ): Address {
+        return $this->service(AddressRepository::class)->createNewAddress(
+            $postalAddress,
+            $postCode,
+            $city,
+            $countryCode ? $this->country($countryCode) : null,
+        );
     }
 
     protected function em(): EntityManagerInterface

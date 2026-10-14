@@ -35,9 +35,9 @@ class OrganizationDirectoryTest extends AbstractAccountingTestCase
         $this->assertNull($inWeegerBe->getPaymentTermDays());
 
         // …and one identity, changed once.
-        $client->setName('TPA SA')->setCity('Bruxelles');
+        $client->setName('TPA SA')->setAddress($this->address(city: 'Bruxelles', countryCode: 'BE'));
         $this->assertSame('TPA SA', $inWexample->getName());
-        $this->assertSame('Bruxelles', $inWeegerBe->getCity());
+        $this->assertSame('Bruxelles', $inWeegerBe->getAddress()->getCity());
         $this->assertSame(1, $this->em()->getRepository(Organization::class)->count(['vatNumber' => 'BE0417497106']));
     }
 

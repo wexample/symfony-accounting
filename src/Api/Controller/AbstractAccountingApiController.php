@@ -13,6 +13,9 @@ use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\LedgerRepository;
 use Wexample\SymfonyApi\Api\Controller\AbstractApiController;
+use Wexample\SymfonyGeo\Entity\Address;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
+use Wexample\SymfonyOrganization\Entity\Organization;
 
 /**
  * What the endpoints of the books share. Each entity has its own, under its
@@ -92,6 +95,23 @@ abstract class AbstractAccountingApiController extends AbstractApiController
     protected static function sentFields(Request $request): array
     {
         return array_keys((array) json_decode($request->getContent() ?: '{}', true));
+    }
+
+    /**
+     * The address an identity points at, built on the first field written on
+     * it: the endpoints keep their flat `postalAddress`/`postCode`/`city`
+     * fields, which are written on that row.
+     */
+    protected static function addressOf(
+        Organization $organization,
+        AddressRepository $addresses
+    ): Address {
+        if (! $address = $organization->getAddress()) {
+            $address = $addresses->createNewAddress();
+            $organization->setAddress($address);
+        }
+
+        return $address;
     }
 
     /**

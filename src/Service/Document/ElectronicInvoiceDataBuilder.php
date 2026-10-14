@@ -7,7 +7,7 @@ use Wexample\SymfonyAccounting\Entity\InvoiceItem;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
 use Wexample\SymfonyAccounting\Enum\VatKind;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
-use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
+use Wexample\SymfonyGeo\Entity\AddressSnapshot;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
 use Wexample\SymfonyMoney\Helper\RateHelper;
@@ -82,8 +82,8 @@ class ElectronicInvoiceDataBuilder
             'period' => $invoice->getPeriodStart() && $invoice->getPeriodEnd()
                 ? ['start' => $invoice->getPeriodStart(), 'end' => $invoice->getPeriodEnd()]
                 : null,
-            'seller' => $this->party($invoice->getIssuerSnapshot() ?? [], $invoice->getLedger()),
-            'buyer' => $this->party($invoice->getPartySnapshot() ?? [], $invoice->getParty()),
+            'seller' => $this->party($invoice->getIssuerSnapshot() ?? []),
+            'buyer' => $this->party($invoice->getPartySnapshot() ?? []),
             'payment' => ! $credit && ($bank['iban'] ?? null) ? [
                 'reference' => (string) ($invoice->getPaymentReference() ?? $invoice->getNumber()),
                 'iban' => $bank['iban'],
@@ -190,20 +190,21 @@ class ElectronicInvoiceDataBuilder
         ];
     }
 
-    private function party(
-        array $identity,
-        ?PostalAddressInterface $address
-    ): array {
-        $country = (string) $address?->getCountry()?->getIsoAlpha2Code();
+    private function party(array $identity): array
+    {
+        // Everything here is read from the document's snapshots: what was
+        // issued, not what the directory says today.
+        $address = AddressSnapshot::fromArray($identity['address'] ?? []);
+        $country = (string) ($identity['countryCode'] ?? $address->getCountryCode());
         $identifier = preg_replace('/[^0-9A-Z]/', '', strtoupper((string) ($identity['legalIdentifier'] ?? '')));
-        $lines = array_values(array_filter(preg_split('/\R/', (string) $address?->getPostalAddress())));
+        $lines = array_values(array_filter(preg_split('/\R/', (string) $address->getPostalAddress())));
 
         return [
             'name' => (string) ($identity['name'] ?? ''),
             'endpoint' => $this->endpoint($identity, $country),
             'addressLines' => array_slice($lines, 0, 2),
-            'city' => $address?->getCity() ?: null,
-            'postCode' => $address?->getPostCode() ?: null,
+            'city' => $address->getCity() ?: null,
+            'postCode' => $address->getPostCode() ?: null,
             'country' => $country ?: null,
             'vatNumber' => $identity['vatNumber'] ?? null,
             'legalIdentifier' => $identifier ? ['id' => $identifier, 'scheme' => $this->legalScheme($identifier, $country)] : null,

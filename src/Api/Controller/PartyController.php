@@ -22,6 +22,7 @@ use Wexample\SymfonyApi\Api\Attribute\QueryOption\StringQueryOption;
 use Wexample\SymfonyApi\Api\Attribute\ValidateRequestContent;
 use Wexample\SymfonyApi\Api\Class\ApiResponse;
 use Wexample\SymfonyGeo\Entity\Country;
+use Wexample\SymfonyGeo\Repository\AddressRepository;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 use Wexample\SymfonyHelpers\Helper\VariableHelper;
 
@@ -73,6 +74,7 @@ class PartyController extends AbstractAccountingApiController
         Request $request,
         PartyInputDto $partyInputDto,
         PartyService $partyService,
+        AddressRepository $addressRepository,
         EntityManagerInterface $entityManager,
         DefaultPartyNormalizer $normalizer,
     ): ApiResponse {
@@ -82,7 +84,7 @@ class PartyController extends AbstractAccountingApiController
 
         $ledger = $this->reachable($this->ledgerRepository->find((string) $partyInputDto->ledger), LedgerPermission::EDIT);
         $party = $partyService->create($ledger, $partyInputDto->name, $partyInputDto->customer ?? true, $partyInputDto->supplier ?? false);
-        $this->write($party, $partyInputDto, self::sentFields($request), $entityManager);
+        $this->write($party, $partyInputDto, self::sentFields($request), $entityManager, $addressRepository);
         $partyService->assignCodes($party);
         $entityManager->flush();
 
@@ -97,11 +99,12 @@ class PartyController extends AbstractAccountingApiController
         Request $request,
         PartyInputDto $partyInputDto,
         PartyRepository $repository,
+        AddressRepository $addressRepository,
         EntityManagerInterface $entityManager,
         DefaultPartyNormalizer $normalizer,
     ): ApiResponse {
         $party = $this->reachable($repository->find($id), LedgerPermission::EDIT);
-        $this->write($party, $partyInputDto, array_diff(self::sentFields($request), ['ledger']), $entityManager);
+        $this->write($party, $partyInputDto, array_diff(self::sentFields($request), ['ledger']), $entityManager, $addressRepository);
         $entityManager->flush();
 
         return self::apiResponseSuccess(data: $normalizer->normalize($party));
@@ -124,7 +127,8 @@ class PartyController extends AbstractAccountingApiController
         Party $party,
         PartyInputDto $input,
         array $fields,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        AddressRepository $addressRepository
     ): void {
         $organization = $party->getOrganization();
 
@@ -140,9 +144,9 @@ class PartyController extends AbstractAccountingApiController
                 'vatNumber' => $organization->setVatNumber($input->vatNumber),
                 'iban' => $party->setIban($input->iban),
                 'paymentTermDays' => $party->setPaymentTermDays($input->paymentTermDays),
-                'postalAddress' => $organization->setPostalAddress($input->postalAddress),
-                'postCode' => $organization->setPostCode($input->postCode),
-                'city' => $organization->setCity($input->city),
+                'postalAddress' => self::addressOf($organization, $addressRepository)->setPostalAddress($input->postalAddress),
+                'postCode' => self::addressOf($organization, $addressRepository)->setPostCode($input->postCode),
+                'city' => self::addressOf($organization, $addressRepository)->setCity($input->city),
                 'country' => $organization->setCountry($input->country
                     ? ($entityManager->find(Country::class, $input->country) ?? throw new BadRequestHttpException('Unknown country.'))
                     : null),

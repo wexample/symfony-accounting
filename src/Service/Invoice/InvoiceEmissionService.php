@@ -12,7 +12,9 @@ use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
 use Wexample\SymfonyAccounting\Event\InvoiceEmittedEvent;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
+use Wexample\SymfonyGeo\Entity\AddressSnapshot;
 use Wexample\SymfonyMoney\Service\ExchangeRateService;
+use Wexample\SymfonyOrganization\Interface\LegalIdentityInterface;
 
 /**
  * The single place where a document becomes official.
@@ -133,6 +135,8 @@ class InvoiceEmissionService
             'email' => $ledger->getEmail(),
             'phone' => $ledger->getPhone(),
             'website' => $ledger->getWebsite(),
+            'countryCode' => $ledger->getCountry()?->getIsoAlpha2Code(),
+            'address' => self::addressSnapshot($ledger),
             'legalMentions' => $ledger->getLegalMentions(),
             'bank' => $bank ? [
                 'label' => $bank->getLabel(),
@@ -153,8 +157,23 @@ class InvoiceEmissionService
             'vatNumber' => $party->getVatNumber(),
             'individual' => $party->isIndividual(),
             'email' => $party->getEmail(),
+            'countryCode' => $party->getCountry()?->getIsoAlpha2Code(),
+            'address' => self::addressSnapshot($party),
             'customerCode' => $party->getCustomerCode(),
             'supplierCode' => $party->getSupplierCode(),
         ];
+    }
+
+    /**
+     * The address as it read the day the document was issued: frozen with it,
+     * so moving afterwards does not change what was sent.
+     *
+     * @return array<string, string|null>|null
+     */
+    private static function addressSnapshot(LegalIdentityInterface $identity): ?array
+    {
+        $address = $identity->getAddress();
+
+        return $address ? AddressSnapshot::fromAddress($address)->toArray() : null;
     }
 }
