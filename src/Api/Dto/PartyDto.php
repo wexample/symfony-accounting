@@ -11,6 +11,9 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 class PartyDto extends AbstractEntityDto
 {
+    /** The organization of the directory it is: the same for each ledger it appears in. */
+    public string $organization;
+
     public string $name;
 
     public ?string $legalIdentifier;
@@ -44,6 +47,7 @@ class PartyDto extends AbstractEntityDto
     {
         $dto = parent::fromEntity($entity);
 
+        $dto->organization = (string) $entity->getOrganization()->getId();
         $dto->name = (string) $entity->getName();
         $dto->legalIdentifier = $entity->getLegalIdentifier();
         $dto->vatNumber = $entity->getVatNumber();

@@ -74,7 +74,7 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
             $this->country($countryCode),
             fiscalYearStart: new DateTimeImmutable($fiscalYearStart)
         );
-        $ledger->setSettings($settings)->setVatNumber($countryCode.'0123456749');
+        $ledger->setSettings($settings)->getOrganization()->setVatNumber($countryCode.'0123456749');
         $this->em()->flush();
 
         return $ledger;
@@ -89,7 +89,7 @@ abstract class AbstractAccountingTestCase extends KernelTestCase
         bool $supplier = false,
     ): Party {
         $party = $this->service(PartyService::class)->create($ledger, $name, $customer, $supplier, $countryCode ? $this->country($countryCode) : null);
-        $party->setVatNumber($vatNumber);
+        $party->getOrganization()->setVatNumber($vatNumber);
         $this->em()->flush();
 
         return $party;

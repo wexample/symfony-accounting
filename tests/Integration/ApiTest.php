@@ -254,7 +254,7 @@ class ApiTest extends AbstractAccountingTestCase
     public function testAnInvoiceLeavesAndArrivesAsAnElectronicInvoice(): void
     {
         $this->signIn('root');
-        $party = $this->createParty($this->acme, 'Globex SA')->setVatNumber('BE0417497106');
+        $party = $this->createParty($this->acme, 'Globex SA', vatNumber: 'BE0417497106');
         $sale = $this->emitSale($this->acme, $party, 50000);
 
         $this->client->request('GET', '/api/invoice/electronic/'.$sale->getId());
@@ -292,8 +292,9 @@ class ApiTest extends AbstractAccountingTestCase
     public function testAnInvoiceIsSentOverPeppol(): void
     {
         $this->signIn('anna');
-        $this->acme->setLegalIdentifier('0123456749');
-        $party = $this->createParty($this->acme, 'Client SA', 'BE', 'BE0417497106')->setLegalIdentifier('0417497106');
+        $this->acme->getOrganization()->setLegalIdentifier('0123456749');
+        $party = $this->createParty($this->acme, 'Client SA', 'BE', 'BE0417497106');
+        $party->getOrganization()->setLegalIdentifier('0417497106');
         $sale = $this->emitSale($this->acme, $party, 50000);
 
         $this->assertFalse($this->get('api/invoice/peppol/'.$sale->getId())['data']['reachable']);

@@ -19,11 +19,11 @@ class DocumentTest extends AbstractAccountingTestCase
     public function testInvoiceDocument(): void
     {
         $ledger = $this->createLedger();
-        $ledger->setName('Wexample SRL')->setLegalIdentifier('0123.456.749')->setPostalAddress('Rue Neuve 1')->setPostCode('1000')->setCity('Bruxelles');
+        $ledger->getOrganization()->setName('Wexample SRL')->setLegalIdentifier('0123.456.749')->setPostalAddress('Rue Neuve 1')->setPostCode('1000')->setCity('Bruxelles');
         $bank = $this->createBankAccount($ledger)->setIban('BE68 5390 0754 7034')->setBic('GKCCBEBB')->setHolder('Wexample SRL');
         $ledger->setDefaultBankAccount($bank);
         $party = $this->createParty($ledger, 'Client SA');
-        $party->setPostalAddress("Avenue Louise 10\nBoîte 3")->setPostCode('1050')->setCity('Ixelles');
+        $party->getOrganization()->setPostalAddress("Avenue Louise 10\nBoîte 3")->setPostCode('1050')->setCity('Ixelles');
 
         $factory = $this->service(InvoiceFactory::class);
         $invoice = $factory->create($ledger, party: $party, title: 'Website');
@@ -168,7 +168,7 @@ class DocumentTest extends AbstractAccountingTestCase
     private function emitDocumented(): Invoice
     {
         $ledger = $this->createLedger();
-        $ledger->setName('Wexample SRL')->setPostalAddress('Rue Neuve 1')->setPostCode('1000')->setCity('Bruxelles');
+        $ledger->getOrganization()->setName('Wexample SRL')->setPostalAddress('Rue Neuve 1')->setPostCode('1000')->setCity('Bruxelles');
         $bank = $this->createBankAccount($ledger)->setIban('BE68 5390 0754 7034')->setBic('GKCCBEBB');
         $ledger->setDefaultBankAccount($bank);
         $factory = $this->service(InvoiceFactory::class);

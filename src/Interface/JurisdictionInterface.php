@@ -30,13 +30,6 @@ interface JurisdictionInterface
     public function getCountryCode(): ?string;
 
     /**
-     * Translation key of the company identifier's name ("SIRET", "Numéro d'entreprise").
-     */
-    public function getLegalIdentifierLabel(): string;
-
-    public function getVatNumberLabel(): string;
-
-    /**
      * The VAT deposits due in $year, where the regime asks for some (the
      * French simplified regime: July and December), from the previous year's
      * net VAT. Empty elsewhere.
@@ -62,16 +55,6 @@ interface JurisdictionInterface
      * Factur-X (CII embedded in a PDF/A-3), the hybrid format of the French reform.
      */
     public function isFacturXEmbedded(Ledger $ledger): bool;
-
-    /**
-     * Whether the VAT number contains the company identifier (BE), so that
-     * documents print only one of them.
-     */
-    public function isLegalIdentifierIncludedInVatNumber(): bool;
-
-    public function isLegalIdentifierValid(string $identifier): bool;
-
-    public function isVatNumberValid(string $vatNumber): bool;
 
     /**
      * Chart datasets this jurisdiction ships, by key ("fr_pcg", "fr_pca", "be_pcmn").

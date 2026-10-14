@@ -60,20 +60,23 @@ class LedgerController extends AbstractAccountingApiController
         $ledger = $this->reachable($this->ledgerRepository->find($id), LedgerPermission::ADMINISTER);
         $input = $ledgerInputDto;
 
+        // The identity is the organization's, written through its books.
+        $organization = $ledger->getOrganization();
+
         foreach (self::sentFields($request) as $field) {
             match ($field) {
-                'name' => $input->name ? $ledger->setName($input->name) : throw new BadRequestHttpException('Books have a name.'),
-                'legalForm' => $ledger->setLegalForm($input->legalForm),
-                'legalIdentifier' => $ledger->setLegalIdentifier($input->legalIdentifier),
-                'vatNumber' => $ledger->setVatNumber($input->vatNumber),
-                'email' => $ledger->setEmail($input->email),
-                'phone' => $ledger->setPhone($input->phone),
-                'website' => $ledger->setWebsite($input->website),
+                'name' => $input->name ? $organization->setName($input->name) : throw new BadRequestHttpException('Books have a name.'),
+                'legalForm' => $organization->setLegalForm($input->legalForm),
+                'legalIdentifier' => $organization->setLegalIdentifier($input->legalIdentifier),
+                'vatNumber' => $organization->setVatNumber($input->vatNumber),
+                'email' => $organization->setEmail($input->email),
+                'phone' => $organization->setPhone($input->phone),
+                'website' => $organization->setWebsite($input->website),
                 'legalMentions' => $ledger->setLegalMentions($input->legalMentions),
-                'postalAddress' => $ledger->setPostalAddress($input->postalAddress),
-                'postCode' => $ledger->setPostCode($input->postCode),
-                'city' => $ledger->setCity($input->city),
-                'country' => $ledger->setCountry($input->country
+                'postalAddress' => $organization->setPostalAddress($input->postalAddress),
+                'postCode' => $organization->setPostCode($input->postCode),
+                'city' => $organization->setCity($input->city),
+                'country' => $organization->setCountry($input->country
                     ? ($entityManager->find(Country::class, $input->country) ?? throw new BadRequestHttpException('Unknown country.'))
                     : throw new BadRequestHttpException('Books are kept in a country.')),
                 'invoicePrefix' => $ledger->setInvoicePrefix($input->invoicePrefix),

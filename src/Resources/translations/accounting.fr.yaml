@@ -37,10 +37,6 @@ document:
   attachment:
     data: "Les données du document, pour le contrôler face à la comptabilité"
 
-identity:
-  legal_identifier: Numéro d'entreprise
-  vat_number: Numéro de TVA
-
 mention:
   vat:
     franchise: TVA non applicable, franchise des petites entreprises.

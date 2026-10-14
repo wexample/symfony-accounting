@@ -30,15 +30,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
      */
     abstract protected function getAccountNumbers(): array;
 
-    public function getLegalIdentifierLabel(): string
-    {
-        return 'identity.legal_identifier';
-    }
 
-    public function getVatNumberLabel(): string
-    {
-        return 'identity.vat_number';
-    }
 
     public function getVatDepositSchedule(
         Ledger $ledger,
@@ -58,20 +50,8 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         return false;
     }
 
-    public function isLegalIdentifierIncludedInVatNumber(): bool
-    {
-        return false;
-    }
 
-    public function isLegalIdentifierValid(string $identifier): bool
-    {
-        return '' !== trim($identifier);
-    }
 
-    public function isVatNumberValid(string $vatNumber): bool
-    {
-        return 1 === preg_match('/^[A-Z]{2}[0-9A-Z]{2,13}$/', strtoupper(preg_replace('/[\s.\-]/', '', $vatNumber)));
-    }
 
     public function getChartDatasets(): array
     {

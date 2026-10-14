@@ -13,6 +13,7 @@ use Wexample\SymfonyGeo\WexampleSymfonyGeoBundle;
 use Wexample\SymfonyLoader\WexampleSymfonyLoaderBundle;
 use Wexample\SymfonyMedia\WexampleSymfonyMediaBundle;
 use Wexample\SymfonyMoney\WexampleSymfonyMoneyBundle;
+use Wexample\SymfonyOrganization\WexampleSymfonyOrganizationBundle;
 use Wexample\SymfonyPayment\WexampleSymfonyPaymentBundle;
 use Wexample\SymfonyRemoteDocumentReader\WexampleSymfonyRemoteDocumentReaderBundle;
 use Wexample\SymfonyRemotePayment\WexampleSymfonyRemotePaymentBundle;
@@ -35,6 +36,7 @@ class AppKernel extends AbstractFixtureKernel
         return [
             new WexampleSymfonyMoneyBundle(),
             new WexampleSymfonyGeoBundle(),
+            new WexampleSymfonyOrganizationBundle(),
             new WexampleSymfonyCheckBundle(),
             new WexampleSymfonyRemotePaymentBundle(),
             new WexampleSymfonyMediaBundle(),

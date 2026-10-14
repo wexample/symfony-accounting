@@ -8,6 +8,7 @@ use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyAccounting\Service\Ledger\SalesLedgerProvider;
 use Wexample\SymfonyMoney\Interface\VatRateResolverInterface;
+use Wexample\SymfonyOrganization\Service\VatNumberVerifier;
 
 /**
  * The VAT a buyer is charged at checkout, by the rules of the sales ledger's

@@ -1,81 +1,15 @@
 {
     "name": "ledger",
     "type": "class",
-    "description": "The books of one legal entity: a company, a sole trader, an association.\nAn accounting firm keeps one ledger per client; an app keeping its own books\nhas a single one. Its country selects the jurisdiction (chart of accounts, VAT,\nlegal mentions); its identity is printed on the invoices it emits.\n`externalReference` links it to the host's organization.",
+    "description": "The books of one legal entity: a company, a sole trader, an association.\nAn accounting firm keeps one ledger per client; an app keeping its own books\nhas a single one. The entity is an organization of the directory: its\nidentity — printed on the invoices it emits — is read through it, and its\ncountry selects the jurisdiction (chart of accounts, VAT, legal mentions).\n`externalReference` is the host's key for these books.",
     "properties": [
-        {
-            "name": "name",
-            "type": "string"
-        },
-        {
-            "name": "legalIdentifier",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "vatNumber",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "email",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "phone",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "postalAddress",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "postCode",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "city",
-            "type": "string",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "country",
-            "type": "Wexample\\SymfonyGeo\\Entity\\Country",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "latitude",
-            "type": "float",
-            "nullable": true,
-            "default": null
-        },
-        {
-            "name": "longitude",
-            "type": "float",
-            "nullable": true,
-            "default": null
-        },
         {
             "name": "id",
             "type": "Symfony\\Component\\Uid\\Uuid"
         },
         {
-            "name": "legalForm",
-            "type": "string",
-            "nullable": true,
-            "default": null
+            "name": "organization",
+            "type": "Organization"
         },
         {
             "name": "legalMentions",
@@ -87,12 +21,6 @@
             "name": "currencyCode",
             "type": "string",
             "default": "EUR"
-        },
-        {
-            "name": "website",
-            "type": "string",
-            "nullable": true,
-            "default": null
         },
         {
             "name": "vatSubject",
@@ -163,35 +91,9 @@
         },
         {
             "type": "method",
-            "name": "setName",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "name"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
             "name": "getLegalIdentifier",
             "return": {
                 "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "setLegalIdentifier",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "legalIdentifier"
-                }
-            ],
-            "return": {
-                "type": "static"
             }
         },
         {
@@ -203,20 +105,21 @@
         },
         {
             "type": "method",
-            "name": "setVatNumber",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "vatNumber"
-                }
-            ],
+            "name": "hasVatNumber",
             "return": {
-                "type": "static"
+                "type": "bool"
             }
         },
         {
             "type": "method",
-            "name": "hasVatNumber",
+            "name": "getLegalForm",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isIndividual",
             "return": {
                 "type": "bool"
             }
@@ -230,19 +133,6 @@
         },
         {
             "type": "method",
-            "name": "setEmail",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "email"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
             "name": "getPhone",
             "return": {
                 "type": "string"
@@ -250,15 +140,9 @@
         },
         {
             "type": "method",
-            "name": "setPhone",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "phone"
-                }
-            ],
+            "name": "getWebsite",
             "return": {
-                "type": "static"
+                "type": "string"
             }
         },
         {
@@ -270,35 +154,9 @@
         },
         {
             "type": "method",
-            "name": "setPostalAddress",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "postalAddress"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
             "name": "getPostCode",
             "return": {
                 "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "setPostCode",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "postCode"
-                }
-            ],
-            "return": {
-                "type": "static"
             }
         },
         {
@@ -310,48 +168,9 @@
         },
         {
             "type": "method",
-            "name": "setCity",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "city"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
             "name": "getCountry",
             "return": {
                 "type": "Wexample\\SymfonyGeo\\Entity\\Country"
-            }
-        },
-        {
-            "type": "method",
-            "name": "setCountry",
-            "parameters": [
-                {
-                    "type": "Wexample\\SymfonyGeo\\Entity\\Country",
-                    "name": "country"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
-            "name": "copyAddressFrom",
-            "parameters": [
-                {
-                    "type": "Wexample\\SymfonyGeo\\Interface\\PostalAddressInterface",
-                    "name": "address"
-                }
-            ],
-            "return": {
-                "type": "static"
             }
         },
         {
@@ -366,33 +185,6 @@
             "name": "toStringInline",
             "return": {
                 "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "getGeoPoint",
-            "return": {
-                "type": "Wexample\\SymfonyGeo\\Class\\GeoPoint"
-            }
-        },
-        {
-            "type": "method",
-            "name": "setGeoPoint",
-            "parameters": [
-                {
-                    "type": "Wexample\\SymfonyGeo\\Class\\GeoPoint",
-                    "name": "point"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
-            "name": "isGeoLocated",
-            "return": {
-                "type": "bool"
             }
         },
         {
@@ -469,18 +261,18 @@
         },
         {
             "type": "method",
-            "name": "getLegalForm",
+            "name": "getOrganization",
             "return": {
-                "type": "string"
+                "type": "Organization"
             }
         },
         {
             "type": "method",
-            "name": "setLegalForm",
+            "name": "setOrganization",
             "parameters": [
                 {
-                    "type": "string",
-                    "name": "legalForm"
+                    "type": "Organization",
+                    "name": "organization"
                 }
             ],
             "return": {
@@ -521,26 +313,6 @@
                 {
                     "type": "string",
                     "name": "currencyCode"
-                }
-            ],
-            "return": {
-                "type": "static"
-            }
-        },
-        {
-            "type": "method",
-            "name": "getWebsite",
-            "return": {
-                "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "setWebsite",
-            "parameters": [
-                {
-                    "type": "string",
-                    "name": "website"
                 }
             ],
             "return": {

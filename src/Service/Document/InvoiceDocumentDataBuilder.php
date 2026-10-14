@@ -16,6 +16,8 @@ use Wexample\SymfonyAccounting\Service\Jurisdiction\JurisdictionRegistry;
 use Wexample\SymfonyGeo\Helper\PostalAddressHelper;
 use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyMoney\Service\MoneyFormatter;
+use Wexample\SymfonyOrganization\Interface\LegalIdentifierSchemeInterface;
+use Wexample\SymfonyOrganization\Service\Identifier\LegalIdentifierSchemeRegistry;
 
 /**
  * Everything a printed document shows, as plain data: who, what, how much, which
@@ -30,6 +32,7 @@ class InvoiceDocumentDataBuilder
         private readonly JurisdictionRegistry $jurisdictionRegistry,
         private readonly InvoiceRelationRepository $relationRepository,
         private readonly MoneyFormatter $moneyFormatter,
+        private readonly LegalIdentifierSchemeRegistry $schemeRegistry,
         private readonly ?TranslatorInterface $translator = null,
     ) {
     }
@@ -111,8 +114,9 @@ class InvoiceDocumentDataBuilder
                 'periodEnd' => $date($invoice->getPeriodEnd()),
                 'paid' => $date($invoice->getDatePaid()),
             ],
-            'issuer' => $this->identityBlock($issuer, $invoice->getLedger(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
-            'client' => $this->identityBlock($client, $invoice->getParty(), $jurisdiction->getLegalIdentifierLabel(), $jurisdiction->getVatNumberLabel(), $jurisdiction->isLegalIdentifierIncludedInVatNumber(), $locale),
+            // Each identity is named as its own country names it.
+            'issuer' => $this->identityBlock($issuer, $invoice->getLedger(), $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
+            'client' => $this->identityBlock($client, $invoice->getParty(), $invoice->getParty() ? $this->schemeRegistry->forIdentity($invoice->getParty()) : $this->schemeRegistry->forIdentity($invoice->getLedger()), $locale),
             'items' => $items,
             'credits' => $credits,
             'credited' => $credited,
@@ -214,21 +218,19 @@ class InvoiceDocumentDataBuilder
     private function identityBlock(
         array $identity,
         ?PostalAddressInterface $address,
-        string $identifierLabel,
-        string $vatLabel,
-        bool $identifierInVat,
+        LegalIdentifierSchemeInterface $scheme,
         ?string $locale
     ): array {
-        $showIdentifier = ! ($identifierInVat && ! empty($identity['vatNumber']));
+        $showIdentifier = ! ($scheme->isLegalIdentifierIncludedInVatNumber() && ! empty($identity['vatNumber']));
 
         return [
             'name' => $identity['name'] ?? null,
             'legalForm' => $identity['legalForm'] ?? null,
             'addressLines' => $address ? PostalAddressHelper::toLines($address) : [],
             'legalIdentifier' => $showIdentifier ? ($identity['legalIdentifier'] ?? null) : null,
-            'legalIdentifierLabel' => $this->trans($identifierLabel, [], $locale),
+            'legalIdentifierLabel' => $this->trans($scheme->getLegalIdentifierLabel(), [], $locale, 'organization'),
             'vatNumber' => $identity['vatNumber'] ?? null,
-            'vatNumberLabel' => $this->trans($vatLabel, [], $locale),
+            'vatNumberLabel' => $this->trans($scheme->getVatNumberLabel(), [], $locale, 'organization'),
             'email' => $identity['email'] ?? null,
             'phone' => $identity['phone'] ?? null,
             'website' => $identity['website'] ?? null,
@@ -281,7 +283,8 @@ class InvoiceDocumentDataBuilder
     private function trans(
         string $key,
         array $parameters,
-        ?string $locale
+        ?string $locale,
+        string $domain = 'accounting'
     ): string {
         if (! $this->translator) {
             return $key;
@@ -292,6 +295,6 @@ class InvoiceDocumentDataBuilder
             $placeholders['%'.$name.'%'] = $value;
         }
 
-        return $this->translator->trans($key, $placeholders, 'accounting', $locale);
+        return $this->translator->trans($key, $placeholders, $domain, $locale);
     }
 }

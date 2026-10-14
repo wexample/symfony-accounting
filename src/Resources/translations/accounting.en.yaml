@@ -37,10 +37,6 @@ document:
   attachment:
     data: "The document's data, to check it against the books"
 
-identity:
-  legal_identifier: Company number
-  vat_number: VAT number
-
 mention:
   vat:
     franchise: VAT not applicable, small business exemption.

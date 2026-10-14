@@ -4,40 +4,50 @@ namespace Wexample\SymfonyAccounting\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
-use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
-use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyOrganization\Entity\Organization;
+use Wexample\SymfonyOrganization\Entity\Traits\DelegatesLegalIdentityTrait;
+use Wexample\SymfonyOrganization\Interface\HasOrganizationInterface;
+use Wexample\SymfonyOrganization\Interface\LegalIdentityInterface;
 
 /**
- * A third party of the ledger: customer, supplier, or both.
+ * A third party of the ledger: customer, supplier, or both — an organization
+ * of the directory, as this ledger trades with it.
  *
- * Its auxiliary account codes (`C…` for the customer side, `F…`/`S…` for the
- * supplier side) are what accountants letter and what the FEC exports as
- * CompAuxNum. `externalReference` links it to the host's organization or user.
+ * Who it is (name, identifiers, VAT number, address) is its organization's,
+ * read through it; what is the ledger's own is here: its auxiliary account
+ * codes (`C…` for the customer side, `F…`/`S…` for the supplier side) — what
+ * accountants letter and what the FEC exports as CompAuxNum —, its default
+ * account, its payment terms. `externalReference` links it to a record of the
+ * host's (a user, a CRM contact).
  */
 #[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: PartyRepository::class)]
 #[ORM\Table(name: 'accounting_party')]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'customer_code'])]
 #[ORM\UniqueConstraint(columns: ['ledger_id', 'supplier_code'])]
-class Party extends AbstractEntity implements PostalAddressInterface, BelongsToLedgerInterface
+#[ORM\UniqueConstraint(columns: ['ledger_id', 'organization_id'])]
+class Party extends AbstractEntity implements LegalIdentityInterface, HasOrganizationInterface, BelongsToLedgerInterface
 {
     use BelongsToLedgerTrait;
-    use HasLegalIdentityTrait;
+    use DelegatesLegalIdentityTrait;
+
+    /** Validated with it: an identity typed through it follows its country's rules. */
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\Valid]
+    protected Organization $organization;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     protected bool $customer = false;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     protected bool $supplier = false;
-
-    /** A private person rather than a business (B2C rules, no VAT number). */
-    #[ORM\Column(type: Types::BOOLEAN)]
-    protected bool $individual = false;
 
     #[ORM\Column(type: Types::STRING, length: 30, nullable: true)]
     protected ?string $customerCode = null;
@@ -63,7 +73,19 @@ class Party extends AbstractEntity implements PostalAddressInterface, BelongsToL
 
     public function __toString(): string
     {
-        return $this->name;
+        return $this->getName();
+    }
+
+    public function getOrganization(): Organization
+    {
+        return $this->organization;
+    }
+
+    public function setOrganization(Organization $organization): static
+    {
+        $this->organization = $organization;
+
+        return $this;
     }
 
     public function isCustomer(): bool
@@ -86,18 +108,6 @@ class Party extends AbstractEntity implements PostalAddressInterface, BelongsToL
     public function setSupplier(bool $supplier): static
     {
         $this->supplier = $supplier;
-
-        return $this;
-    }
-
-    public function isIndividual(): bool
-    {
-        return $this->individual;
-    }
-
-    public function setIndividual(bool $individual): static
-    {
-        $this->individual = $individual;
 
         return $this;
     }

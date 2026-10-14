@@ -27,6 +27,10 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
 
 /**
  * The customers and suppliers of a ledger (`role=customer|supplier` to keep one side).
+ *
+ * A party reads and writes its identity (name, identifiers, address…) as one
+ * resource, though it is its organization's: a change here is seen by every
+ * ledger the organization is a party to.
  */
 #[Route(path: 'api/party/', name: 'api_party_')]
 class PartyController extends AbstractAccountingApiController
@@ -39,14 +43,14 @@ class PartyController extends AbstractAccountingApiController
     #[SearchQueryOption]
     #[PageQueryOption]
     #[LengthQueryOption]
-    #[SortQueryOption(allowed: ['name'], default: 'name')]
+    #[SortQueryOption(allowed: ['name' => 'organization.name'], default: 'name')]
     #[ApiResponseData(PartyDto::class, paginated: true)]
     public function list(
         Request $request,
         PartyRepository $repository,
         DefaultPartyNormalizer $normalizer,
     ): ApiResponse {
-        $query = $this->ledgerScope($request, $repository->createQueryBuilder('party'), 'party.ledger');
+        $query = $this->ledgerScope($request, $repository->createQueryBuilder('party')->join('party.organization', 'organization'), 'party.ledger');
 
         match (self::getQueryOptionValue($request, self::QUERY_OPTION_ROLE, '')) {
             'customer' => $query->andWhere('party.customer = true'),
@@ -55,7 +59,7 @@ class PartyController extends AbstractAccountingApiController
         };
 
         if ('' !== $search = trim((string) self::getQueryOptionValue($request, VariableHelper::SEARCH, ''))) {
-            $query->andWhere('LOWER(party.name) LIKE :search OR LOWER(party.email) LIKE :search OR party.vatNumber LIKE :search')
+            $query->andWhere('LOWER(organization.name) LIKE :search OR LOWER(organization.email) LIKE :search OR organization.vatNumber LIKE :search')
                 ->setParameter('search', '%'.mb_strtolower($search).'%');
         }
 
@@ -122,22 +126,24 @@ class PartyController extends AbstractAccountingApiController
         array $fields,
         EntityManagerInterface $entityManager
     ): void {
+        $organization = $party->getOrganization();
+
         foreach ($fields as $field) {
             match ($field) {
-                'name' => $input->name ? $party->setName($input->name) : throw new BadRequestHttpException('A party has a name.'),
+                'name' => $input->name ? $organization->setName($input->name) : throw new BadRequestHttpException('A party has a name.'),
                 'customer' => $party->setCustomer((bool) $input->customer),
                 'supplier' => $party->setSupplier((bool) $input->supplier),
-                'individual' => $party->setIndividual((bool) $input->individual),
-                'email' => $party->setEmail($input->email),
-                'phone' => $party->setPhone($input->phone),
-                'legalIdentifier' => $party->setLegalIdentifier($input->legalIdentifier),
-                'vatNumber' => $party->setVatNumber($input->vatNumber),
+                'individual' => $organization->setIndividual((bool) $input->individual),
+                'email' => $organization->setEmail($input->email),
+                'phone' => $organization->setPhone($input->phone),
+                'legalIdentifier' => $organization->setLegalIdentifier($input->legalIdentifier),
+                'vatNumber' => $organization->setVatNumber($input->vatNumber),
                 'iban' => $party->setIban($input->iban),
                 'paymentTermDays' => $party->setPaymentTermDays($input->paymentTermDays),
-                'postalAddress' => $party->setPostalAddress($input->postalAddress),
-                'postCode' => $party->setPostCode($input->postCode),
-                'city' => $party->setCity($input->city),
-                'country' => $party->setCountry($input->country
+                'postalAddress' => $organization->setPostalAddress($input->postalAddress),
+                'postCode' => $organization->setPostCode($input->postCode),
+                'city' => $organization->setCity($input->city),
+                'country' => $organization->setCountry($input->country
                     ? ($entityManager->find(Country::class, $input->country) ?? throw new BadRequestHttpException('Unknown country.'))
                     : null),
                 'notes' => $party->setNotes($input->notes),

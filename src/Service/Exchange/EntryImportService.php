@@ -22,6 +22,7 @@ use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 use Wexample\SymfonyAccounting\Service\Ledger\FiscalYearService;
 use Wexample\SymfonyAccounting\Service\Ledger\PostingService;
+use Wexample\SymfonyOrganization\Service\OrganizationService;
 
 /**
  * Books the entries of another bookkeeping in a ledger: what an accounting firm
@@ -45,6 +46,7 @@ class EntryImportService
         private readonly FiscalYearRepository $fiscalYearRepository,
         private readonly JournalRepository $journalRepository,
         private readonly PartyRepository $partyRepository,
+        private readonly OrganizationService $organizationService,
         private readonly iterable $importers = [],
     ) {
     }
@@ -239,7 +241,7 @@ class EntryImportService
         if (! $party) {
             $party = (new Party())
                 ->setLedger($ledger)
-                ->setName($line->auxiliaryLabel ?? $line->auxiliaryCode)
+                ->setOrganization($this->organizationService->create($line->auxiliaryLabel ?? $line->auxiliaryCode, $ledger->getCountry()))
                 ->setCustomer($customer)
                 ->setSupplier(! $customer);
             $customer ? $party->setCustomerCode($line->auxiliaryCode) : $party->setSupplierCode($line->auxiliaryCode);

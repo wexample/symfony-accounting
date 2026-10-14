@@ -16,6 +16,7 @@ use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
 use Wexample\SymfonyGeo\Repository\CountryRepository;
 use Wexample\SymfonyMoney\Enum\PriceUnit;
 use Wexample\SymfonyMoney\Helper\MoneyHelper;
+use Wexample\SymfonyOrganization\Service\OrganizationService;
 
 /**
  * Turns a received electronic invoice, read by UblInvoiceReader or CiiInvoiceReader
@@ -35,6 +36,7 @@ class ElectronicInvoiceImporter
         private readonly PartyService $partyService,
         private readonly PartyRepository $partyRepository,
         private readonly CountryRepository $countryRepository,
+        private readonly OrganizationService $organizationService,
     ) {
     }
 
@@ -121,33 +123,29 @@ class ElectronicInvoiceImporter
         array $seller,
         ?string $iban
     ): array {
-        $vatNumber = $seller['vatNumber'];
+        $vatNumber = $seller['vatNumber'] ? strtoupper(preg_replace('/[\s.\-]/', '', $seller['vatNumber'])) : null;
+        $country = $seller['country'] ? $this->countryRepository->findByIsoAlpha2Code(strtoupper($seller['country'])) : null;
+        $legalIdentifier = $seller['legalIdentifier']['id'] ?? null;
 
-        if ($vatNumber) {
-            $existing = $this->partyRepository->findOneBy(['ledger' => $ledger, 'vatNumber' => strtoupper(preg_replace('/[\s.\-]/', '', $vatNumber))]);
+        // The seller may already be in the directory (a customer, another ledger's supplier).
+        $organization = $this->organizationService->find($country, $legalIdentifier, $vatNumber);
 
-            if ($existing) {
-                $existing->setSupplier(true);
-                $this->partyService->assignCodes($existing);
+        if ($organization && $existing = $this->partyRepository->findOneByOrganization($ledger, $organization)) {
+            $existing->setSupplier(true);
+            $this->partyService->assignCodes($existing);
 
-                return [$existing, false];
-            }
+            return [$existing, false];
         }
 
-        $supplier = $this->partyService->create(
-            $ledger,
-            $seller['name'] ?: 'Supplier',
-            customer: false,
-            supplier: true,
-            country: $seller['country'] ? $this->countryRepository->findByIsoAlpha2Code(strtoupper($seller['country'])) : null,
-        );
-        $supplier
-            ->setVatNumber($vatNumber)
-            ->setLegalIdentifier($seller['legalIdentifier']['id'] ?? null)
-            ->setPostalAddress(implode("\n", $seller['addressLines']) ?: null)
-            ->setPostCode($seller['postCode'])
-            ->setCity($seller['city'])
-            ->setIban($iban);
+        if (! $organization) {
+            $organization = $this->organizationService->create($seller['name'] ?: 'Supplier', $country ?? $ledger->getCountry(), $legalIdentifier, $vatNumber)
+                ->setPostalAddress(implode("\n", $seller['addressLines']) ?: null)
+                ->setPostCode($seller['postCode'])
+                ->setCity($seller['city']);
+        }
+
+        $supplier = $this->partyService->create($ledger, $organization, customer: false, supplier: true);
+        $supplier->setIban($iban);
 
         return [$supplier, true];
     }

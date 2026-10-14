@@ -11,6 +11,9 @@ use Wexample\SymfonyHelpers\Entity\AbstractEntity;
  */
 class LedgerDto extends AbstractEntityDto
 {
+    /** The organization of the directory it is: the same for each ledger it appears in. */
+    public string $organization;
+
     public string $name;
 
     public ?string $legalForm;
@@ -39,6 +42,7 @@ class LedgerDto extends AbstractEntityDto
     {
         $dto = parent::fromEntity($entity);
 
+        $dto->organization = (string) $entity->getOrganization()->getId();
         $dto->name = (string) $entity->getName();
         $dto->legalForm = $entity->getLegalForm();
         $dto->legalIdentifier = $entity->getLegalIdentifier();

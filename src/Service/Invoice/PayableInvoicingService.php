@@ -13,7 +13,6 @@ use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyAccounting\Service\Ledger\PartyService;
 use Wexample\SymfonyAccounting\Service\Ledger\SalesLedgerProvider;
-use Wexample\SymfonyAccounting\Service\Vat\VatNumberVerifier;
 use Wexample\SymfonyGeo\Repository\CountryRepository;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 use Wexample\SymfonyMoney\Interface\DiscountedInterface;
@@ -24,6 +23,8 @@ use Wexample\SymfonyPayment\Entity\PaymentRefund;
 use Wexample\SymfonyPayment\Interface\BuyerIdentifiedInterface;
 use Wexample\SymfonyPayment\Interface\PayableInterface;
 use Wexample\SymfonyPayment\Service\PayableRegistry;
+use Wexample\SymfonyOrganization\Service\OrganizationService;
+use Wexample\SymfonyOrganization\Service\VatNumberVerifier;
 
 /**
  * Invoices what was paid, whatever it is: a cart, a subscription, a registration.
@@ -46,6 +47,7 @@ class PayableInvoicingService
         private readonly InvoiceFactory $invoiceFactory,
         private readonly InvoiceEmissionService $emissionService,
         private readonly VatNumberVerifier $vatNumberVerifier,
+        private readonly OrganizationService $organizationService,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -215,17 +217,19 @@ class PayableInvoicingService
         $country = $address?->getCountryCode() ? $this->countryRepository->findByIsoAlpha2Code($address->getCountryCode()) : null;
         $company = $buyer?->getBuyerCompanyName();
 
-        $party = $this->partyService->create($ledger, $company ?? $buyer?->getBuyerName() ?? $email ?? 'Customer', country: $country);
-        $party
-            ->setIndividual(null === $company)
-            ->setVatNumber($vatNumber)
-            ->setEmail($email)
-            ->setPhone($buyer?->getBuyerPhone())
-            ->setPostalAddress($address?->getPostalAddress())
-            ->setPostCode($address?->getPostCode())
-            ->setCity($address?->getCity());
-        $this->entityManager->flush();
+        // Already in the directory — a customer of another ledger, a supplier —, or new.
+        $organization = $this->organizationService->find($country, vatNumber: $vatNumber);
 
-        return $party;
+        if (! $organization) {
+            $organization = $this->organizationService->create($company ?? $buyer?->getBuyerName() ?? $email ?? 'Customer', $country ?? $ledger->getCountry(), vatNumber: $vatNumber)
+                ->setIndividual(null === $company)
+                ->setEmail($email)
+                ->setPhone($buyer?->getBuyerPhone())
+                ->setPostalAddress($address?->getPostalAddress())
+                ->setPostCode($address?->getPostCode())
+                ->setCity($address?->getCity());
+        }
+
+        return $this->partyService->findOrCreate($ledger, $organization, customer: true);
     }
 }

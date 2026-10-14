@@ -7,6 +7,7 @@ use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\InvoiceTransmissionRepository;
 use Wexample\SymfonyAccounting\Service\Document\PeppolInvoiceService;
 use Wexample\SymfonyAccounting\Service\Document\UblInvoiceBuilder;
+use Wexample\SymfonyAccounting\Service\Ledger\LedgerService;
 use Wexample\SymfonyRemotePeppol\Class\FakeAccessPoint;
 use Wexample\SymfonyRemotePeppol\Class\PeppolParticipant;
 use Wexample\SymfonyRemotePeppol\Enum\TransmissionStatus;
@@ -23,8 +24,9 @@ class PeppolTest extends AbstractAccountingTestCase
     private function sale(): \Wexample\SymfonyAccounting\Entity\Invoice
     {
         $ledger = $this->createLedger();
-        $ledger->setLegalIdentifier('0123.456.749');
-        $party = $this->createParty($ledger, 'Client SA', 'BE', 'BE0417497106')->setLegalIdentifier('0417.497.106');
+        $ledger->getOrganization()->setLegalIdentifier('0123.456.749');
+        $party = $this->createParty($ledger, 'Client SA', 'BE', 'BE0417497106');
+        $party->getOrganization()->setLegalIdentifier('0417.497.106');
 
         return $this->emitSale($ledger, $party, 50000);
     }
@@ -65,8 +67,10 @@ class PeppolTest extends AbstractAccountingTestCase
         $sale = $this->sale();
         $ubl = $this->service(UblInvoiceBuilder::class)->build($sale);
 
-        $buyer = $this->createLedger();
-        $buyer->setName('Client SA')->setLegalIdentifier('0417497106')->setVatNumber('BE0417497106');
+        // The client keeps its own books: they open on the organization the
+        // seller already knows it by.
+        $buyer = $this->service(LedgerService::class)->create($sale->getParty()->getOrganization(), fiscalYearStart: new \DateTimeImmutable('2026-01-01'));
+        $buyer->setSettings(['default_vat_rate' => 2000])->getOrganization()->setLegalIdentifier('0417497106');
         $this->em()->flush();
 
         $this->accessPoint()->receive(PeppolParticipant::fromString('0208:0123456749'), PeppolParticipant::fromString('0208:0417497106'), $ubl);

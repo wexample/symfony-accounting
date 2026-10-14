@@ -7,35 +7,71 @@ use Wexample\SymfonyAccounting\Entity\Ledger;
 use Wexample\SymfonyAccounting\Entity\Party;
 use Wexample\SymfonyAccounting\Repository\PartyRepository;
 use Wexample\SymfonyGeo\Entity\Country;
+use Wexample\SymfonyOrganization\Entity\Organization;
+use Wexample\SymfonyOrganization\Service\OrganizationService;
 
 /**
- * Third parties and their auxiliary account codes.
+ * Third parties — organizations of the directory, as a ledger trades with
+ * them — and their auxiliary account codes.
  */
 class PartyService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly PartyRepository $partyRepository,
+        private readonly OrganizationService $organizationService,
     ) {
     }
 
+    /**
+     * @param Organization|string $organization An organization of the directory, or the name
+     *                                          of a new one (in $country, else the ledger's).
+     */
     public function create(
         Ledger $ledger,
-        string $name,
+        Organization|string $organization,
         bool $customer = true,
         bool $supplier = false,
         ?Country $country = null,
     ): Party {
+        if (is_string($organization)) {
+            $organization = $this->organizationService->create($organization, $country ?? $ledger->getCountry());
+        }
+
         $party = (new Party())
             ->setLedger($ledger)
-            ->setName($name)
+            ->setOrganization($organization)
             ->setCustomer($customer)
-            ->setSupplier($supplier)
-            ->setCountry($country ?? $ledger->getCountry());
+            ->setSupplier($supplier);
 
         $this->assignCodes($party);
         $this->entityManager->persist($party);
         $this->entityManager->flush();
+
+        return $party;
+    }
+
+    /**
+     * The party this organization already is to the ledger, else a new one;
+     * an existing party gains the side it lacked.
+     */
+    public function findOrCreate(
+        Ledger $ledger,
+        Organization $organization,
+        bool $customer = true,
+        bool $supplier = false,
+    ): Party {
+        $party = $this->partyRepository->findOneByOrganization($ledger, $organization);
+
+        if (! $party) {
+            return $this->create($ledger, $organization, $customer, $supplier);
+        }
+
+        if (($customer && ! $party->isCustomer()) || ($supplier && ! $party->isSupplier())) {
+            $party->setCustomer($party->isCustomer() || $customer)->setSupplier($party->isSupplier() || $supplier);
+            $this->assignCodes($party);
+            $this->entityManager->flush();
+        }
 
         return $party;
     }

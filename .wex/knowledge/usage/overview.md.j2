@@ -1,12 +1,25 @@
 ## A ledger
 
 ```php
-$ledger = $ledgerService->create('Acme SRL', 'BE', fiscalYearStart: new DateTimeImmutable('2026-01-01'));
-$ledger->setLegalIdentifier('0123.456.749')->setVatNumber('BE0123456749')->setInvoicePrefix('ACM');
+$ledger = $ledgerService->create('Acme SRL', $belgium, fiscalYearStart: new DateTimeImmutable('2026-01-01'));
+$ledger->setInvoicePrefix('ACM')->getOrganization()->setLegalIdentifier('0123.456.749')->setVatNumber('BE0123456749');
 $customer = $partyService->create($ledger, 'Client SA');           // gets its auxiliary code, CCLIENTSA
 ```
 
 `create()` loads the jurisdiction's chart and journals. Accounts missing from the chart are created on first use, labelled after their closest parent. The ledger's settings (`setSettings()`) tune the rest: `default_vat_rate`, `invoice_number_pattern`, `hours_per_day`, `late_penalty_rate`, `auto_post_invoices`… — each documented where it is read.
+
+## Ledgers and parties are organizations
+
+Who keeps the books and whom they trade with are organizations of the directory (`wexample/symfony-organization`): `Ledger` and `Party` point to an `Organization`, which holds the legal identity — name, legal identifier, VAT number, legal form, contacts, address, and its country, which selects the ledger's jurisdiction. Both read that identity as their own (`getName()`, `getVatNumber()`, `getCountry()`…, `LegalIdentityInterface`) and change it on the organization: `$party->getOrganization()->setCity('Namur')`, seen by every ledger the organization is a party to. What belongs to one ledger stays on the party: its auxiliary codes, default account, payment terms, IBAN, notes.
+
+```php
+$tpa = $organizationService->findOrCreate('The Photo Academy SA', $belgium, vatNumber: 'BE0417497106');
+$inWexample = $partyService->findOrCreate($wexample, $tpa);       // one party per ledger and organization
+$inWeegerBe = $partyService->findOrCreate($weegerBe, $tpa);
+$books = $ledgerService->create($tpa);                            // its own books, on the same organization
+```
+
+`create()` accepts an organization or a name (then a new organization, in the given country). Parties made from a payment (`PayableInvoicingService`) or a received e-invoice (`ElectronicInvoiceImporter`) find the organization already in the directory by VAT number or legal identifier before adding one. Documents keep the identity they froze when emitted (`issuerSnapshot`, `partySnapshot`); each identity is labelled as its own country names its identifiers (`LegalIdentifierSchemeInterface`). The API keeps reading and writing a party's or a ledger's identity as fields of their own, and gives the id of their `organization`.
 
 ## Who may reach a ledger
 

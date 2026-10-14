@@ -194,6 +194,12 @@
             "default": null
         },
         {
+            "name": "payment",
+            "type": "Payment",
+            "nullable": true,
+            "default": null
+        },
+        {
             "name": "items",
             "type": "Collection",
             "description": "InvoiceItem>"
@@ -1050,6 +1056,26 @@
                 {
                     "type": "self",
                     "name": "model"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getPayment",
+            "return": {
+                "type": "Payment"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setPayment",
+            "parameters": [
+                {
+                    "type": "Payment",
+                    "name": "payment"
                 }
             ],
             "return": {

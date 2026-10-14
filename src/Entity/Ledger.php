@@ -5,31 +5,37 @@ namespace Wexample\SymfonyAccounting\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
-use Wexample\SymfonyAccounting\Entity\Traits\HasLegalIdentityTrait;
 use Wexample\SymfonyAccounting\Enum\VatPeriodicity;
 use Wexample\SymfonyAccounting\Repository\LedgerRepository;
-use Wexample\SymfonyGeo\Interface\PostalAddressInterface;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyOrganization\Entity\Organization;
+use Wexample\SymfonyOrganization\Entity\Traits\DelegatesLegalIdentityTrait;
+use Wexample\SymfonyOrganization\Interface\HasOrganizationInterface;
+use Wexample\SymfonyOrganization\Interface\LegalIdentityInterface;
 
 /**
  * The books of one legal entity: a company, a sole trader, an association.
  *
  * An accounting firm keeps one ledger per client; an app keeping its own books
- * has a single one. Its country selects the jurisdiction (chart of accounts, VAT,
- * legal mentions); its identity is printed on the invoices it emits.
- * `externalReference` links it to the host's organization.
+ * has a single one. The entity is an organization of the directory: its
+ * identity — printed on the invoices it emits — is read through it, and its
+ * country selects the jurisdiction (chart of accounts, VAT, legal mentions).
+ * `externalReference` is the host's key for these books.
  */
 #[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: LedgerRepository::class)]
 #[ORM\Table(name: 'accounting_ledger')]
-class Ledger extends AbstractEntity implements PostalAddressInterface
+class Ledger extends AbstractEntity implements LegalIdentityInterface, HasOrganizationInterface
 {
-    use HasLegalIdentityTrait;
+    use DelegatesLegalIdentityTrait;
 
-    /** "SAS", "SRL", "EI", "ASBL"… as the jurisdiction knows them. */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    protected ?string $legalForm = null;
+    /** Validated with it: an identity typed through it follows its country's rules. */
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\Valid]
+    protected Organization $organization;
 
     /** Free mentions printed under the identity: share capital, RCS city… */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -37,9 +43,6 @@ class Ledger extends AbstractEntity implements PostalAddressInterface
 
     #[ORM\Column(type: Types::STRING, length: 3)]
     protected string $currencyCode = 'EUR';
-
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    protected ?string $website = null;
 
     /** Whether the entity charges VAT at all (false: franchise / exempt). */
     #[ORM\Column(type: Types::BOOLEAN)]
@@ -92,20 +95,21 @@ class Ledger extends AbstractEntity implements PostalAddressInterface
 
     public function __toString(): string
     {
-        return $this->name;
+        return $this->getName();
     }
 
-    public function getLegalForm(): ?string
+    public function getOrganization(): Organization
     {
-        return $this->legalForm;
+        return $this->organization;
     }
 
-    public function setLegalForm(?string $legalForm): static
+    public function setOrganization(Organization $organization): static
     {
-        $this->legalForm = $legalForm;
+        $this->organization = $organization;
 
         return $this;
     }
+
 
     public function getLegalMentions(): ?string
     {
@@ -131,17 +135,6 @@ class Ledger extends AbstractEntity implements PostalAddressInterface
         return $this;
     }
 
-    public function getWebsite(): ?string
-    {
-        return $this->website;
-    }
-
-    public function setWebsite(?string $website): static
-    {
-        $this->website = $website;
-
-        return $this;
-    }
 
     public function isVatSubject(): bool
     {
