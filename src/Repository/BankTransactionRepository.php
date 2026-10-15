@@ -3,10 +3,13 @@
 namespace Wexample\SymfonyAccounting\Repository;
 
 use DateTimeInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UuidType;
+use Wexample\SymfonyAccounting\Entity\Allocation;
 use Wexample\SymfonyAccounting\Entity\BankAccount;
 use Wexample\SymfonyAccounting\Entity\BankTransaction;
 use Wexample\SymfonyAccounting\Entity\Ledger;
+use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyHelpers\Repository\AbstractRepository;
 
 /**
@@ -20,18 +23,23 @@ class BankTransactionRepository extends AbstractRepository
         return BankTransaction::class;
     }
 
+    /**
+     * @param BankAccount|list<BankAccount> $bankAccount one account, or the shares of one
+     */
     public function findOneByExternalId(
-        BankAccount $bankAccount,
+        BankAccount|array $bankAccount,
         string $externalId
     ): ?BankTransaction {
         return $this->findOneBy(['bankAccount' => $bankAccount, 'externalId' => $externalId]);
     }
 
     /**
+     * @param BankAccount|list<BankAccount> $bankAccount one account, or the shares of one
+     *
      * @return BankTransaction[]
      */
     public function findByFingerprint(
-        BankAccount $bankAccount,
+        BankAccount|array $bankAccount,
         string $fingerprint
     ): array {
         return $this->findBy(['bankAccount' => $bankAccount, 'fingerprint' => $fingerprint]);
@@ -62,17 +70,20 @@ class BankTransactionRepository extends AbstractRepository
         return $builder->getQuery()->getResult();
     }
 
+    /**
+     * @param BankAccount|list<BankAccount> $bankAccount one account, or the shares of one
+     */
     public function sumBetween(
-        BankAccount $bankAccount,
+        BankAccount|array $bankAccount,
         ?DateTimeInterface $after,
         DateTimeInterface $until
     ): int {
         $builder = $this->createQueryBuilder('t')
             ->select('COALESCE(SUM(t.amount), 0)')
-            ->where('t.bankAccount = :account')
             ->andWhere('t.date <= :until')
-            ->setParameter('account', $bankAccount->getId(), UuidType::NAME)
             ->setParameter('until', \DateTimeImmutable::createFromInterface($until)->setTime(0, 0), 'date_immutable');
+
+        $this->whereAccounts($builder, $bankAccount);
 
         if ($after) {
             $builder->andWhere('t.date > :after')->setParameter('after', \DateTimeImmutable::createFromInterface($after)->setTime(0, 0), 'date_immutable');
@@ -82,31 +93,140 @@ class BankTransactionRepository extends AbstractRepository
     }
 
     /**
+     * The latest lines of an account, or of all the shares of one, the newest first.
+     *
+     * @param BankAccount|list<BankAccount> $bankAccount
+     *
+     * @return BankTransaction[]
+     */
+    public function findLatest(
+        BankAccount|array $bankAccount,
+        ?DateTimeInterface $from = null,
+        ?DateTimeInterface $to = null,
+        int $limit = 300
+    ): array {
+        $builder = $this->createQueryBuilder('t')
+            ->orderBy('t.date', 'DESC')
+            ->addOrderBy('t.dateCreated', 'DESC')
+            ->setMaxResults($limit);
+        $this->whereAccounts($builder, $bankAccount);
+
+        if ($from) {
+            $builder->andWhere('t.date >= :from')->setParameter('from', \DateTimeImmutable::createFromInterface($from)->setTime(0, 0), 'date_immutable');
+        }
+
+        if ($to) {
+            $builder->andWhere('t.date < :to')->setParameter('to', \DateTimeImmutable::createFromInterface($to)->setTime(0, 0), 'date_immutable');
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * The lines of an account whose label holds the words, between the dates,
+     * that are not explained yet: those that may be pointed elsewhere.
+     *
+     * @return BankTransaction[] Oldest first.
+     */
+    public function findPointable(
+        BankAccount $bankAccount,
+        string $words,
+        ?DateTimeInterface $from = null,
+        ?DateTimeInterface $to = null
+    ): array {
+        $builder = $this->createQueryBuilder('t')
+            ->where('t.bankAccount = :account')
+            ->andWhere('LOWER(t.label) LIKE :words')
+            ->andWhere('t.transferPeer IS NULL')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM '.BankTransaction::class.' s WHERE s.transferPeer = t)')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM '.Allocation::class.' x WHERE x.transaction = t AND x.status <> :excluded)')
+            ->setParameter('account', $bankAccount->getId(), UuidType::NAME)
+            ->setParameter('words', '%'.addcslashes(mb_strtolower($words), '%_').'%')
+            ->setParameter('excluded', AllocationStatus::Excluded->value)
+            ->orderBy('t.date', self::SORT_ASC);
+
+        if ($from) {
+            $builder->andWhere('t.date >= :from')->setParameter('from', \DateTimeImmutable::createFromInterface($from)->setTime(0, 0), 'date_immutable');
+        }
+
+        if ($to) {
+            $builder->andWhere('t.date <= :to')->setParameter('to', \DateTimeImmutable::createFromInterface($to)->setTime(0, 0), 'date_immutable');
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @param BankAccount|list<BankAccount> $bankAccount
+     */
+    private function whereAccounts(
+        QueryBuilder $builder,
+        BankAccount|array $bankAccount
+    ): void {
+        $conditions = [];
+
+        foreach (is_array($bankAccount) ? $bankAccount : [$bankAccount] as $index => $account) {
+            $conditions[] = 't.bankAccount = :account'.$index;
+            $builder->setParameter('account'.$index, $account->getId(), UuidType::NAME);
+        }
+
+        $builder->andWhere('('.implode(' OR ', $conditions).')');
+    }
+
+    /**
      * Lines not fully explained yet (no transfer, allocations not covering them).
      *
      * @return BankTransaction[]
      */
     public function findUnsettled(
         Ledger $ledger,
-        ?BankAccount $bankAccount = null
+        ?BankAccount $bankAccount = null,
+        ?int $limit = null
     ): array {
+        $builder = $this->unsettled($ledger, $bankAccount)->orderBy('t.date', self::SORT_ASC);
+
+        if (null === $limit) {
+            // All of them: their allocations with them, read once.
+            $builder->leftJoin('t.allocations', 'a')->addSelect('a');
+        } else {
+            $builder->setMaxResults($limit);
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    public function countUnsettled(
+        Ledger $ledger,
+        ?BankAccount $bankAccount = null
+    ): int {
+        return (int) $this->unsettled($ledger, $bankAccount)
+            ->select('COUNT(t.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Neither half of a transfer, nor covered by its active allocations —
+     * decided by the database, a person's books holding years of lines.
+     */
+    private function unsettled(
+        Ledger $ledger,
+        ?BankAccount $bankAccount
+    ): QueryBuilder {
         $builder = $this->createQueryBuilder('t')
             ->join('t.bankAccount', 'b')
-            ->leftJoin('t.allocations', 'a')
-            ->addSelect('a')
             ->where('b.ledger = :ledger')
             ->andWhere('t.transferPeer IS NULL')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM '.BankTransaction::class.' s WHERE s.transferPeer = t)')
+            ->andWhere('t.amount <> (SELECT COALESCE(SUM(x.amount), 0) FROM '.Allocation::class.' x WHERE x.transaction = t AND x.status <> :excluded)')
             ->setParameter('ledger', $ledger->getId(), UuidType::NAME)
-            ->orderBy('t.date', self::SORT_ASC);
+            ->setParameter('excluded', AllocationStatus::Excluded->value);
 
         if ($bankAccount) {
             $builder->andWhere('t.bankAccount = :account')->setParameter('account', $bankAccount->getId(), UuidType::NAME);
         }
 
-        return array_values(array_filter(
-            $builder->getQuery()->getResult(),
-            fn (BankTransaction $transaction) => ! $transaction->isSettled() && ! $this->isTransferTarget($transaction)
-        ));
+        return $builder;
     }
 
     /**

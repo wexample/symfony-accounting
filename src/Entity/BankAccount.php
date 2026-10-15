@@ -10,11 +10,20 @@ use Wexample\SymfonyAccounting\Entity\Traits\BelongsToLedgerTrait;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\BankAccountRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
+use Wexample\SymfonyOrganization\Entity\Organization;
 
 /**
  * An account holding the ledger's money: a bank account, a cash box, or the
  * balance a payment provider keeps (`provider` names it, e.g. "stripe", so its
  * movements can be imported through symfony-remote-payment).
+ *
+ * The account at the bank belongs to its owner, an organization of the
+ * directory — a company, or a person. When the owner's account also carries
+ * the money of other organizations (a personal account a sole trader is paid
+ * on), each ledger concerned has its own share of it: an account with the
+ * same owner and IBAN, booked on its own chart, holding the lines pointed to
+ * that ledger (BankLineAssignmentService). Lines are imported once, into any
+ * share; the owner's share holds what is pointed to nobody else.
  */
 #[PseudocodeExport(inherited: true)]
 #[ORM\Entity(repositoryClass: BankAccountRepository::class)]
@@ -32,8 +41,14 @@ class BankAccount extends AbstractEntity implements BelongsToLedgerInterface
     #[ORM\Column(type: Types::STRING, length: 11, nullable: true)]
     protected ?string $bic = null;
 
+    /** The holder's name as the bank prints it. */
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     protected ?string $holder = null;
+
+    /** Who holds the account; the ledger's organization when null. */
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
+    protected ?Organization $owner = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     protected ?string $bankName = null;
@@ -113,6 +128,26 @@ class BankAccount extends AbstractEntity implements BelongsToLedgerInterface
         $this->holder = $holder;
 
         return $this;
+    }
+
+    public function getOwner(): Organization
+    {
+        return $this->owner ?? $this->getLedger()->getOrganization();
+    }
+
+    public function setOwner(?Organization $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * The owner's own share: the one its lines go back to.
+     */
+    public function isOwnerShare(): bool
+    {
+        return $this->getOwner() === $this->getLedger()->getOrganization();
     }
 
     public function getBankName(): ?string

@@ -147,27 +147,6 @@
         },
         {
             "type": "method",
-            "name": "getPostalAddress",
-            "return": {
-                "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "getPostCode",
-            "return": {
-                "type": "string"
-            }
-        },
-        {
-            "type": "method",
-            "name": "getCity",
-            "return": {
-                "type": "string"
-            }
-        },
-        {
-            "type": "method",
             "name": "getCountry",
             "return": {
                 "type": "Wexample\\SymfonyGeo\\Entity\\Country"
@@ -175,16 +154,9 @@
         },
         {
             "type": "method",
-            "name": "hasPostalAddress",
+            "name": "getAddress",
             "return": {
-                "type": "bool"
-            }
-        },
-        {
-            "type": "method",
-            "name": "toStringInline",
-            "return": {
-                "type": "string"
+                "type": "Wexample\\SymfonyGeo\\Entity\\Address"
             }
         },
         {

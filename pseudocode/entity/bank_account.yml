@@ -1,7 +1,7 @@
 items:
   - name: BankAccount
     type: class
-    description: "An account holding the ledger's money: a bank account, a cash box, or the\nbalance a payment provider keeps (`provider` names it, e.g. \"stripe\", so its\nmovements can be imported through symfony-remote-payment)."
+    description: "An account holding the ledger's money: a bank account, a cash box, or the\nbalance a payment provider keeps (`provider` names it, e.g. \"stripe\", so its\nmovements can be imported through symfony-remote-payment).\nThe account at the bank belongs to its owner, an organization of the\ndirectory — a company, or a person. When the owner's account also carries\nthe money of other organizations (a personal account a sole trader is paid\non), each ledger concerned has its own share of it: an account with the\nsame owner and IBAN, booked on its own chart, holding the lines pointed to\nthat ledger (BankLineAssignmentService). Lines are imported once, into any\nshare; the owner's share holds what is pointed to nobody else."
     properties:
       - name: ledger
         type: Wexample\SymfonyAccounting\Entity\Ledger
@@ -19,6 +19,10 @@ items:
         default: null
       - name: holder
         type: string
+        nullable: true
+        default: null
+      - name: owner
+        type: Organization
         nullable: true
         default: null
       - name: bankName
@@ -144,6 +148,22 @@ items:
             name: holder
         return:
           type: static
+      - type: method
+        name: getOwner
+        return:
+          type: Organization
+      - type: method
+        name: setOwner
+        parameters:
+          - type: Organization
+            name: owner
+        return:
+          type: static
+      - type: method
+        name: isOwnerShare
+        description: "The owner's own share: the one its lines go back to."
+        return:
+          type: bool
       - type: method
         name: getBankName
         return:

@@ -5,6 +5,7 @@ namespace Wexample\SymfonyAccounting\Service\Bank;
 use DateTimeImmutable;
 use Wexample\SymfonyAccounting\Class\StatementCheck;
 use Wexample\SymfonyAccounting\Entity\BankAccount;
+use Wexample\SymfonyAccounting\Repository\BankAccountRepository;
 use Wexample\SymfonyAccounting\Repository\BankStatementRepository;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyAccounting\Repository\EntryLineRepository;
@@ -13,6 +14,10 @@ use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 /**
  * Do the imported lines explain the balances the bank states, and do the books
  * agree with the bank?
+ *
+ * The bank states the balance of the whole account: an account shared between
+ * ledgers is checked with the lines of all its shares, against the balances
+ * its shares were given.
  */
 class ReconciliationService
 {
@@ -21,6 +26,7 @@ class ReconciliationService
         private readonly BankTransactionRepository $transactionRepository,
         private readonly EntryLineRepository $lineRepository,
         private readonly ChartService $chartService,
+        private readonly BankAccountRepository $bankAccountRepository,
     ) {
     }
 
@@ -32,14 +38,23 @@ class ReconciliationService
         BankAccount $bankAccount,
         DateTimeImmutable $date
     ): ?int {
-        $statement = $this->statementRepository->findLastOnOrBefore($bankAccount, $date);
+        $shares = $this->bankAccountRepository->findShares($bankAccount);
+        $statement = null;
+
+        foreach ($shares as $share) {
+            $candidate = $this->statementRepository->findLastOnOrBefore($share, $date);
+
+            if ($candidate && (! $statement || $candidate->getDate() > $statement->getDate())) {
+                $statement = $candidate;
+            }
+        }
 
         if (! $statement) {
             return null;
         }
 
         return $statement->getBalance()
-            + $this->transactionRepository->sumBetween($bankAccount, $statement->getDate(), $date);
+            + $this->transactionRepository->sumBetween($shares, $statement->getDate(), $date);
     }
 
     /**
@@ -52,11 +67,14 @@ class ReconciliationService
     {
         $checks = [];
         $previous = null;
+        $shares = $this->bankAccountRepository->findShares($bankAccount);
+        $statements = array_merge(...array_map(fn (BankAccount $share) => $this->statementRepository->findByBankAccount($share), $shares));
+        usort($statements, static fn ($a, $b) => $a->getDate() <=> $b->getDate());
 
-        foreach ($this->statementRepository->findByBankAccount($bankAccount) as $statement) {
+        foreach ($statements as $statement) {
             $computed = null === $previous
                 ? $statement->getBalance()
-                : $previous->getBalance() + $this->transactionRepository->sumBetween($bankAccount, $previous->getDate(), $statement->getDate());
+                : $previous->getBalance() + $this->transactionRepository->sumBetween($shares, $previous->getDate(), $statement->getDate());
 
             $checks[] = new StatementCheck($statement, $computed);
             $previous = $statement;

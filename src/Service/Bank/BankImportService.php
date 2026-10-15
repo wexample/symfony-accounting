@@ -14,6 +14,7 @@ use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Helper\ProviderMovementHelper;
+use Wexample\SymfonyAccounting\Repository\BankAccountRepository;
 use Wexample\SymfonyAccounting\Repository\BankStatementRepository;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
@@ -21,7 +22,8 @@ use Wexample\SymfonyAccounting\Service\Ledger\ChartService;
 /**
  * Stores parsed bank lines without ever duplicating them.
  *
- * A line with an external id is new when no line of the account has that id.
+ * A line with an external id is new when no line of the account — of any of
+ * its shares, the lines pointed to other ledgers included — has that id.
  * Without one, lines are compared by fingerprint (date, amount, label), counting
  * occurrences: two identical coffees on the same day stay two lines, and the same
  * file imported twice adds nothing.
@@ -35,6 +37,7 @@ class BankImportService
         private readonly BankStatementParserRegistry $parserRegistry,
         private readonly AllocationService $allocationService,
         private readonly ChartService $chartService,
+        private readonly BankAccountRepository $bankAccountRepository,
     ) {
     }
 
@@ -66,6 +69,7 @@ class BankImportService
 
         $result = new ImportResult(Uuid::v7()->toRfc4122());
         $seenFingerprints = [];
+        $shares = $this->bankAccountRepository->findShares($bankAccount);
 
         foreach ($statement->transactions as $parsed) {
             if (0 === $parsed->amount) {
@@ -73,7 +77,7 @@ class BankImportService
             }
 
             if ($parsed->externalId) {
-                if ($this->transactionRepository->findOneByExternalId($bankAccount, $parsed->externalId)
+                if ($this->transactionRepository->findOneByExternalId($shares, $parsed->externalId)
                     || isset($seenFingerprints['id:'.$parsed->externalId])) {
                     ++$result->duplicates;
 
@@ -85,7 +89,7 @@ class BankImportService
                 $fingerprint = BankTransaction::buildFingerprint($parsed->date, $parsed->amount, $parsed->label);
                 $occurrence = $seenFingerprints[$fingerprint] = ($seenFingerprints[$fingerprint] ?? 0) + 1;
                 $existing = array_filter(
-                    $this->transactionRepository->findByFingerprint($bankAccount, $fingerprint),
+                    $this->transactionRepository->findByFingerprint($shares, $fingerprint),
                     fn (BankTransaction $transaction) => null === $transaction->getExternalId()
                 );
 
