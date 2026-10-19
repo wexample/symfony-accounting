@@ -11,24 +11,28 @@ use Wexample\SymfonyAccounting\Interface\JurisdictionInterface;
 class JurisdictionRegistry
 {
     /** @var array<string, JurisdictionInterface> */
-    private array $byCountry = [];
+    private readonly array $byCountry;
 
-    private JurisdictionInterface $default;
+    private readonly JurisdictionInterface $default;
 
     /**
      * @param iterable<JurisdictionInterface> $jurisdictions
      */
     public function __construct(iterable $jurisdictions = [])
     {
-        $this->default = new DefaultJurisdiction();
+        $byCountry = [];
+        $default = new DefaultJurisdiction();
 
         foreach ($jurisdictions as $jurisdiction) {
             if (null === $jurisdiction->getCountryCode()) {
-                $this->default = $jurisdiction;
+                $default = $jurisdiction;
             } else {
-                $this->byCountry[strtoupper($jurisdiction->getCountryCode())] = $jurisdiction;
+                $byCountry[strtoupper($jurisdiction->getCountryCode())] = $jurisdiction;
             }
         }
+
+        $this->byCountry = $byCountry;
+        $this->default = $default;
     }
 
     public function get(?string $countryCode): JurisdictionInterface

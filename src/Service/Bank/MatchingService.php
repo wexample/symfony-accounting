@@ -22,7 +22,7 @@ class MatchingService
     public const int DEFAULT_THRESHOLD = 60;
 
     /** @var list<TransactionMatcherInterface> */
-    private array $matchers;
+    private readonly array $matchers;
 
     /**
      * @param iterable<TransactionMatcherInterface> $matchers
@@ -33,8 +33,9 @@ class MatchingService
         private readonly AllocationRepository $allocationRepository,
         private readonly BankTransactionRepository $transactionRepository,
     ) {
-        $this->matchers = iterator_to_array($matchers, false);
-        usort($this->matchers, fn ($a, $b) => $b->getPriority() <=> $a->getPriority());
+        $sorted = iterator_to_array($matchers, false);
+        usort($sorted, fn ($a, $b) => $b->getPriority() <=> $a->getPriority());
+        $this->matchers = $sorted;
     }
 
     /**
