@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 7.0.0
+Version: 8.0.0
 
 ## A ledger
 
@@ -98,6 +98,18 @@ $letteringService->letterLedger($ledger);
 ```
 
 Imports never duplicate a line. Matchers propose (pending) or settle (validated) by provider payment, payment reference, label rules, transfers between the ledger's accounts and exact amounts; refusing a proposal excludes the pair for good. Validated allocations are booked at once, one entry per payment.
+
+### One account, several organizations
+
+An account at the bank belongs to its owner (`BankAccount::getOwner()`, an organization of the directory — a company, or a person; the ledger's organization when not set). When the money of other organizations goes through it — a sole trader paid on their personal account —, each ledger concerned holds a *share* of it: an account with the same owner and IBAN, booked on that ledger's own chart. Every line belongs to exactly one share, so to one organization; the owner's share holds what is pointed to nobody else.
+
+```php
+$bankAccountRepository->findShares($bankAccount);        // the shares of the same account, the owner's first
+$bankLineAssignmentService->assign($line, $ledger);      // the line moves into the ledger's share, created on first use
+$bankLineAssignmentService->release($line);              // back to the owner
+```
+
+A line already explained — allocated, or one half of a transfer — stays in the books that explained it. Imports compare lines with all the shares, so a file imported again never brings back a line pointed elsewhere; the balances the bank states are checked against the lines of all the shares. `accounting:bank-assign <bank-account> <ledger> --match=… --from=… --to=…` points lines in bulk; the bank pages of `symfony-accounting-ds` show the owner the whole account, each line with its organization.
 
 A bank account whose `provider` is set (`stripe`) is fed by `ProviderBalanceImporter` through symfony-remote-payment: gross payments, fees (booked on the bank fees account), refunds, payouts (matched as transfers).
 
@@ -258,14 +270,12 @@ This package is part of the Wexample Suite — a collection of high-quality, mod
 
 The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
 
-Visit the [Wexample Suite documentation](https://docs.wexample.com) for the complete package ecosystem.
-
 ## Dependencies
 
 - php: >=8.5
 - league/csv: ^9.5
 - wexample/php-date: >=2.1.0
-- wexample/symfony-helpers: >=16.0.0
+- wexample/symfony-helpers: >=17.0.0
 - wexample/symfony-money: >=7.0.0
 - wexample/symfony-geo: >=7.0.0
 - wexample/symfony-check: >=4.0.0
@@ -275,11 +285,11 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - wexample/symfony-remote-pdf-factory: >=2.0.0
 - wexample/symfony-remote-document-reader: >=2.0.0
 - wexample/symfony-remote-peppol: >=2.0.0
-- wexample/symfony-api: >=13.0.0
+- wexample/symfony-api: >=14.0.0
 - wexample/php-pseudocode: >=2.2.0
-- wexample/symfony-pseudocode: >=3.0.0
-- wexample/symfony-media: >=2.0.0
-- wexample/symfony-organization: >=2.0.0
+- wexample/symfony-pseudocode: >=4.0.0
+- wexample/symfony-media: >=3.0.0
+- wexample/symfony-organization: >=3.0.0
 - symfony/validator: ^7.4 || ^8.0
 
 ## Versioning & Compatibility Policy
@@ -305,6 +315,8 @@ Free to use in both personal and commercial projects.
 This packages suite embodies this spirit. Trusted by professionals and enthusiasts alike, it delivers a consistent, high-quality foundation for modern development — open, elegant, and battle-tested. Its reputation is built on years of collaboration, refinement, and rigorous attention to detail, making it a natural choice for those who demand both robustness and beauty in their tools.
 
 Wexample cultivates a culture of mastery. Each package, each contribution carries the mark of a community that values precision, ethics, and innovation — a community proud to shape the future of digital craftsmanship.
+
+Built and maintained by [Romain Weeger](https://weeger.io).
 
 ## Migration Notes
 
