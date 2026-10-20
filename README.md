@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 8.0.0
+Version: 8.0.1
 
 ## A ledger
 
@@ -277,7 +277,7 @@ The suite includes packages for configuration management, file handling, prompts
 - wexample/php-date: >=2.1.0
 - wexample/symfony-helpers: >=17.0.0
 - wexample/symfony-money: >=7.0.0
-- wexample/symfony-geo: >=7.0.0
+- wexample/symfony-geo: >=8.0.0
 - wexample/symfony-check: >=4.0.0
 - wexample/symfony-payment: >=4.0.0
 - wexample/symfony-remote-payment: >=3.0.0
@@ -288,7 +288,7 @@ The suite includes packages for configuration management, file handling, prompts
 - wexample/symfony-api: >=14.0.0
 - wexample/php-pseudocode: >=2.2.0
 - wexample/symfony-pseudocode: >=4.0.0
-- wexample/symfony-media: >=3.0.0
+- wexample/symfony-media: >=4.0.0
 - wexample/symfony-organization: >=3.0.0
 - symfony/validator: ^7.4 || ^8.0
 
