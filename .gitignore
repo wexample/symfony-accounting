@@ -60,3 +60,4 @@ coverage*.lcov
 
 # Example and reference documents, some holding real data: never committed.
 /var/pdf-examples/
+/node_modules
