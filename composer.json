@@ -3,7 +3,7 @@
   "description": "Accounting for Symfony: ledgers, double-entry bookkeeping, invoices, bank reconciliation, VAT, closing and reports, with country rules in jurisdiction packages",
   "type": "library",
   "license": "MIT",
-  "version": "8.0.4",
+  "version": "9.0.0",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyAccounting\\": "src/"
@@ -25,10 +25,10 @@
     "league/csv": "^9.5",
     "wexample/php-date": ">=2.1.2",
     "wexample/symfony-helpers": ">=18.0.2",
-    "wexample/symfony-money": ">=7.0.4",
+    "wexample/symfony-money": ">=8.0.0",
     "wexample/symfony-geo": ">=8.0.2",
     "wexample/symfony-check": ">=4.0.4",
-    "wexample/symfony-payment": ">=4.0.6",
+    "wexample/symfony-payment": ">=5.0.0",
     "wexample/symfony-remote-payment": ">=3.0.4",
     "symfony/security-core": "^7.4 || ^8.0",
     "wexample/symfony-remote-pdf-factory": ">=2.0.4",
@@ -37,7 +37,7 @@
     "wexample/symfony-api": ">=15.0.0",
     "wexample/php-pseudocode": ">=2.2.4",
     "wexample/symfony-pseudocode": ">=4.0.2",
-    "wexample/symfony-media": ">=5.0.1",
+    "wexample/symfony-media": ">=6.0.0",
     "wexample/symfony-organization": ">=3.0.3",
     "symfony/validator": "^7.4 || ^8.0"
   },
