@@ -21,7 +21,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
  * The chart of a ledger: by number, or words of the label (`search` starting
  * with a digit reads as the start of a number).
  */
-#[Route(path: 'api/account/', name: 'api_account_')]
+#[Route(path: '_api/account/', name: 'api_account_')]
 class AccountController extends AbstractAccountingApiController
 {
     #[Route(path: 'list', name: self::ROUTE_LIST, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]

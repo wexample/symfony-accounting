@@ -36,7 +36,7 @@ use Wexample\SymfonyRemoteDocumentReader\Service\DocumentReaderClient;
  * from a table: pasted rows, or a file whose tables are read first
  * (`read-table`) so the columns can be chosen, then sent as lines (`import`).
  */
-#[Route(path: 'api/invoice-item/', name: 'api_invoice_item_')]
+#[Route(path: '_api/invoice-item/', name: 'api_invoice_item_')]
 class InvoiceItemController extends AbstractAccountingApiController
 {
     final public const string ROUTE_IMPORT = 'import';

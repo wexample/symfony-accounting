@@ -36,7 +36,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
  * The bank lines of a ledger, of one account (`bankAccount`) or all, those
  * still to explain only (`unallocated`) — what reconciliation works through.
  */
-#[Route(path: 'api/bank-transaction/', name: 'api_bank_transaction_')]
+#[Route(path: '_api/bank-transaction/', name: 'api_bank_transaction_')]
 class BankTransactionController extends AbstractAccountingApiController
 {
     final public const string QUERY_OPTION_BANK_ACCOUNT = 'bankAccount';

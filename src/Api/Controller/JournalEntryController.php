@@ -27,7 +27,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
 /**
  * The entries of a ledger for a year, of one journal (`journal`, its code) or all.
  */
-#[Route(path: 'api/journal-entry/', name: 'api_journal_entry_')]
+#[Route(path: '_api/journal-entry/', name: 'api_journal_entry_')]
 class JournalEntryController extends AbstractAccountingApiController
 {
     final public const string QUERY_OPTION_JOURNAL = 'journal';

@@ -17,7 +17,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
 /**
  * Lettering: lines of one account marked as settling each other, or no longer.
  */
-#[Route(path: 'api/entry-line/', name: 'api_entry_line_')]
+#[Route(path: '_api/entry-line/', name: 'api_entry_line_')]
 class EntryLineController extends AbstractAccountingApiController
 {
     final public const string ROUTE_LETTER = 'letter';

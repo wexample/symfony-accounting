@@ -20,7 +20,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
  * (balance sheet, income statement…), its general ledger, its exports (FEC…).
  * Reports are computed, not entities: their answers are plain data.
  */
-#[Route(path: 'api/accounting-report/', name: 'api_accounting_report_')]
+#[Route(path: '_api/accounting-report/', name: 'api_accounting_report_')]
 class ReportController extends AbstractAccountingApiController
 {
     final public const string QUERY_OPTION_FISCAL_YEAR = 'fiscalYear';

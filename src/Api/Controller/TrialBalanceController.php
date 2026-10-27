@@ -17,7 +17,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
 /**
  * The balance of every account over a calendar year: a report, not an entity.
  */
-#[Route(path: 'api/trial-balance/', name: 'api_trial_balance_')]
+#[Route(path: '_api/trial-balance/', name: 'api_trial_balance_')]
 class TrialBalanceController extends AbstractAccountingApiController
 {
     #[Route(path: 'show', name: self::ROUTE_SHOW, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]

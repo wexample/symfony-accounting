@@ -33,7 +33,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
  * resource, though it is its organization's: a change here is seen by every
  * ledger the organization is a party to.
  */
-#[Route(path: 'api/party/', name: 'api_party_')]
+#[Route(path: '_api/party/', name: 'api_party_')]
 class PartyController extends AbstractAccountingApiController
 {
     final public const string QUERY_OPTION_ROLE = 'role';

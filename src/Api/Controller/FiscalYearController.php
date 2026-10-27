@@ -21,7 +21,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
  * The fiscal years of a ledger: listed, checked before closing, closed,
  * reopened. Closing and reopening ask `accounting.administer`.
  */
-#[Route(path: 'api/fiscal-year/', name: 'api_fiscal_year_')]
+#[Route(path: '_api/fiscal-year/', name: 'api_fiscal_year_')]
 class FiscalYearController extends AbstractAccountingApiController
 {
     final public const string ROUTE_CHECK = 'check';

@@ -25,7 +25,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
  * The VAT of a period (`from`, `to`): computed to be read, the boxes of the
  * jurisdiction's forms filled, then settled — booked into VAT payable or credit.
  */
-#[Route(path: 'api/vat-return/', name: 'api_vat_return_')]
+#[Route(path: '_api/vat-return/', name: 'api_vat_return_')]
 class VatReturnController extends AbstractAccountingApiController
 {
     final public const string ROUTE_SETTLE = 'settle';

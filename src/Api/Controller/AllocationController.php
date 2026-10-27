@@ -24,7 +24,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
  * What a bank line pays. Allocating books the payment and moves the document
  * towards paid; removing keeps the allocation, excluded, and reverses its entry.
  */
-#[Route(path: 'api/allocation/', name: 'api_allocation_')]
+#[Route(path: '_api/allocation/', name: 'api_allocation_')]
 class AllocationController extends AbstractAccountingApiController
 {
     final public const string QUERY_OPTION_TRANSACTION = 'transaction';

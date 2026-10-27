@@ -15,7 +15,7 @@ use Wexample\SymfonyHelpers\Controller\AbstractController;
 /**
  * The bank accounts of a ledger.
  */
-#[Route(path: 'api/bank-account/', name: 'api_bank_account_')]
+#[Route(path: '_api/bank-account/', name: 'api_bank_account_')]
 class BankAccountController extends AbstractAccountingApiController
 {
     #[Route(path: 'list', name: self::ROUTE_LIST, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]

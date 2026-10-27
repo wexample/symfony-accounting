@@ -53,7 +53,7 @@ use Wexample\SymfonyHelpers\Helper\VariableHelper;
  * credit note, printed, exchanged as electronic invoices. Reading asks
  * `accounting.view`, the rest `accounting.edit`.
  */
-#[Route(path: 'api/invoice/', name: 'api_invoice_')]
+#[Route(path: '_api/invoice/', name: 'api_invoice_')]
 class InvoiceController extends AbstractAccountingApiController
 {
     final public const string ROUTE_EMIT = 'emit';
