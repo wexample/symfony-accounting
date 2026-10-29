@@ -1,6 +1,6 @@
 # symfony_accounting
 
-Version: 9.0.1
+Version: 9.0.2
 
 Accounting for Symfony: ledgers, double-entry bookkeeping, invoices, bank reconciliation, VAT, closing and reports, with country rules in jurisdiction packages
 
