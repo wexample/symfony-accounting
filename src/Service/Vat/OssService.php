@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyAccounting\Service\Vat;
 
 use DateTimeImmutable;
+use Symfony\Contracts\Service\ResetInterface;
 use Wexample\SymfonyAccounting\Class\EntryDraft;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\InvoiceItem;
@@ -34,12 +35,15 @@ use Wexample\SymfonyMoney\Helper\MoneyHelper;
  * Its VAT is kept on its own account and declared each quarter by country and
  * rate, apart from the national return.
  */
-class OssService
+class OssService implements ResetInterface
 {
     /** 10 000 €, in cents. */
     public const int THRESHOLD = 1_000_000;
 
     public const string SOURCE_SETTLEMENT = 'oss_settlement';
+
+    /** @var array<string, bool> ledger and year → whether their sales passed the threshold, for the request */
+    private array $thresholdPassed = [];
 
     public function __construct(
         private readonly InvoiceRepository $invoiceRepository,
@@ -99,8 +103,17 @@ class OssService
 
         $year = (int) $date->format('Y');
 
-        return $this->getDistanceSales($ledger, $year - 1) > self::THRESHOLD
-            || $this->getDistanceSales($ledger, $year) > self::THRESHOLD;
+        // Asked for each line of a cart, answered once a request (reset()
+        // empties it between two): a sale emitted later in the same request
+        // is not counted here, applies() counts it on its own document.
+        return $this->thresholdPassed[($ledger->getId() ?? spl_object_id($ledger)).'_'.$year]
+            ??= $this->getDistanceSales($ledger, $year - 1) > self::THRESHOLD
+                || $this->getDistanceSales($ledger, $year) > self::THRESHOLD;
+    }
+
+    public function reset(): void
+    {
+        $this->thresholdPassed = [];
     }
 
     /**
@@ -113,13 +126,17 @@ class OssService
         ?Invoice $except = null
     ): int {
         $total = 0;
+        // Emitted sales of the counted types only, as the query selects them:
+        // the purchases, drafts and quotations of the year are not read.
+        $sales = $this->invoiceRepository->findEmittedSalesForPeriod(
+            $ledger,
+            new DateTimeImmutable($year.'-01-01'),
+            new DateTimeImmutable($year.'-12-31'),
+            [InvoiceType::Bill, InvoiceType::Penalty, InvoiceType::CreditNote],
+        );
 
-        foreach ($this->invoiceRepository->findForPeriod($ledger, new DateTimeImmutable($year.'-01-01'), new DateTimeImmutable($year.'-12-31')) as $invoice) {
-            if ($invoice === $except
-                || ! $invoice->isSale()
-                || ! $invoice->getStatus()->isEmitted()
-                || ! in_array($invoice->getType(), [InvoiceType::Bill, InvoiceType::Penalty, InvoiceType::CreditNote], true)
-                || ! $this->isDistanceCustomer($ledger, $invoice->getParty())) {
+        foreach ($sales as $invoice) {
+            if ($invoice === $except || ! $this->isDistanceCustomer($ledger, $invoice->getParty())) {
                 continue;
             }
 

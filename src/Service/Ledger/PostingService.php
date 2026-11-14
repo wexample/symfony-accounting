@@ -172,11 +172,9 @@ class PostingService
         $count = 0;
         $now = new DateTimeImmutable();
 
-        foreach ($this->entryRepository->findBy(['ledger' => $ledger, 'status' => EntryStatus::Posted]) as $entry) {
-            if ($entry->getDate() <= $until) {
-                $entry->setStatus(EntryStatus::Validated)->setDateValidated($now);
-                ++$count;
-            }
+        foreach ($this->entryRepository->findPostedUntil($ledger, $until) as $entry) {
+            $entry->setStatus(EntryStatus::Validated)->setDateValidated($now);
+            ++$count;
         }
 
         $this->entityManager->flush();

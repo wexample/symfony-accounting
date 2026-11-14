@@ -3,11 +3,13 @@
 namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use DateTimeImmutable;
+use Wexample\SymfonyAccounting\Class\EntryDraft;
 use Wexample\SymfonyAccounting\Entity\BankStatement;
 use Wexample\SymfonyAccounting\Entity\ImportPattern;
 use Wexample\SymfonyAccounting\Enum\AllocationStatus;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
+use Wexample\SymfonyAccounting\Enum\JournalType;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Repository\BankTransactionRepository;
 use Wexample\SymfonyAccounting\Repository\JournalEntryRepository;
@@ -20,6 +22,7 @@ use Wexample\SymfonyAccounting\Service\Bank\ReconciliationService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceEmissionService;
 use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
 use Wexample\SymfonyAccounting\Service\Ledger\LetteringService;
+use Wexample\SymfonyAccounting\Service\Ledger\PostingService;
 use Wexample\SymfonyCheck\Service\CheckService;
 use Wexample\SymfonyPayment\Service\PaymentService;
 use Wexample\SymfonyRemotePayment\Class\BalanceMovement;
@@ -269,6 +272,32 @@ class BankTest extends AbstractAccountingTestCase
         $this->assertTrue($checks[1]->isReconciled());
         $this->assertFalse($checks[2]->isReconciled());
         $this->assertSame(-1, $checks[2]->getDifference());
+    }
+
+    /**
+     * The bank account's balance in the books: its booked lines up to the day,
+     * that day included; lines of other accounts do not count.
+     */
+    public function testBookBalanceAt(): void
+    {
+        $ledger = $this->createLedger();
+        $bank = $this->createBankAccount($ledger);
+        $reconciliation = $this->service(ReconciliationService::class);
+        $posting = $this->service(PostingService::class);
+
+        $this->assertSame(0, $reconciliation->getBookBalanceAt($bank, new DateTimeImmutable('2026-12-31')));
+
+        $posting->postDraft($ledger, (new EntryDraft(JournalType::Bank, new DateTimeImmutable('2026-02-10'), 'In'))->add('5121', 15000)->add('706', -15000));
+        $posting->postDraft($ledger, (new EntryDraft(JournalType::Bank, new DateTimeImmutable('2026-02-28'), 'Out'))->add('5121', -3000)->add('627', 3000));
+        $posting->postDraft($ledger, (new EntryDraft(JournalType::Bank, new DateTimeImmutable('2026-03-05'), 'Out'))->add('5121', -12001)->add('627', 12001));
+        // Another bank account's movement.
+        $posting->postDraft($ledger, (new EntryDraft(JournalType::Bank, new DateTimeImmutable('2026-02-15'), 'Other'))->add('5122', 99999)->add('706', -99999));
+        $this->em()->flush();
+
+        $this->assertSame(0, $reconciliation->getBookBalanceAt($bank, new DateTimeImmutable('2026-02-09')));
+        $this->assertSame(15000, $reconciliation->getBookBalanceAt($bank, new DateTimeImmutable('2026-02-27')));
+        $this->assertSame(12000, $reconciliation->getBookBalanceAt($bank, new DateTimeImmutable('2026-02-28')));
+        $this->assertSame(-1, $reconciliation->getBookBalanceAt($bank, new DateTimeImmutable('2026-03-31')));
     }
 
     public function testLettering(): void

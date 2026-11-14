@@ -4,6 +4,10 @@ namespace Wexample\SymfonyAccounting\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use Wexample\SymfonyAccounting\Enum\InvoiceStatus;
+use Wexample\SymfonyAccounting\Repository\InvoiceRepository;
+use Wexample\SymfonyAccounting\Service\Invoice\InvoiceFactory;
+use Wexample\SymfonyAccounting\Service\Invoice\InvoiceWorkflow;
 
 class CommandTest extends AbstractAccountingTestCase
 {
@@ -42,5 +46,25 @@ class CommandTest extends AbstractAccountingTestCase
 
         $checkRun = $this->runCommand('check:run', ['provider' => 'bank', '--format' => 'json']);
         $this->assertStringContainsString('bank.unexplained', $checkRun->getDisplay());
+    }
+
+    /**
+     * A model gives one document a month: run again in the same month, or for
+     * a document dated another day of it, nothing more is made.
+     */
+    public function testInvoiceRenewMakesOneDocumentPerModelAndMonth(): void
+    {
+        $ledger = $this->createLedger();
+        $factory = $this->service(InvoiceFactory::class);
+        $model = $factory->create($ledger, party: $this->createParty($ledger));
+        $factory->addItem($model, 'Monthly maintenance', 50000);
+        $this->em()->flush();
+        $this->service(InvoiceWorkflow::class)->transition($model, InvoiceStatus::Model);
+        $this->em()->flush();
+
+        $this->assertStringContainsString('1 document(s) created', $this->runCommand('accounting:invoice-renew', ['date' => '2026-03-01'])->getDisplay());
+        $this->assertStringContainsString('0 document(s) created', $this->runCommand('accounting:invoice-renew', ['date' => '2026-03-31'])->getDisplay());
+        $this->assertStringContainsString('1 document(s) created', $this->runCommand('accounting:invoice-renew', ['date' => '2026-04-01'])->getDisplay());
+        $this->assertCount(2, $this->service(InvoiceRepository::class)->findBy(['model' => $model]));
     }
 }

@@ -49,7 +49,7 @@ class CsvEntryExporter implements LedgerExporterInterface
         $handle = fopen('php://temp', 'w+');
         fputcsv($handle, self::COLUMNS, $delimiter, '"', '');
 
-        foreach ($this->entryRepository->findBooked($fiscalYear) as $entry) {
+        foreach ($this->entryRepository->findBookedWithLines($fiscalYear) as $entry) {
             foreach ($entry->getLines() as $line) {
                 fputcsv($handle, [
                     $entry->getJournal()->getCode(),

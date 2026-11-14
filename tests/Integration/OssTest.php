@@ -64,6 +64,52 @@ class OssTest extends AbstractAccountingTestCase
         $oss->settle($ledger, $from, $to);
     }
 
+    /**
+     * What a checkout asks: past the threshold this year or the last, once the
+     * year's distance sales — net of credit notes, drafts and domestic
+     * sales left out — exceed 10 000 €.
+     */
+    public function testTheLedgerPassesTheThresholdOnItsDistanceSales(): void
+    {
+        $ledger = $this->createLedger();
+        $german = $this->createParty($ledger, 'Hans Müller', 'DE');
+        $belgian = $this->createParty($ledger, 'Jan Peeters', 'BE');
+        $oss = $this->service(OssService::class);
+        $factory = $this->service(InvoiceFactory::class);
+
+        $this->sell($ledger, $german, 600000, '2026-01-10');
+        // Neither a domestic sale nor a draft counts.
+        $this->sell($ledger, $belgian, 900000, '2026-01-11');
+        $draft = $factory->create($ledger, party: $german, dateInvoice: new DateTimeImmutable('2026-01-12'));
+        $factory->addItem($draft, 'Lamp', 900000, goods: true);
+        $this->em()->flush();
+        $this->assertSame(600000, $oss->getDistanceSales($ledger, 2026));
+        $this->assertFalse($oss->appliesToLedger($ledger, new DateTimeImmutable('2026-06-01')));
+
+        // Exactly the threshold is not past it.
+        $this->sell($ledger, $german, 400000, '2026-02-10');
+        $oss->reset();
+        $this->assertSame(1000000, $oss->getDistanceSales($ledger, 2026));
+        $this->assertFalse($oss->appliesToLedger($ledger, new DateTimeImmutable('2026-06-01')));
+
+        $last = $this->sell($ledger, $german, 1, '2026-02-11');
+        // Answered once a request: the sale just emitted is seen after a reset.
+        $this->assertFalse($oss->appliesToLedger($ledger, new DateTimeImmutable('2026-06-01')));
+        $oss->reset();
+        $this->assertTrue($oss->appliesToLedger($ledger, new DateTimeImmutable('2026-06-01')));
+        // The year after, on last year's sales; the year before had none.
+        $this->assertTrue($oss->appliesToLedger($ledger, new DateTimeImmutable('2027-03-01')));
+        $this->assertFalse($oss->appliesToLedger($ledger, new DateTimeImmutable('2025-12-31')));
+
+        // A credit note takes its part back off the year.
+        $credit = $factory->createCreditNote($last, null, 'Returned');
+        $this->em()->flush();
+        $this->service(InvoiceEmissionService::class)->emit($credit);
+        $oss->reset();
+        $this->assertSame(1000000, $oss->getDistanceSales($ledger, 2026));
+        $this->assertFalse($oss->appliesToLedger($ledger, new DateTimeImmutable('2026-06-01')));
+    }
+
     public function testARegisteredLedgerUsesTheOssFromTheFirstSaleAndElectronicServicesCount(): void
     {
         $ledger = $this->createLedger(settings: ['default_vat_rate' => 2000, 'oss_registered' => true, 'oss_electronic_services' => true]);

@@ -62,7 +62,15 @@ class LetteringService
     ): int {
         $lines = $this->lineRepository->findForAccount($account->getLedger(), $account);
         $this->clearUnbalancedLetters($lines);
+        $this->loadAllocations($lines);
         $count = 0;
+        // The lines carrying each letter, and the highest one: the next letter
+        // follows it, as LetterHelper::next() over every line would say,
+        // without reading every line again for each group lettered.
+        $used = [];
+        foreach ($lines as $line) {
+            $this->countLetter($used, $line->getLetter(), 1);
+        }
 
         $byParty = [];
         foreach ($lines as $line) {
@@ -78,6 +86,7 @@ class LetteringService
                 if (0 !== array_sum(array_map(fn (EntryLine $l) => $l->getBalance(), $group))) {
                     // A payment removed or reversed: the group is open again.
                     foreach ($group as $line) {
+                        $this->countLetter($used, $line->getLetter(), -1);
                         $line->setLetter(null);
                     }
 
@@ -90,11 +99,13 @@ class LetteringService
                     continue;
                 }
 
-                $letter = LetterHelper::next(array_map(fn (EntryLine $l) => $l->getLetter(), $lines));
+                $letter = LetterHelper::fromNumber(max([0, ...array_keys($used)]) + 1);
                 $lettered = $date ?? $this->latestDate($group);
 
                 foreach ($group as $line) {
+                    $this->countLetter($used, $line->getLetter(), -1);
                     $line->setLetter($letter, $lettered);
+                    $this->countLetter($used, $letter, 1);
                 }
 
                 ++$count;
@@ -225,6 +236,49 @@ class LetteringService
         $nodes[] = 'T:'.$allocation->getTransaction()->getId();
 
         return $nodes;
+    }
+
+    /**
+     * @param array<int, int> $used letter number → lines carrying it
+     */
+    private function countLetter(
+        array &$used,
+        ?string $letter,
+        int $lines
+    ): void {
+        if (null === $letter || '' === $letter) {
+            return;
+        }
+
+        $number = LetterHelper::toNumber($letter);
+        $used[$number] = ($used[$number] ?? 0) + $lines;
+
+        if ($used[$number] <= 0) {
+            unset($used[$number]);
+        }
+    }
+
+    /**
+     * The allocations the lines come from, read at once: each line asks for
+     * its own afterwards, and finds it already loaded.
+     *
+     * @param list<EntryLine> $lines
+     */
+    private function loadAllocations(array $lines): void
+    {
+        $ids = [];
+
+        foreach ($lines as $line) {
+            $entry = $line->getEntry();
+
+            if (AllocationAccountingService::SOURCE_ALLOCATION === $entry->getSourceType() && Uuid::isValid((string) $entry->getSourceId())) {
+                $ids[(string) $entry->getSourceId()] = Uuid::fromString((string) $entry->getSourceId());
+            }
+        }
+
+        if ([] !== $ids) {
+            $this->allocationRepository->findByIds(array_values($ids));
+        }
     }
 
     /**

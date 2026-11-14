@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyAccounting\Service\Jurisdiction;
 
+use Wexample\SymfonyAccounting\Class\ChartAccountDefinition;
 use Wexample\SymfonyAccounting\Class\LatePenaltyPolicy;
 use Wexample\SymfonyAccounting\Class\LegalMention;
 use Wexample\SymfonyAccounting\Class\ReportDefinition;
@@ -9,6 +10,7 @@ use Wexample\SymfonyAccounting\Class\VatCode;
 use Wexample\SymfonyAccounting\Class\VatContext;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\Ledger;
+use Wexample\SymfonyAccounting\Enum\AccountNature;
 use Wexample\SymfonyAccounting\Enum\AccountRole;
 use Wexample\SymfonyAccounting\Enum\InvoiceDirection;
 use Wexample\SymfonyAccounting\Enum\InvoiceType;
@@ -30,8 +32,6 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
      */
     abstract protected function getAccountNumbers(): array;
 
-
-
     public function getVatDepositSchedule(
         Ledger $ledger,
         int $year,
@@ -49,9 +49,6 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
     {
         return false;
     }
-
-
-
 
     public function getChartDatasets(): array
     {
@@ -278,23 +275,7 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
             return [];
         }
 
-        $mentions = [];
-
-        foreach ($invoice->getVatKinds() as $kind) {
-            $key = match ($kind) {
-                VatKind::Franchise => 'mention.vat.franchise',
-                VatKind::IntraEuServices => 'mention.vat.reverse_charge',
-                VatKind::DomesticReverseCharge => 'mention.vat.domestic_reverse_charge',
-                VatKind::IntraEuGoods => 'mention.vat.intra_eu_goods',
-                VatKind::Export => 'mention.vat.export',
-                VatKind::Exempt => 'mention.vat.exempt',
-                default => null,
-            };
-
-            if ($key) {
-                $mentions[] = new LegalMention($key, LegalMention::PLACEMENT_VAT);
-            }
-        }
+        $mentions = $this->getVatKindMentions($invoice);
 
         if (in_array($invoice->getType(), [InvoiceType::Bill, InvoiceType::Penalty], true)) {
             $policy = $this->getLatePenaltyPolicy($invoice->getLedger());
@@ -308,6 +289,49 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
         return $mentions;
     }
 
+    /**
+     * Why there is no VAT on a sale, a mention per kind of VAT it carries,
+     * under this jurisdiction's own keys.
+     *
+     * @return list<LegalMention>
+     */
+    protected function getVatKindMentions(Invoice $invoice): array
+    {
+        $mentions = [];
+
+        foreach ($invoice->getVatKinds() as $kind) {
+            $key = match ($kind) {
+                VatKind::Franchise => 'vat.franchise',
+                VatKind::IntraEuServices => 'vat.reverse_charge',
+                VatKind::DomesticReverseCharge => 'vat.domestic_reverse_charge',
+                VatKind::IntraEuGoods => 'vat.intra_eu_goods',
+                VatKind::Export => 'vat.export',
+                VatKind::Exempt => 'vat.exempt',
+                default => null,
+            };
+
+            if ($key) {
+                $mentions[] = new LegalMention($this->getMentionKeyPrefix().$key, LegalMention::PLACEMENT_VAT);
+            }
+        }
+
+        return $mentions;
+    }
+
+    /**
+     * Where the mentions of this jurisdiction are translated: the generic
+     * texts under `mention.`, a country's own under `mention.<country>.`.
+     */
+    protected function getMentionKeyPrefix(): string
+    {
+        return 'mention.';
+    }
+
+    /**
+     * The ledger's own terms, else 12 % a year and a 40 € flat fee — the
+     * defaults of French (L441-10, D441-5) and Belgian (law of 2 August 2002)
+     * law alike.
+     */
     public function getLatePenaltyPolicy(Ledger $ledger): LatePenaltyPolicy
     {
         return new LatePenaltyPolicy(
@@ -357,5 +381,32 @@ abstract class AbstractJurisdiction implements JurisdictionInterface
                 ],
             ]),
         ];
+    }
+
+    /**
+     * A chart bundled as CSV — `number;label;nature;lettrable`, a header line
+     * first —, for the jurisdictions that ship one.
+     *
+     * @return list<ChartAccountDefinition>
+     */
+    protected function readChart(string $path): array
+    {
+        $accounts = [];
+        $handle = fopen($path, 'r');
+        fgetcsv($handle, null, ';', '"', '');
+
+        while (false !== ($row = fgetcsv($handle, null, ';', '"', ''))) {
+            [$number, $label, $nature, $lettrable] = $row;
+            $accounts[] = new ChartAccountDefinition(
+                number: $number,
+                label: $label,
+                nature: AccountNature::from($nature),
+                lettrable: '1' === $lettrable,
+            );
+        }
+
+        fclose($handle);
+
+        return $accounts;
     }
 }

@@ -41,6 +41,7 @@ class EntryLineRepository extends AbstractRepository
      * @param bool|null $opening True for the opening entries only (the balances
      *                           carried from the year before), false for every
      *                           other entry, null for all.
+     * @param string|null $accountNumber One account only, its sums the only key.
      * @return array<string, array{debit: int, credit: int}> Sorted by account number.
      */
     public function sumByAccount(
@@ -49,11 +50,16 @@ class EntryLineRepository extends AbstractRepository
         ?DateTimeInterface $to = null,
         ?FiscalYear $fiscalYear = null,
         ?bool $opening = null,
+        ?string $accountNumber = null,
     ): array {
         $builder = $this->queryBooked($ledger)
             ->select('a.number AS number, SUM(l.debit) AS debit, SUM(l.credit) AS credit')
             ->groupBy('a.number')
             ->orderBy('a.number', self::SORT_ASC);
+
+        if (null !== $accountNumber) {
+            $builder->andWhere('a.number = :number')->setParameter('number', $accountNumber);
+        }
 
         if (null !== $opening) {
             $builder->join('e.journal', 'j')
@@ -82,6 +88,7 @@ class EntryLineRepository extends AbstractRepository
         ?DateTimeInterface $to = null,
         ?FiscalYear $fiscalYear = null,
         ?string $accountPrefix = null,
+        bool $unlettered = false,
     ): array {
         $builder = $this->queryBooked($ledger)
             ->addSelect('e', 'a')
@@ -99,6 +106,10 @@ class EntryLineRepository extends AbstractRepository
 
         if ($accountPrefix) {
             $builder->andWhere('a.number LIKE :prefix')->setParameter('prefix', $accountPrefix.'%');
+        }
+
+        if ($unlettered) {
+            $builder->andWhere("(l.letter IS NULL OR l.letter = '')");
         }
 
         $this->filterPeriod($builder, $from, $to, $fiscalYear);

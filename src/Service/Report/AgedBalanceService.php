@@ -37,11 +37,8 @@ class AgedBalanceService
         $sign = AccountRole::Suppliers === $role ? -1 : 1;
         $result = [];
 
-        foreach ($this->lineRepository->findForAccount($ledger, to: $at, accountPrefix: $prefix) as $line) {
-            if ($line->getLetter()) {
-                continue;
-            }
-
+        // What is lettered is settled: only the open lines age.
+        foreach ($this->lineRepository->findForAccount($ledger, to: $at, accountPrefix: $prefix, unlettered: true) as $line) {
             $key = $line->getAuxiliaryCode() ?? $line->getAccount()->getNumber();
             $result[$key] ??= [
                 'party' => $line->getParty()?->getName() ?? $line->getAccount()->getLabel(),

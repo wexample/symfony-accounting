@@ -96,11 +96,8 @@ class ReconciliationService
             return 0;
         }
 
-        $balance = 0;
-        foreach ($this->lineRepository->findForAccount($bankAccount->getLedger(), $account, to: $date) as $line) {
-            $balance += $line->getBalance();
-        }
+        $sums = $this->lineRepository->sumByAccount($bankAccount->getLedger(), to: $date, accountNumber: $account->getNumber())[$account->getNumber()] ?? null;
 
-        return $balance;
+        return null === $sums ? 0 : $sums['debit'] - $sums['credit'];
     }
 }

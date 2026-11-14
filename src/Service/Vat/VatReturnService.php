@@ -208,7 +208,7 @@ class VatReturnService
         DateTimeImmutable $to
     ): int {
         $number = $this->chartService->getRoleNumber($ledger, $role);
-        $sums = $this->lineRepository->sumByAccount($ledger, $from, $to);
+        $sums = $this->lineRepository->sumByAccount($ledger, $from, $to, accountNumber: $number);
 
         return isset($sums[$number]) ? $sums[$number]['debit'] - $sums[$number]['credit'] : 0;
     }

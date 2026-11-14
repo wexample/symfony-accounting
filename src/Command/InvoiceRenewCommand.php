@@ -47,16 +47,10 @@ class InvoiceRenewCommand extends AbstractAccountingCommand
         OutputInterface $output
     ): int {
         $date = new DateTimeImmutable($input->getArgument('date'));
-        $month = $date->format('Y-m');
         $count = 0;
 
         foreach ($this->invoiceRepository->findBy(['status' => InvoiceStatus::Model]) as $model) {
-            $done = array_filter(
-                $this->invoiceRepository->findBy(['model' => $model]),
-                fn ($invoice) => $invoice->getDateInvoice()->format('Y-m') === $month
-            );
-
-            if ([] !== $done) {
+            if ($this->invoiceRepository->hasFromModelInMonth($model, $date)) {
                 continue;
             }
 

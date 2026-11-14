@@ -70,6 +70,7 @@ class BankImportService
         $result = new ImportResult(Uuid::v7()->toRfc4122());
         $seenFingerprints = [];
         $shares = $this->bankAccountRepository->findShares($bankAccount);
+        [$knownIds, $knownFingerprints] = $this->findKnown($shares, $statement);
 
         foreach ($statement->transactions as $parsed) {
             if (0 === $parsed->amount) {
@@ -77,7 +78,7 @@ class BankImportService
             }
 
             if ($parsed->externalId) {
-                if ($this->transactionRepository->findOneByExternalId($shares, $parsed->externalId)
+                if ($this->isKnownId($shares, $parsed->externalId, $knownIds)
                     || isset($seenFingerprints['id:'.$parsed->externalId])) {
                     ++$result->duplicates;
 
@@ -88,12 +89,7 @@ class BankImportService
             } else {
                 $fingerprint = BankTransaction::buildFingerprint($parsed->date, $parsed->amount, $parsed->label);
                 $occurrence = $seenFingerprints[$fingerprint] = ($seenFingerprints[$fingerprint] ?? 0) + 1;
-                $existing = array_filter(
-                    $this->transactionRepository->findByFingerprint($shares, $fingerprint),
-                    fn (BankTransaction $transaction) => null === $transaction->getExternalId()
-                );
-
-                if (count($existing) >= $occurrence) {
+                if (($knownFingerprints[$fingerprint] ?? 0) >= $occurrence) {
                     ++$result->duplicates;
 
                     continue;
@@ -136,6 +132,78 @@ class BankImportService
         $this->allocateProviderFees($result);
 
         return $result;
+    }
+
+    /**
+     * What the books already hold of a statement, read in two queries rather
+     * than one per line: the bank's ids found, and per fingerprint the lines
+     * without an id that carry it.
+     *
+     * @param list<BankAccount> $shares
+     * @return array{array<string, true>, array<string, int>}
+     */
+    private function findKnown(
+        array $shares,
+        ParsedStatement $statement
+    ): array {
+        $ids = [];
+        $fingerprints = [];
+
+        foreach ($statement->transactions as $parsed) {
+            if (0 === $parsed->amount) {
+                continue;
+            }
+
+            if ($parsed->externalId) {
+                $ids[$parsed->externalId] = true;
+            } else {
+                $fingerprints[BankTransaction::buildFingerprint($parsed->date, $parsed->amount, $parsed->label)] = true;
+            }
+        }
+
+        $knownIds = [];
+        if ([] !== $ids) {
+            foreach ($this->transactionRepository->findBy(['bankAccount' => $shares, 'externalId' => array_map('strval', array_keys($ids))]) as $transaction) {
+                $knownIds[(string) $transaction->getExternalId()] = true;
+            }
+        }
+
+        $knownFingerprints = [];
+        if ([] !== $fingerprints) {
+            foreach ($this->transactionRepository->findBy(['bankAccount' => $shares, 'fingerprint' => array_map('strval', array_keys($fingerprints))]) as $transaction) {
+                if (null === $transaction->getExternalId()) {
+                    $knownFingerprints[$transaction->getFingerprint()] = ($knownFingerprints[$transaction->getFingerprint()] ?? 0) + 1;
+                }
+            }
+        }
+
+        return [$knownIds, $knownFingerprints];
+    }
+
+    /**
+     * Whether the bank's id is in the books. The database compares ids by its
+     * own collation (case and accents aside on MySQL): an id found only that
+     * way is asked again, alone, as the books asked it before.
+     *
+     * @param list<BankAccount> $shares
+     * @param array<string, true> $knownIds
+     */
+    private function isKnownId(
+        array $shares,
+        string $externalId,
+        array $knownIds
+    ): bool {
+        if (isset($knownIds[$externalId])) {
+            return true;
+        }
+
+        foreach (array_keys($knownIds) as $known) {
+            if (0 === strcasecmp((string) $known, $externalId)) {
+                return null !== $this->transactionRepository->findOneByExternalId($shares, $externalId);
+            }
+        }
+
+        return false;
     }
 
     /**

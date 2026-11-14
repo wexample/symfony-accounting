@@ -47,7 +47,9 @@ class LatePenaltyCalculator
             : [[
                 'label' => sprintf('%s → %s', $due->modify('+1 day')->format('Y-m-d'), $paidAt->format('Y-m-d')),
                 'days' => $days,
-                'amount' => RateHelper::mulDiv(RateHelper::rateOf($base, $policy->rate), $days, 365),
+                // Rounded once, at the end: rounding the yearly interest first
+                // then its share of the days was a cent off now and then.
+                'amount' => RateHelper::mulDiv($base, $policy->rate * $days, RateHelper::BASIS * 365),
             ]];
 
         return new LatePenalty($days, $base, $lines, $policy->flatFee);
@@ -113,7 +115,8 @@ class LatePenaltyCalculator
             $lines[] = [
                 'label' => sprintf('%s → %s', $cursor->format('Y-m-d'), $end->format('Y-m-d')),
                 'days' => $days,
-                'amount' => RateHelper::mulDiv(RateHelper::rateOf($base, $monthlyRate), $days, $daysInMonth),
+                // Rounded once, as the annual rate is.
+                'amount' => RateHelper::mulDiv($base, $monthlyRate * $days, RateHelper::BASIS * $daysInMonth),
             ];
 
             $cursor = $end->modify('+1 day');

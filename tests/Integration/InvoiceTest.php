@@ -301,6 +301,101 @@ class InvoiceTest extends AbstractAccountingTestCase
         $this->assertSame(['763:0/5479', '411:5479/0'], $this->describeLines($this->entryOf($penalty)));
     }
 
+    /**
+     * Interest is rounded once: the yearly interest rounded first, then its
+     * share of the days, was a cent short on 1000.04 at 12 % for 45 days.
+     */
+    public function testLatePenaltyIsRoundedOnce(): void
+    {
+        $ledger = $this->createLedger();
+        $paidAt = new DateTimeImmutable('2026-03-17');
+        $calculator = $this->service(LatePenaltyCalculator::class);
+
+        $bill = $this->emitSale($ledger, $this->createParty($ledger), 100004, '2026-01-01', vatRate: 0);
+        // 1000.04 × 12 % × 45 / 365 = 14.7951…, where 120.00 × 45 / 365 gave 14.79.
+        $annual = $calculator->calculate($bill, $paidAt, new LatePenaltyPolicy(LatePenaltyPolicy::MODE_ANNUAL, 1200, 0));
+        $this->assertSame(1480, $annual->getInterest());
+
+        $bill = $this->emitSale($ledger, $this->createParty($ledger), 100045, '2026-01-01', vatRate: 0);
+        // 1000.45 × 10 % × 17 / 31 = 54.8633…, where 100.05 × 17 / 31 gave 54.87.
+        $monthly = $calculator->calculate($bill, $paidAt, new LatePenaltyPolicy(LatePenaltyPolicy::MODE_MONTHLY, 1000, 0));
+        $this->assertSame([10005, 5486], array_column($monthly->lines, 'amount'));
+    }
+
+    /**
+     * The monthly rule cuts the delay at each month's end, each part over the
+     * days of its own month: February has 28 of them, 29 in a leap year.
+     */
+    public function testMonthlyLatePenaltyAroundMonthEnds(): void
+    {
+        $ledger = $this->createLedger();
+        $calculator = $this->service(LatePenaltyCalculator::class);
+        $policy = new LatePenaltyPolicy(LatePenaltyPolicy::MODE_MONTHLY, 1000, 0);
+        $bill = $this->emitSale($ledger, $this->createParty($ledger), 100000, '2026-01-01', vatRate: 0);
+        $this->assertSame('2026-01-31', $bill->calcDateDue()->format('Y-m-d'));
+
+        // Paid on the last day of February: one whole month.
+        $penalty = $calculator->calculate($bill, new DateTimeImmutable('2026-02-28'), $policy);
+        $this->assertSame(['2026-02-01 → 2026-02-28'], array_column($penalty->lines, 'label'));
+        $this->assertSame([28], array_column($penalty->lines, 'days'));
+        $this->assertSame([10000], array_column($penalty->lines, 'amount'));
+
+        // One day more opens March, a day of its 31.
+        $penalty = $calculator->calculate($bill, new DateTimeImmutable('2026-03-01'), $policy);
+        $this->assertSame(['2026-02-01 → 2026-02-28', '2026-03-01 → 2026-03-01'], array_column($penalty->lines, 'label'));
+        $this->assertSame([10000, 323], array_column($penalty->lines, 'amount'));
+        $this->assertSame(29, $penalty->daysLate);
+
+        // Due mid-month: 13 of February's 28 days, then 14 of March's 31.
+        $bill = $this->emitSale($ledger, $this->createParty($ledger), 100000, '2026-01-16', vatRate: 0);
+        $this->assertSame('2026-02-15', $bill->calcDateDue()->format('Y-m-d'));
+        $penalty = $calculator->calculate($bill, new DateTimeImmutable('2026-03-14'), $policy);
+        $this->assertSame([13, 14], array_column($penalty->lines, 'days'));
+        $this->assertSame([4643, 4516], array_column($penalty->lines, 'amount'));
+
+        // A leap February counts 29 days: 14 of them are a little less than half.
+        $ledger = $this->createLedger(fiscalYearStart: '2028-01-01');
+        $bill = $this->emitSale($ledger, $this->createParty($ledger), 100000, '2028-01-01', vatRate: 0);
+        $penalty = $calculator->calculate($bill, new DateTimeImmutable('2028-02-14'), $policy);
+        $this->assertSame([14], array_column($penalty->lines, 'days'));
+        $this->assertSame([4828], array_column($penalty->lines, 'amount'));
+    }
+
+    /**
+     * A written-off sale takes its VAT back off the collected VAT, in the
+     * proportion of the document's VAT, each rate its share; the rest is a
+     * bad debt.
+     */
+    public function testWriteOffSplitsTheVatAcrossRates(): void
+    {
+        $ledger = $this->createLedger();
+        $invoice = $this->factory()->create($ledger, party: $this->createParty($ledger));
+        $this->factory()->addItem($invoice, 'Service', 10000, vatRate: 2100);
+        $this->factory()->addItem($invoice, 'Book', 10000, vatRate: 600, goods: true);
+        $this->em()->flush();
+        $this->emission()->emit($invoice);
+        $this->assertSame(22700, $invoice->calcPriceFinal());
+
+        $accounting = $this->service(InvoiceAccountingService::class);
+        // 100.00 of 227.00: 11.89 of VAT (100 × 27 / 227), 9.25 at 21 % and
+        // 2.64 at 6 % — the cent left over goes to the larger remainder.
+        $entry = $accounting->writeOff($invoice, 10000, new DateTimeImmutable('2026-06-30'));
+        $this->assertTrue($entry->isBalanced());
+        $this->assertSame(['4457:925/0', '4457:264/0', '654:8811/0', '411:0/10000'], $this->describeLines($entry));
+        $this->assertSame(10000, $invoice->getPriceLoss());
+
+        // The rest, written off too: all the VAT is back, 21.00 and 6.00.
+        $rest = $accounting->writeOff($invoice, 12700, new DateTimeImmutable('2026-07-31'));
+        $vatOf = static fn ($entry) => array_sum(array_map(
+            static fn ($line) => '4457' === $line->getAccount()->getNumber() ? $line->getDebit() : 0,
+            $entry->getLines()->toArray()
+        ));
+        $this->assertSame(2700, $vatOf($entry) + $vatOf($rest));
+
+        $this->expectException(AccountingException::class);
+        $accounting->writeOff($invoice, 1);
+    }
+
     public function testChecker(): void
     {
         $ledger = $this->createLedger();
