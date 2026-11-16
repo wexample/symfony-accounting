@@ -39,6 +39,10 @@ class DocumentTest extends AbstractAccountingTestCase
         $this->assertSame('Wexample SRL', $data['issuer']['name']);
         $this->assertSame(['Avenue Louise 10', 'Boîte 3', '1050 Ixelles', 'Belgium'], $data['client']['addressLines']);
         $this->assertSame('1.5', $data['items'][0]['quantity']);
+        $this->assertSame('1.5', $data['items'][0]['quantityFormatted']);
+        // The data keeps the notation programs read; the page, the reader's.
+        $this->assertSame('1.5', $this->service(InvoiceDocumentDataBuilder::class)->build($invoice, 'fr')['items'][0]['quantity']);
+        $this->assertSame('1,5', $this->service(InvoiceDocumentDataBuilder::class)->build($invoice, 'fr')['items'][0]['quantityFormatted']);
         $this->assertSame(75000, $data['items'][0]['total']['amount']);
         $this->assertCount(2, $data['totals']['vatLines']);
         $this->assertSame(100600, $data['totals']['final']['amount']);

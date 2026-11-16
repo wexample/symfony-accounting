@@ -168,7 +168,7 @@ class PdfFactoryDocumentBuilder
         foreach ($data['items'] as $item) {
             $rows[] = [
                 Node::cell(Node::paragraphs([$item['title'], $item['description']])),
-                Node::textCell(trim($item['quantity'].' '.($item['unit'] ?? '')), 'right'),
+                Node::textCell(trim(($item['quantityFormatted'] ?? $item['quantity']).' '.($item['unit'] ?? '')), 'right'),
                 Node::textCell($item['unitPrice']['formatted'], 'right'),
                 Node::textCell($item['vatRateFormatted'], 'right'),
                 Node::textCell($item['total']['formatted'], 'right'),

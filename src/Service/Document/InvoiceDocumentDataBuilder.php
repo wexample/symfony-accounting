@@ -6,6 +6,7 @@ use DateTimeInterface;
 use IntlDateFormatter;
 use IntlDatePatternGenerator;
 use Locale;
+use NumberFormatter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Wexample\SymfonyAccounting\Entity\Invoice;
 use Wexample\SymfonyAccounting\Entity\InvoiceItem;
@@ -54,6 +55,7 @@ class InvoiceDocumentDataBuilder
             'description' => $item->getDescription(),
             'reference' => $item->getReference(),
             'quantity' => $this->formatQuantity($item),
+            'quantityFormatted' => $this->formatQuantity($item, $locale),
             'unit' => $item->getUnit(),
             'unitPrice' => $money((int) $item->getPriceRaw()),
             'vatRate' => $item->getPriceVat(),
@@ -237,17 +239,32 @@ class InvoiceDocumentDataBuilder
         ];
     }
 
-    private function formatQuantity(InvoiceItem $item): string
-    {
+    /**
+     * The quantity of a line: its duration as entered, else a decimal. Without a
+     * locale, the notation the data is read in by programs (`1.5`); with one, the
+     * reader's (`1,5` in French) — each language keeps its own.
+     */
+    private function formatQuantity(
+        InvoiceItem $item,
+        ?string $locale = null
+    ): string {
         if ($item->getDuration()) {
             return $item->getDuration();
         }
 
         $quantity = (int) $item->getQuantity();
-        $whole = intdiv($quantity, InvoiceItem::QUANTITY_SCALE);
-        $rest = $quantity % InvoiceItem::QUANTITY_SCALE;
 
-        return 0 === $rest ? (string) $whole : rtrim(sprintf('%d.%02d', $whole, abs($rest)), '0');
+        if (null !== $locale) {
+            $formatter = new NumberFormatter($locale, NumberFormatter::DECIMAL);
+            $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 2);
+
+            return (string) $formatter->format($quantity / InvoiceItem::QUANTITY_SCALE);
+        }
+
+        $whole = intdiv(abs($quantity), InvoiceItem::QUANTITY_SCALE);
+        $rest = abs($quantity) % InvoiceItem::QUANTITY_SCALE;
+
+        return ($quantity < 0 ? '-' : '').(0 === $rest ? (string) $whole : rtrim(sprintf('%d.%02d', $whole, $rest), '0'));
     }
 
     private function liveIssuer(Invoice $invoice): array
