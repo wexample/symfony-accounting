@@ -2,7 +2,6 @@
 
 namespace Wexample\SymfonyAccounting\Api\Controller;
 
-use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +12,7 @@ use Wexample\SymfonyAccounting\Enum\LedgerPermission;
 use Wexample\SymfonyAccounting\Exception\AccountingException;
 use Wexample\SymfonyAccounting\Interface\BelongsToLedgerInterface;
 use Wexample\SymfonyAccounting\Repository\LedgerRepository;
+use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use Wexample\SymfonyApi\Api\Controller\AbstractApiController;
 use Wexample\SymfonyGeo\Entity\Address;
 use Wexample\SymfonyGeo\Repository\AddressRepository;
