@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyAccounting\Api\Controller;
 
+use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,7 @@ use Wexample\SymfonyOrganization\Entity\Organization;
  * them: 404, never 403 (LedgerVoter decides). A request breaking a rule of
  * the books is answered 400 with the rule's words.
  */
+#[ApiAccess(ApiAccess::CONTROLLER, "LedgerVoter: a ledger, or anything in it, the reader may not reach is a 404")]
 abstract class AbstractAccountingApiController extends AbstractApiController
 {
     final public const string ROUTE_LIST = 'list';
