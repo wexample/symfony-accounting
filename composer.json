@@ -3,7 +3,7 @@
   "description": "Accounting for Symfony: ledgers, double-entry bookkeeping, invoices, bank reconciliation, VAT, closing and reports, with country rules in jurisdiction packages",
   "type": "library",
   "license": "MIT",
-  "version": "10.0.3",
+  "version": "11.0.0",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyAccounting\\": "src/"
@@ -25,19 +25,19 @@
     "league/csv": "^9.5",
     "wexample/php-date": ">=3.1.0",
     "wexample/symfony-helpers": ">=19.3.0",
-    "wexample/symfony-money": ">=8.0.0",
-    "wexample/symfony-geo": ">=9.0.0",
+    "wexample/symfony-money": ">=9.0.0",
+    "wexample/symfony-geo": ">=10.0.0",
     "wexample/symfony-check": ">=4.0.4",
-    "wexample/symfony-payment": ">=6.0.0",
+    "wexample/symfony-payment": ">=7.0.0",
     "wexample/symfony-remote-payment": ">=3.0.4",
     "symfony/security-core": "^7.4 || ^8.0",
     "wexample/symfony-remote-pdf-factory": ">=2.0.4",
     "wexample/symfony-remote-document-reader": ">=3.0.0",
     "wexample/symfony-remote-peppol": ">=3.0.0",
-    "wexample/symfony-api": ">=19.0.0",
+    "wexample/symfony-api": ">=20.0.0",
     "wexample/php-pseudocode": ">=3.1.0",
     "wexample/symfony-pseudocode": ">=4.0.2",
-    "wexample/symfony-media": ">=7.0.0",
+    "wexample/symfony-media": ">=8.0.0",
     "wexample/symfony-organization": ">=6.0.0",
     "symfony/validator": "^7.4 || ^8.0"
   },
